@@ -424,6 +424,8 @@
             let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
             logs.push(behavior);
             localStorage.setItem('studentLogs', JSON.stringify(logs));
+            // Update rewards for the most-recent student
+            saveRewardsToLocalStorage();
             
             // Show in right column
             showLog(behavior);
@@ -490,6 +492,8 @@
             
             // Show each log (newest first)
             logs.slice().reverse().forEach(showLog);
+            // Update rewards storage based on existing logs
+            saveRewardsToLocalStorage();
         }
         
         // ==================== DELETE BEHAVIOR ====================
@@ -500,6 +504,8 @@
             let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
             logs = logs.filter(log => log.id !== id);
             localStorage.setItem('studentLogs', JSON.stringify(logs));
+            // Update rewards after deletion
+            saveRewardsToLocalStorage();
             
             // Remove from display
             const entries = document.querySelectorAll('.log-entry');
@@ -717,6 +723,39 @@
                   `📊 ${logs.length} behaviors across ${Object.keys(students).length} students\n` +
                   `📝 Includes AI recommendations\n\n` +
                   `Next: Paste into Google Docs and share with your team!`);
+            // After exporting, also refresh rewards (in case export or analysis changed counts)
+            saveRewardsToLocalStorage();
+        }
+
+        // ==================== REWARDS INTEGRATION ====================
+        // Compute simple reward points & badges and save for read-only app to consume
+        function saveRewardsToLocalStorage() {
+            try {
+                const logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
+                if (logs.length === 0) {
+                    localStorage.removeItem('studentScopeRewards');
+                    return;
+                }
+
+                // Use the most recent log's student as the target student
+                const recent = logs[logs.length - 1];
+                const studentName = recent.studentName || 'Student';
+
+                // Count points = number of logs for that student
+                const points = logs.filter(l => l.studentName === studentName).length;
+
+                // Simple badge rules
+                const badges = [];
+                if (points >= 5) badges.push('Bronze Achiever');
+                if (points >= 10) badges.push('Silver Achiever');
+                if (points >= 20) badges.push('Gold Achiever');
+
+                const payload = { name: studentName, points: points, badges: badges };
+                localStorage.setItem('studentScopeRewards', JSON.stringify(payload));
+                console.log('Saved rewards for', studentName, payload);
+            } catch (err) {
+                console.error('Failed to save rewards to localStorage', err);
+            }
         }
     </script>
     

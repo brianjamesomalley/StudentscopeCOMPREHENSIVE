@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Rewards!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background: linear-gradient(blue, purple);
+            color: white;
+            padding: 20px;
+        }
+        .star {
+            font-size: 40px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        .badge { display: inline-block; background: rgba(255,255,255,0.12); padding: 8px 12px; margin:6px; border-radius:8px; }
+    </style>
+</head>
+<body>
+    <h1>🎉 Your Rewards! 🎉</h1>
+    <div id="app">
+        <!-- Student's name will go here -->
+        <h2>Hello, <span id="studentName">Student</span>!</h2>
+        
+        <!-- Points display -->
+        <div class="points">
+            <div class="star">⭐</div>
+            <h3 id="points">0 Points</h3>
+        </div>
+        
+        <!-- Rewards earned -->
+        <div id="rewards">
+            <h3>🏆 Your Badges:</h3>
+            <div id="badges"></div>
+        </div>
+    </div>
+    
+    <script src="student-app.js"></script>
+</body>
+</html>

@@ -269,7 +269,6 @@
             color: #9b59b6;
             font-weight: 600;
         }
-        
     </style>
 </head>
 <body>
@@ -290,9 +289,8 @@
                         <input type="text" id="studentName" placeholder="Type student's name" required>
                     </div>
                     
-                    <div class="form-group">
-                        <input type="hidden" id="date" name="date">
-                    </div>
+                    <!-- Hidden date field - auto-set when form is submitted -->
+                    <input type="hidden" id="date" name="date">
                     
                     <div class="form-group">
                         <label>What happened?</label>
@@ -388,9 +386,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log("StudentScope AI starting...");
             
-            // Set date to now
-            document.getElementById('date').value = new Date().toISOString().slice(0, 16);
-            
             // Load existing logs
             loadLogs();
             
@@ -406,12 +401,16 @@
         function saveBehavior(e) {
             e.preventDefault();
             
+            // 1. AUTO-SET THE DATE TO THE EXACT MOMENT OF SAVING
+            const now = new Date();
+            document.getElementById('date').value = now.toISOString();
+            
+            // 2. Proceed with save logic
             const behavior = {
                 id: Date.now(),
                 studentName: document.getElementById('studentName').value.trim(),
                 date: document.getElementById('date').value,
-                behavior: document.getElementById('behavior').value.trim(),
-                timestamp: new Date().toISOString()
+                behavior: document.getElementById('behavior').value.trim()
             };
             
             // Validate
@@ -424,15 +423,20 @@
             let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
             logs.push(behavior);
             localStorage.setItem('studentLogs', JSON.stringify(logs));
+            
             // Update rewards for the most-recent student
             saveRewardsToLocalStorage();
             
             // Show in right column
             showLog(behavior);
             
-            // Clear form
-            document.getElementById('behaviorForm').reset();
-            document.getElementById('date').value = new Date().toISOString().slice(0, 16);
+            // 3. Clear only the Student Name and Behavior fields after saving
+            document.getElementById('studentName').value = '';
+            document.getElementById('behavior').value = '';
+            // DO NOT clear the date field - it's hidden and auto-set on next save
+            
+            // Return focus to Student Name for rapid sequential entry
+            document.getElementById('studentName').focus();
             
             console.log("Behavior saved successfully");
         }
@@ -510,14 +514,14 @@
             // Remove from display
             const entries = document.querySelectorAll('.log-entry');
             entries.forEach(entry => {
-                if (entry.innerHTML.includes(`deleteBehavior(${id})`)) {
+                if (entry.dataset.id == id) {
                     entry.remove();
                 }
             });
             
             // If empty, show empty state
             const container = document.getElementById('logContainer');
-            if (logs.length === 0) {
+            if (container.children.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-clipboard-list"></i>
@@ -573,7 +577,7 @@
                 // Scroll to AI output
                 output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 
-            }, 1500); // Simulate 1.5 second AI processing
+            }, 1500);
         }
         
         // AI Knowledge Base (simulated)
@@ -641,7 +645,7 @@
                 suggestions.unshift("Use partitioned work areas or study carrels to reduce visual distractions during independent work.");
             }
             
-            return suggestions.slice(0, 4); // Return top 4 suggestions
+            return suggestions.slice(0, 4);
         }
         
         // ==================== GOOGLE DOCS EXPORT ====================
@@ -723,12 +727,11 @@
                   `📊 ${logs.length} behaviors across ${Object.keys(students).length} students\n` +
                   `📝 Includes AI recommendations\n\n` +
                   `Next: Paste into Google Docs and share with your team!`);
-            // After exporting, also refresh rewards (in case export or analysis changed counts)
+            // After exporting, also refresh rewards
             saveRewardsToLocalStorage();
         }
 
         // ==================== REWARDS INTEGRATION ====================
-        // Compute simple reward points & badges and save for read-only app to consume
         function saveRewardsToLocalStorage() {
             try {
                 const logs = JSON.parse(localStorage.getItem('studentLogs')) || [];

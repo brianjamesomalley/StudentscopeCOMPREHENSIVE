@@ -135,8 +135,9 @@
             },
             
             // === BEHAVIOR LOGGING ===
-            saveBehavior(e)
-            
+            saveBehavior(e) {
+                e.preventDefault();
+                
                 const log = {
                     id: Date.now(),
                     studentName: document.getElementById('studentName').value.trim(),

@@ -269,6 +269,96 @@
             color: #9b59b6;
             font-weight: 600;
         }
+        
+        /* === ABC EXPANDABLE SECTION === */
+        .abc-expandable {
+            margin-top: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background: #f0f7ff;
+            border-radius: 8px;
+        }
+
+        .abc-expandable.expanded {
+            max-height: 500px;
+            padding: 20px;
+            border: 1px solid #d0e0f0;
+        }
+
+        .abc-section {
+            margin-bottom: 15px;
+        }
+
+        .abc-section label {
+            color: #2c3e50;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .abc-section textarea {
+            background: white;
+            border: 1px solid #c8d6e5;
+            font-size: 0.95rem;
+            min-height: 60px;
+            padding: 10px;
+        }
+
+        .comments-section {
+            border-top: 1px dashed #c8d6e5;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .comment-entry {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+            font-size: 0.9rem;
+        }
+
+        .comment-meta {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        /* Small, unobtrusive edit button */
+        .edit-abc-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .edit-abc-btn:hover {
+            background: #2980b9;
+        }
+
+        .save-abc-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .save-abc-btn:hover {
+            background: #219653;
+        }
     </style>
 </head>
 <body>
@@ -336,7 +426,7 @@
                 </div>
             </div>
             
-            <!-- COLUMN 3: BEHAVIOR LOGS + EXPORT -->
+            <!-- COLUMN 3: BEHAVIOR LOGS WITH ABC EDIT -->
             <div class="card card-3">
                 <div class="right-column-header">
                     <h2 style="margin: 0;">📋 3. Behavior Logs</h2>
@@ -410,7 +500,10 @@
                 id: Date.now(),
                 studentName: document.getElementById('studentName').value.trim(),
                 date: document.getElementById('date').value,
-                behavior: document.getElementById('behavior').value.trim()
+                behavior: document.getElementById('behavior').value.trim(),
+                antecedent: "", // Initialize empty for ABC data
+                consequence: "", // Initialize empty for ABC data
+                comments: [] // Initialize empty array for comments
             };
             
             // Validate
@@ -423,9 +516,6 @@
             let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
             logs.push(behavior);
             localStorage.setItem('studentLogs', JSON.stringify(logs));
-            
-            // Update rewards for the most-recent student
-            saveRewardsToLocalStorage();
             
             // Show in right column
             showLog(behavior);
@@ -441,7 +531,7 @@
             console.log("Behavior saved successfully");
         }
         
-        // ==================== SHOW LOG IN RIGHT COLUMN ====================
+        // ==================== SHOW LOG IN RIGHT COLUMN (WITH ABC EDIT) ====================
         function showLog(log) {
             const container = document.getElementById('logContainer');
             const emptyState = container.querySelector('.empty-state');
@@ -466,11 +556,59 @@
                 minute: '2-digit'
             });
             
-            // Build display HTML
+            // Check if this log already has ABC data or comments
+            const hasAntecedent = log.antecedent && log.antecedent.trim() !== '';
+            const hasConsequence = log.consequence && log.consequence.trim() !== '';
+            const hasComments = log.comments && log.comments.length > 0;
+            
+            // Build display HTML - MAIN SIMPLE VIEW
             entry.innerHTML = `
                 <div class="student-name">${log.studentName}</div>
                 <div class="log-date">${formattedDate}</div>
-                <div style="margin-top: 15px; line-height: 1.5;">${log.behavior}</div>
+                <div style="margin-top: 15px; line-height: 1.5;"><strong>Behavior:</strong> ${log.behavior}</div>
+                
+                ${hasAntecedent ? `<div style="margin-top: 8px;"><strong>Antecedent:</strong> ${log.antecedent}</div>` : ''}
+                ${hasConsequence ? `<div style="margin-top: 8px;"><strong>Consequence:</strong> ${log.consequence}</div>` : ''}
+                
+                <!-- Comments Display -->
+                ${hasComments ? `
+                    <div style="margin-top: 15px; border-top: 1px solid #e0e6ed; padding-top: 10px;">
+                        <strong>Comments:</strong>
+                        ${log.comments.map(comment => `
+                            <div class="comment-entry">
+                                ${comment.text}
+                                <div class="comment-meta">— ${comment.author || 'Staff'} • ${new Date(comment.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                <!-- Edit/Add ABC Button -->
+                <button class="edit-abc-btn" onclick="toggleABCEditor(${log.id})">
+                    ${hasAntecedent || hasConsequence || hasComments ? '✏️ Edit ABC/Comments' : '➕ Add ABC/Comment'}
+                </button>
+                
+                <!-- EXPANDABLE EDIT SECTION (Hidden by default) -->
+                <div class="abc-expandable" id="abcEditor-${log.id}">
+                    <div class="abc-section">
+                        <label>Antecedent (What happened BEFORE?)</label>
+                        <textarea id="antecedent-${log.id}" placeholder="Optional: What triggered the behavior?">${log.antecedent || ''}</textarea>
+                    </div>
+                    
+                    <div class="abc-section">
+                        <label>Consequence (What happened AFTER?)</label>
+                        <textarea id="consequence-${log.id}" placeholder="Optional: What was the response?">${log.consequence || ''}</textarea>
+                    </div>
+                    
+                    <div class="comments-section">
+                        <label>Add a Comment</label>
+                        <textarea id="newComment-${log.id}" placeholder="Optional: Add notes, analysis, or follow-up..."></textarea>
+                        <button onclick="addComment(${log.id})" class="save-abc-btn">💬 Add Comment</button>
+                    </div>
+                    
+                    <button onclick="saveABCData(${log.id})" class="save-abc-btn">💾 Save ABC Data</button>
+                </div>
+                
                 <button onclick="deleteBehavior(${log.id})" class="delete-btn">
                     🗑️ Delete
                 </button>
@@ -496,8 +634,6 @@
             
             // Show each log (newest first)
             logs.slice().reverse().forEach(showLog);
-            // Update rewards storage based on existing logs
-            saveRewardsToLocalStorage();
         }
         
         // ==================== DELETE BEHAVIOR ====================
@@ -508,16 +644,12 @@
             let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
             logs = logs.filter(log => log.id !== id);
             localStorage.setItem('studentLogs', JSON.stringify(logs));
-            // Update rewards after deletion
-            saveRewardsToLocalStorage();
             
             // Remove from display
-            const entries = document.querySelectorAll('.log-entry');
-            entries.forEach(entry => {
-                if (entry.dataset.id == id) {
-                    entry.remove();
-                }
-            });
+            const entry = document.querySelector(`[data-id="${id}"]`);
+            if (entry) {
+                entry.remove();
+            }
             
             // If empty, show empty state
             const container = document.getElementById('logContainer');
@@ -531,6 +663,109 @@
                 `;
             }
         };
+        
+        // ==================== ABC EDITOR FUNCTIONS ====================
+        window.toggleABCEditor = function(logId) {
+            const editor = document.getElementById(`abcEditor-${logId}`);
+            const button = event.target;
+            
+            if (editor.classList.contains('expanded')) {
+                editor.classList.remove('expanded');
+                button.textContent = button.textContent.includes('Edit') ? '✏️ Edit ABC/Comments' : '➕ Add ABC/Comment';
+            } else {
+                // Close any other open editors first
+                document.querySelectorAll('.abc-expandable.expanded').forEach(el => {
+                    el.classList.remove('expanded');
+                });
+                
+                editor.classList.add('expanded');
+                button.textContent = '▲ Close Editor';
+            }
+        };
+
+        window.saveABCData = function(logId) {
+            const antecedent = document.getElementById(`antecedent-${logId}`).value.trim();
+            const consequence = document.getElementById(`consequence-${logId}`).value.trim();
+            
+            // Get current logs
+            let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
+            const logIndex = logs.findIndex(log => log.id === logId);
+            
+            if (logIndex !== -1) {
+                // Update the log with ABC data
+                logs[logIndex].antecedent = antecedent;
+                logs[logIndex].consequence = consequence;
+                
+                // Save back to localStorage
+                localStorage.setItem('studentLogs', JSON.stringify(logs));
+                
+                // Close the editor
+                const editor = document.getElementById(`abcEditor-${logId}`);
+                editor.classList.remove('expanded');
+                
+                // Refresh just this log entry
+                refreshLogEntry(logId);
+                
+                console.log("ABC data saved for log ID:", logId);
+            }
+        };
+
+        window.addComment = function(logId) {
+            const commentText = document.getElementById(`newComment-${logId}`).value.trim();
+            
+            if (!commentText) {
+                alert("Please enter a comment");
+                return;
+            }
+            
+            // Get current logs
+            let logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
+            const logIndex = logs.findIndex(log => log.id === logId);
+            
+            if (logIndex !== -1) {
+                // Initialize comments array if it doesn't exist
+                if (!logs[logIndex].comments) {
+                    logs[logIndex].comments = [];
+                }
+                
+                // Add new comment with timestamp
+                const newComment = {
+                    text: commentText,
+                    timestamp: new Date().toISOString(),
+                    author: "Staff"
+                };
+                
+                logs[logIndex].comments.push(newComment);
+                
+                // Save back to localStorage
+                localStorage.setItem('studentLogs', JSON.stringify(logs));
+                
+                // Clear the comment input
+                document.getElementById(`newComment-${logId}`).value = '';
+                
+                // Refresh just this log entry
+                refreshLogEntry(logId);
+                
+                console.log("Comment added to log ID:", logId);
+            }
+        };
+
+        function refreshLogEntry(logId) {
+            // Get the updated log data
+            const logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
+            const updatedLog = logs.find(log => log.id === logId);
+            
+            if (updatedLog) {
+                // Remove the old entry
+                const oldEntry = document.querySelector(`[data-id="${logId}"]`);
+                if (oldEntry) {
+                    oldEntry.remove();
+                }
+                
+                // Re-add with updated data
+                showLog(updatedLog);
+            }
+        }
         
         // ==================== AI ASSISTANT ====================
         function generateAISuggestions() {
@@ -551,7 +786,7 @@
                 </div>
             `;
             
-            // Simulate AI thinking (in real app, this would call an API)
+            // Simulate AI thinking
             setTimeout(() => {
                 const suggestions = getAISuggestions(prompt, focus);
                 
@@ -690,10 +925,16 @@
                     });
                     
                     docContent += `${index + 1}. ${dateStr}\n`;
-                    docContent += `   ${log.behavior}\n\n`;
+                    docContent += `   Behavior: ${log.behavior}\n`;
+                    if (log.antecedent) docContent += `   Antecedent: ${log.antecedent}\n`;
+                    if (log.consequence) docContent += `   Consequence: ${log.consequence}\n`;
+                    if (log.comments && log.comments.length > 0) {
+                        docContent += `   Comments: ${log.comments.length}\n`;
+                    }
+                    docContent += '\n';
                 });
                 
-                // Add AI-generated recommendations based on this student's logs
+                // Add AI-generated recommendations
                 if (studentLogs.length >= 3) {
                     docContent += `AI RECOMMENDATIONS for ${studentName}:\n`;
                     docContent += `• Consider tracking frequency to identify patterns\n`;
@@ -711,58 +952,4 @@
             
             // Create download
             const blob = new Blob([docContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const today = new Date().toISOString().slice(0, 10);
-            a.download = `StudentScope_AI_Report_${today}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            // Show success message
-            alert(`🤖 AI Report Generated!\n\n` +
-                  `✅ Downloaded: "${a.download}"\n` +
-                  `📊 ${logs.length} behaviors across ${Object.keys(students).length} students\n` +
-                  `📝 Includes AI recommendations\n\n` +
-                  `Next: Paste into Google Docs and share with your team!`);
-            // After exporting, also refresh rewards
-            saveRewardsToLocalStorage();
-        }
-
-        // ==================== REWARDS INTEGRATION ====================
-        function saveRewardsToLocalStorage() {
-            try {
-                const logs = JSON.parse(localStorage.getItem('studentLogs')) || [];
-                if (logs.length === 0) {
-                    localStorage.removeItem('studentScopeRewards');
-                    return;
-                }
-
-                // Use the most recent log's student as the target student
-                const recent = logs[logs.length - 1];
-                const studentName = recent.studentName || 'Student';
-
-                // Count points = number of logs for that student
-                const points = logs.filter(l => l.studentName === studentName).length;
-
-                // Simple badge rules
-                const badges = [];
-                if (points >= 5) badges.push('Bronze Achiever');
-                if (points >= 10) badges.push('Silver Achiever');
-                if (points >= 20) badges.push('Gold Achiever');
-
-                const payload = { name: studentName, points: points, badges: badges };
-                localStorage.setItem('studentScopeRewards', JSON.stringify(payload));
-                console.log('Saved rewards for', studentName, payload);
-            } catch (err) {
-                console.error('Failed to save rewards to localStorage', err);
-            }
-        }
-    </script>
-    
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-</body>
-</html>
+            const url = URL.createObjectURL(bl

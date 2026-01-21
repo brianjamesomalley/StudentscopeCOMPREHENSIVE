@@ -135,7 +135,16 @@
             },
             
             // === BEHAVIOR LOGGING ===
-            saveBehavior(e) {
+            saveBehavior(e)
+            
+                const behavior = {
+                ...existingData,
+                communicationStatus: {
+                parentNotified: false, // Will be true when message sent
+                messageId: null, // Links to TalkingParents-style message
+                lastParentView: null
+                 }
+                };{
                 e.preventDefault();
                 
                 const log = {

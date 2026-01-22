@@ -1,1 +1,62 @@
 
+<!-- Simple login - 3 options -->
+<div class="login-screen">
+<div class="login-card">
+<h2>Studentscope Messenger</h2>
+<p class="subtitle">Secure school-parent communication</p>
+
+<!-- Role Selection -->
+<div class="role-selector">
+<button class="role-btn" onclick="showParentLogin()">
+<div class="role-icon">👨‍👩‍👧‍👦</div>
+<strong>Parent/Family</strong>
+<small>View updates, message team</small>
+</button>
+
+<button class="role-btn" onclick="showStaffLogin()">
+<div class="role-icon">👨‍🏫</div>
+<strong>School Staff</strong>
+<small>Teachers, paras, admins</small>
+</button>
+</div>
+
+<!-- Parent Login (Simple) -->
+<div class="login-form" id="parent-login" style="display:none;">
+<input type="text" placeholder="Student ID (from school)" class="login-input">
+<input type="text" placeholder="Access Code (from school)" class="login-input">
+<button class="login-btn">Access Messages</button>
+<p class="help-text">
+Don't have codes? Contact your school.
+<a href="#">Why secure messaging matters →</a>
+</p>
+</div>
+
+<!-- Staff Login -->
+<div class="login-form" id="staff-login" style="display:none;">
+<select class="login-select">
+<option>Select School/District</option>
+<option>Lincoln Elementary</option>
+<option>Jefferson Middle</option>
+</select>
+<input type="email" placeholder="School email" class="login-input">
+<input type="password" placeholder="Password" class="login-input">
+<button class="login-btn">Staff Login</button>
+</div>
+
+<!-- Value Prop -->
+<div class="value-prop">
+<div class="prop-item">
+<span>🔒</span>
+<div>Secure & Archived (legal protection)</div>
+</div>
+<div class="prop-item">
+<span>⚡</span>
+<div>15-sec behavior logging included</div>
+</div>
+<div class="prop-item">
+<span>📈</span>
+<div>Tied to student progress data</div>
+</div>
+</div>
+</div>
+</div>

@@ -66,13 +66,13 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 <!-- COLUMN 1: SIMPLE LOG FORM -->
 <div class="card card-1">
 <h2>📝 1. Log Behavior</h2>
-<form id="behaviorForm">
+<div id="behaviorForm">
 <div class="form-group"><label>Student Name</label><input type="text" id="studentName" placeholder="Type student's name" required></div>
 <input type="hidden" id="date">
 <div class="form-group"><label>What happened?</label><textarea id="behavior" placeholder="Describe the behavior in detail..." required></textarea></div>
-<button type="submit" class="save-button">💾 SAVE BEHAVIOR</button>
+<button type="button" id="saveBtn" class="save-button">💾 SAVE BEHAVIOR</button>
 <button type="button" id="goodBehaviorBtn" class="good-behavior-button">⭐ GOOD BEHAVIOR ALERT</button>  
-</form>
+</div>
 </div>
 
 <!-- COLUMN 2: AI ASSISTANT -->
@@ -132,16 +132,14 @@ console.log("StudentScope ready");
 },
 
 setupEventListeners() {
-document.getElementById('behaviorForm').addEventListener('submit', (e) => this.saveBehavior(e));
+document.getElementById('saveBtn').addEventListener('click', () => this.saveBehavior());
 document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());  
 document.getElementById('googleDocsBtn').addEventListener('click', () => this.exportToDocs());
 document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
 },
 
 // === BEHAVIOR LOGGING ===
-saveBehavior(e) {
-e.preventDefault();
-
+saveBehavior() {
 const log = {
 id: Date.now(),
 studentName: document.getElementById('studentName').value.trim(),
@@ -156,33 +154,34 @@ if (!log.studentName || !log.behavior) {
 alert("Please enter both student name and behavior description");
 return;
 }
+
+this.logs.push(log);
+localStorage.setItem('studentLogs', JSON.stringify(this.logs));
+this.displayLog(log);
+
+document.getElementById('studentName').value = '';
+document.getElementById('behavior').value = '';
+document.getElementById('studentName').focus();
+},
+
 saveGoodBehavior() {
-  const studentName = document.getElementById('studentName').value.trim();
-  const behavior = document.getElementById('behavior').value.trim();
+const studentName = document.getElementById('studentName').value.trim();
+const behavior = document.getElementById('behavior').value.trim();
 
-  if (!studentName || !behavior) {
-    alert("Please enter both student name and behavior description");
-    return;
-  }
-
-  const log = {
-    id: Date.now(),
-    studentName: studentName,
-    date: new Date().toISOString(),
-    behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
-    antecedent: "",
-    consequence: "",
-    comments: []
-  };
-
-  this.logs.push(log);
-  localStorage.setItem('studentLogs', JSON.stringify(this.logs));
-  this.displayLog(log);
-
-  document.getElementById('studentName').value = '';
-  document.getElementById('behavior').value = '';
-  document.getElementById('studentName').focus();
+if (!studentName || !behavior) {
+alert("Please enter both student name and behavior description");
+return;
 }
+
+const log = {
+id: Date.now(),
+studentName: studentName,
+date: new Date().toISOString(),
+behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
+antecedent: "",
+consequence: "",
+comments: []
+};
 
 this.logs.push(log);
 localStorage.setItem('studentLogs', JSON.stringify(this.logs));
@@ -393,4 +392,3 @@ document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
 </body>
 </html>
-

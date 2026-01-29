@@ -34,7 +34,8 @@ textarea { min-height: 120px; resize: vertical; }
 /* Buttons */
 .save-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #27ae60, #219653);
 color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
-<button type="button" id="goodBehaviorBtn" class="good-behavior-button">⭐ GOOD BEHAVIOR ALERT</button>  
+.good-behavior-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none; 
+border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; } 
 .ai-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #9b59b6, #8e44ad);
 color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; }
 .docs-button { padding: 12px 24px; background: #4285f4; color: white; border: none; border-radius: 8px;
@@ -70,6 +71,7 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 <input type="hidden" id="date">
 <div class="form-group"><label>What happened?</label><textarea id="behavior" placeholder="Describe the behavior in detail..." required></textarea></div>
 <button type="submit" class="save-button">💾 SAVE BEHAVIOR</button>
+<button type="button" id="goodBehaviorBtn" class="good-behavior-button">⭐ GOOD BEHAVIOR ALERT</button>  
 </form>
 </div>
 

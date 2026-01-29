@@ -1,1 +1,13 @@
-/* Paste your CSS code here */
+
+.good-behavior-button { 
+  width: 100%; 
+  padding: 16px; 
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white; 
+  border: none; 
+  border-radius: 10px; 
+  font-size: 1.2rem; 
+  font-weight: 600; 
+  cursor: pointer; 
+  margin-top: 10px; 
+}

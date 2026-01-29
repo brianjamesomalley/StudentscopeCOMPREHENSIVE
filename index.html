@@ -133,6 +133,7 @@ console.log("StudentScope ready");
 
 setupEventListeners() {
 document.getElementById('behaviorForm').addEventListener('submit', (e) => this.saveBehavior(e));
+document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());  
 document.getElementById('googleDocsBtn').addEventListener('click', () => this.exportToDocs());
 document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
 },
@@ -155,6 +156,36 @@ if (!log.studentName || !log.behavior) {
 alert("Please enter both student name and behavior description");
 return;
 }
+saveGoodBehavior() {
+  const studentName = document.getElementById('studentName').value.trim();
+  const behavior = document.getElementById('behavior').value.trim();
+
+  if (!studentName || !behavior) {
+    alert("Please enter both student name and behavior description");
+    return;
+  }
+
+  const log = {
+    id: Date.now(),
+    studentName: studentName,
+    date: new Date().toISOString(),
+    behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
+    antecedent: "",
+    consequence: "",
+    comments: []
+  };
+
+  this.logs.push(log);
+  localStorage.setItem('studentLogs', JSON.stringify(this.logs));
+  this.displayLog(log);
+
+  document.getElementById('studentName').value = '';
+  document.getElementById('behavior').value = '';
+  document.getElementById('studentName').focus();
+}
+These snippets will add an orange "GOOD BEHAVIOR ALERT" button that saves the behavior with the alert prefix automatically!
+
+
 
 this.logs.push(log);
 localStorage.setItem('studentLogs', JSON.stringify(this.logs));

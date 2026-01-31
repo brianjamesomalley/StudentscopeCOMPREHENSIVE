@@ -390,5 +390,24 @@ alert(`Report exported with ${this.logs.length} behaviors`);
 // Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
+<!-- SUPABASE TEST -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://knpabzrjqhqiauvxwxdf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_m5LJX6cdZ3zNGQHcWb-6SQ_doi97rR7';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+  const testBtn = document.createElement('button');
+  testBtn.innerHTML = '🧪 TEST';
+  testBtn.style.cssText = 'position:fixed; top:20px; right:20px; padding:20px; background:red; color:white; z-index:99999; font-size:20px;';
+  testBtn.onclick = async () => {
+    const test = await supabase.from('behavior_events').insert([{
+      student_name: "TEST",
+      behavior: "Test at " + new Date().toLocaleTimeString()
+    }]);
+    alert(test.error ? '❌ ' + test.error.message : '✅ SAVED!');
+  };
+  document.body.appendChild(testBtn);
+</script>
 </body>
 </html>

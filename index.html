@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudentScope | Behavior Tracking</title>
 <style>
-/* === CORE STYLES (150 lines) === */
+/* === CORE STYLES === */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 body { background: #f8fafc; padding: 20px; }
 .container { max-width: 1200px; margin: 0 auto; }
@@ -14,6 +14,22 @@ body { background: #f8fafc; padding: 20px; }
 header { text-align: center; margin-bottom: 30px; padding: 25px;
 background: linear-gradient(135deg, #4a6fa5 0%, #2c3e50 100%); border-radius: 15px; color: white; }
 h1 { font-size: 2.8rem; margin-bottom: 10px; }
+
+/* LOGIN SCREEN STYLES */
+.login-container { max-width: 450px; margin: 100px auto; }
+.login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+.login-card h2 { color: #2c3e50; margin-bottom: 30px; text-align: center; }
+.login-input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e0e6ed;
+border-radius: 10px; font-size: 1rem; }
+.login-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #4a6fa5, #2c3e50);
+color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600;
+cursor: pointer; margin-top: 10px; }
+.login-button:hover { opacity: 0.9; }
+.toggle-auth { text-align: center; margin-top: 20px; color: #7f8c8d; }
+.toggle-auth a { color: #4a6fa5; cursor: pointer; text-decoration: underline; }
+.logout-button { padding: 10px 20px; background: #e74c3c; color: white; border: none;
+border-radius: 8px; cursor: pointer; margin-left: 15px; }
+.user-info { display: inline-block; margin-right: 15px; color: white; opacity: 0.9; }
 
 /* 3-Column Grid */
 .three-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
@@ -34,8 +50,8 @@ textarea { min-height: 120px; resize: vertical; }
 /* Buttons */
 .save-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #27ae60, #219653);
 color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
-.good-behavior-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none; 
-border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; } 
+.good-behavior-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none;
+border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
 .ai-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #9b59b6, #8e44ad);
 color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; }
 .docs-button { padding: 12px 24px; background: #4285f4; color: white; border: none; border-radius: 8px;
@@ -53,13 +69,44 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 .abc-expandable.expanded { max-height: 500px; padding: 20px; border: 1px solid #d0e0f0; }
 .edit-abc-btn { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-top: 10px; }
 .save-abc-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; margin-top: 10px; width: 100%; }
+
+/* Loading/Hidden */
+.hidden { display: none; }
+.loading { text-align: center; padding: 40px; color: #7f8c8d; }
 </style>
 </head>
 <body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" class="login-container">
+<div class="login-card">
+<h1 style="text-align:center;color:#4a6fa5;margin-bottom:10px;">🤖 StudentScope</h1>
+<p style="text-align:center;color:#7f8c8d;margin-bottom:30px;">Secure Teacher Login</p>
+<h2 id="authTitle">Sign In</h2>
+<input type="email" id="authEmail" class="login-input" placeholder="Email address" required>
+<input type="password" id="authPassword" class="login-input" placeholder="Password" required>
+<button id="authButton" class="login-button">SIGN IN</button>
+<div class="toggle-auth">
+<span id="authToggleText">Don't have an account? <a id="authToggle">Sign up</a></span>
+</div>
+<div id="authError" style="color:#e74c3c;text-align:center;margin-top:15px;display:none;"></div>
+</div>
+</div>
+
+<!-- ========== MAIN APP (hidden until logged in) ========== -->
+<div id="mainApp" class="hidden">
 <div class="container">
 <header>
-<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">AI-POWERED</span></h1>
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div>
+<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">FIREBASE</span></h1>
 <p style="font-size:1.2rem;opacity:0.9;">AI-assisted behavior tracking for modern educators</p>
+</div>
+<div>
+<span class="user-info" id="userEmail"></span>
+<button id="logoutBtn" class="logout-button">🚪 Logout</button>
+</div>
+</div>
 </header>
 
 <div class="three-columns">
@@ -68,7 +115,6 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 <h2>📝 1. Log Behavior</h2>
 <div id="behaviorForm">
 <div class="form-group"><label>Student Name</label><input type="text" id="studentName" placeholder="Type student's name" required></div>
-<input type="hidden" id="date">
 <div class="form-group"><label>What happened?</label><textarea id="behavior" placeholder="Describe the behavior in detail..." required></textarea></div>
 <button type="button" id="saveBtn" class="save-button">💾 SAVE BEHAVIOR</button>
 <button type="button" id="goodBehaviorBtn" class="good-behavior-button">⭐ GOOD BEHAVIOR ALERT</button>  
@@ -116,270 +162,442 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 </div>
 
 <footer style="text-align:center;margin-top:40px;color:#7f8c8d;padding:20px;">
-<p>StudentScope LLC • <span style="color:#9b59b6;font-weight:600;">Powered by AI</span> • Data saves locally • Made for educators</p>
+<p>StudentScope LLC • <span style="color:#9b59b6;font-weight:600;">Powered by Firebase</span> • Secure Cloud Storage • Made for educators</p>
 </footer>
 </div>
+</div>
+
+<!-- ========== FIREBASE SDK ========== -->
+<!-- Step 1: Load Firebase libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
-// === CORE APP STATE ===
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain: "studentscopebehaviorcenter.firebaseapp.com",
+  projectId: "studentscopebehaviorcenter",
+  storageBucket: "studentscopebehaviorcenter.firebasestorage.app",
+  messagingSenderId: "311398911099",
+  appId: "1:311398911099:web:6703268a2b65cdd969a6de"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ========== AUTHENTICATION LOGIC ==========
+const AuthManager = {
+  isSignUp: false,
+  currentUser: null,
+
+  init() {
+    // Listen for auth state changes
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        this.currentUser = user;
+        this.showMainApp();
+        App.init();
+      } else {
+        this.currentUser = null;
+        this.showLoginScreen();
+      }
+    });
+
+    // Setup login/signup toggle
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+    document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
+    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+
+    // Enter key to submit
+    document.getElementById('authPassword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.handleAuth();
+    });
+  },
+
+  toggleAuthMode() {
+    this.isSignUp = !this.isSignUp;
+    document.getElementById('authTitle').textContent = this.isSignUp ? 'Sign Up' : 'Sign In';
+    document.getElementById('authButton').textContent = this.isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN';
+    document.getElementById('authToggleText').innerHTML = this.isSignUp
+      ? 'Already have an account? <a id="authToggle">Sign in</a>'
+      : 'Don\'t have an account? <a id="authToggle">Sign up</a>';
+   
+    // Re-attach the toggle listener
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+  },
+
+  async handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+
+    if (!email || !password) {
+      this.showError('Please enter both email and password');
+      return;
+    }
+
+    try {
+      if (this.isSignUp) {
+        await auth.createUserWithEmailAndPassword(email, password);
+        console.log('Account created successfully');
+      } else {
+        await auth.signInWithEmailAndPassword(email, password);
+        console.log('Signed in successfully');
+      }
+      errorDiv.style.display = 'none';
+    } catch (error) {
+      this.showError(this.getErrorMessage(error.code));
+    }
+  },
+
+  showError(message) {
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+  },
+
+  getErrorMessage(code) {
+    switch(code) {
+      case 'auth/invalid-email': return 'Invalid email format';
+      case 'auth/user-not-found': return 'No account found with this email';
+      case 'auth/wrong-password': return 'Incorrect password';
+      case 'auth/email-already-in-use': return 'Email already registered';
+      case 'auth/weak-password': return 'Password must be at least 6 characters';
+      default: return 'Authentication error. Please try again.';
+    }
+  },
+
+  logout() {
+    auth.signOut();
+  },
+
+  showLoginScreen() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+  },
+
+  showMainApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('userEmail').textContent = this.currentUser.email;
+  }
+};
+
+// ========== MAIN APP LOGIC (with Firestore) ==========
 const App = {
-logs: JSON.parse(localStorage.getItem('studentLogs')) || [],
+  logs: [],
+  unsubscribe: null, // For real-time listener
 
-init() {
-this.setupEventListeners();
-this.loadLogs();
-console.log("StudentScope ready");
-},
+  init() {
+    this.setupEventListeners();
+    this.listenToLogs();
+    console.log("StudentScope Firebase ready");
+  },
 
-setupEventListeners() {
-document.getElementById('saveBtn').addEventListener('click', () => this.saveBehavior());
-document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());  
-document.getElementById('googleDocsBtn').addEventListener('click', () => this.exportToDocs());
-document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
-},
+  setupEventListeners() {
+    document.getElementById('saveBtn').addEventListener('click', () => this.saveBehavior());
+    document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());
+    document.getElementById('googleDocsBtn').addEventListener('click', () => this.exportToDocs());
+    document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
+  },
 
-// === BEHAVIOR LOGGING ===
-saveBehavior() {
-const log = {
-id: Date.now(),
-studentName: document.getElementById('studentName').value.trim(),
-date: new Date().toISOString(),
-behavior: document.getElementById('behavior').value.trim(),
-antecedent: "",
-consequence: "",
-comments: []
-};
+  // ========== FIRESTORE: LISTEN TO LOGS IN REAL-TIME ==========
+  listenToLogs() {
+    const userId = auth.currentUser.uid;
+   
+    // Real-time listener - updates automatically when data changes
+    this.unsubscribe = db.collection('users')
+      .doc(userId)
+      .collection('logs')
+      .orderBy('date', 'desc')
+      .onSnapshot(snapshot => {
+        this.logs = [];
+        document.getElementById('logContainer').innerHTML = '';
 
-if (!log.studentName || !log.behavior) {
-alert("Please enter both student name and behavior description");
-return;
-}
+        if (snapshot.empty) {
+          document.getElementById('logContainer').innerHTML = `
+            <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
+              <div style="font-size:3rem;opacity:0.5;">📋</div>
+              <p>No behaviors logged yet.</p>
+              <p style="font-size:0.9rem;">Save your first behavior in the left column.</p>
+            </div>
+          `;
+          return;
+        }
 
-this.logs.push(log);
-localStorage.setItem('studentLogs', JSON.stringify(this.logs));
-this.displayLog(log);
+        snapshot.forEach(doc => {
+          const log = { id: doc.id, ...doc.data() };
+          this.logs.push(log);
+          this.displayLog(log);
+        });
+      });
+  },
 
-document.getElementById('studentName').value = '';
-document.getElementById('behavior').value = '';
-document.getElementById('studentName').focus();
-},
+  // ========== FIRESTORE: SAVE BEHAVIOR ==========
+  async saveBehavior() {
+    const studentName = document.getElementById('studentName').value.trim();
+    const behavior = document.getElementById('behavior').value.trim();
 
-saveGoodBehavior() {
-const studentName = document.getElementById('studentName').value.trim();
-const behavior = document.getElementById('behavior').value.trim();
+    if (!studentName || !behavior) {
+      alert("Please enter both student name and behavior description");
+      return;
+    }
 
-if (!studentName || !behavior) {
-alert("Please enter both student name and behavior description");
-return;
-}
+    const log = {
+      studentName: studentName,
+      date: new Date().toISOString(),
+      behavior: behavior,
+      antecedent: "",
+      consequence: "",
+      comments: []
+    };
 
-const log = {
-id: Date.now(),
-studentName: studentName,
-date: new Date().toISOString(),
-behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
-antecedent: "",
-consequence: "",
-comments: []
-};
+    try {
+      const userId = auth.currentUser.uid;
+      await db.collection('users').doc(userId).collection('logs').add(log);
+     
+      // Clear form
+      document.getElementById('studentName').value = '';
+      document.getElementById('behavior').value = '';
+      document.getElementById('studentName').focus();
+     
+      console.log('Behavior saved to Firestore');
+    } catch (error) {
+      console.error('Error saving behavior:', error);
+      alert('Failed to save behavior. Please try again.');
+    }
+  },
 
-this.logs.push(log);
-localStorage.setItem('studentLogs', JSON.stringify(this.logs));
-this.displayLog(log);
+  async saveGoodBehavior() {
+    const studentName = document.getElementById('studentName').value.trim();
+    const behavior = document.getElementById('behavior').value.trim();
 
-document.getElementById('studentName').value = '';
-document.getElementById('behavior').value = '';
-document.getElementById('studentName').focus();
-},
+    if (!studentName || !behavior) {
+      alert("Please enter both student name and behavior description");
+      return;
+    }
 
-// === LOG DISPLAY WITH ABC EDIT ===
-displayLog(log) {
-const container = document.getElementById('logContainer');
-const emptyState = container.querySelector('.empty-state');
-if (emptyState) container.removeChild(emptyState);
+    const log = {
+      studentName: studentName,
+      date: new Date().toISOString(),
+      behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
+      antecedent: "",
+      consequence: "",
+      comments: []
+    };
 
-const entry = document.createElement('div');
-entry.className = 'log-entry';
-entry.dataset.id = log.id;
+    try {
+      const userId = auth.currentUser.uid;
+      await db.collection('users').doc(userId).collection('logs').add(log);
+     
+      document.getElementById('studentName').value = '';
+      document.getElementById('behavior').value = '';
+      document.getElementById('studentName').focus();
+    } catch (error) {
+      console.error('Error saving good behavior:', error);
+      alert('Failed to save behavior. Please try again.');
+    }
+  },
 
-const date = new Date(log.date).toLocaleDateString('en-US', {
-month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-});
+  // ========== DISPLAY LOG (same as before) ==========
+  displayLog(log) {
+    const container = document.getElementById('logContainer');
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) container.removeChild(emptyState);
 
-const hasABC = log.antecedent || log.consequence;
-const hasComments = log.comments?.length > 0;
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.dataset.id = log.id;
 
-entry.innerHTML = `
-<div class="student-name">${log.studentName}</div>
-<div class="log-date">${date}</div>
-<div style="margin-top:15px;line-height:1.5;"><strong>Behavior:</strong> ${log.behavior}</div>
-${log.antecedent ? `<div style="margin-top:8px;"><strong>Antecedent:</strong> ${log.antecedent}</div>` : ''}
-${log.consequence ? `<div style="margin-top:8px;"><strong>Consequence:</strong> ${log.consequence}</div>` : ''}
-${hasComments ? `<div style="margin-top:15px;"><strong>Comments:</strong> ${log.comments.length}</div>` : ''}
+    const date = new Date(log.date).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
 
-<button class="edit-abc-btn" onclick="App.toggleABCEditor(${log.id})">
-${hasABC || hasComments ? '✏️ Edit' : '➕ Add ABC/Comment'}
-</button>
+    const hasABC = log.antecedent || log.consequence;
+    const hasComments = log.comments?.length > 0;
 
-<div class="abc-expandable" id="abcEditor-${log.id}">
-<div style="margin-bottom:15px;">
-<label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Antecedent (What happened BEFORE?)</label>
-<textarea id="antecedent-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.antecedent || ''}</textarea>
-</div>
-<div style="margin-bottom:15px;">
-<label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Consequence (What happened AFTER?)</label>
-<textarea id="consequence-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.consequence || ''}</textarea>
-</div>
-<div style="border-top:1px dashed #c8d6e5;padding-top:15px;">
-<label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Add a Comment</label>
-<textarea id="newComment-${log.id}" style="width:100%;min-height:60px;padding:10px;" placeholder="Optional notes..."></textarea>
-<button onclick="App.addComment(${log.id})" class="save-abc-btn">💬 Add Comment</button>
-</div>
-<button onclick="App.saveABCData(${log.id})" class="save-abc-btn">💾 Save ABC Data</button>
-</div>
+    entry.innerHTML = `
+      <div class="student-name">${log.studentName}</div>
+      <div class="log-date">${date}</div>
+      <div style="margin-top:15px;line-height:1.5;"><strong>Behavior:</strong> ${log.behavior}</div>
+      ${log.antecedent ? `<div style="margin-top:8px;"><strong>Antecedent:</strong> ${log.antecedent}</div>` : ''}
+      ${log.consequence ? `<div style="margin-top:8px;"><strong>Consequence:</strong> ${log.consequence}</div>` : ''}
+      ${hasComments ? `<div style="margin-top:15px;"><strong>Comments:</strong> ${log.comments.length}</div>` : ''}
 
-<button onclick="App.deleteLog(${log.id})" class="delete-btn">🗑️ Delete</button>
-`;
+      <button class="edit-abc-btn" onclick="App.toggleABCEditor('${log.id}')">
+        ${hasABC || hasComments ? '✏️ Edit' : '➕ Add ABC/Comment'}
+      </button>
 
-container.prepend(entry);
-},
+      <div class="abc-expandable" id="abcEditor-${log.id}">
+        <div style="margin-bottom:15px;">
+          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Antecedent (What happened BEFORE?)</label>
+          <textarea id="antecedent-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.antecedent || ''}</textarea>
+        </div>
+        <div style="margin-bottom:15px;">
+          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Consequence (What happened AFTER?)</label>
+          <textarea id="consequence-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.consequence || ''}</textarea>
+        </div>
+        <div style="border-top:1px dashed #c8d6e5;padding-top:15px;">
+          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Add a Comment</label>
+          <textarea id="newComment-${log.id}" style="width:100%;min-height:60px;padding:10px;" placeholder="Optional notes..."></textarea>
+          <button onclick="App.addComment('${log.id}')" class="save-abc-btn">💬 Add Comment</button>
+        </div>
+        <button onclick="App.saveABCData('${log.id}')" class="save-abc-btn">💾 Save ABC Data</button>
+      </div>
 
-// === ABC EDITOR FUNCTIONS ===
-toggleABCEditor(logId) {
-const editor = document.getElementById(`abcEditor-${logId}`);
-const button = event.target;
+      <button onclick="App.deleteLog('${log.id}')" class="delete-btn">🗑️ Delete</button>
+    `;
 
-if (editor.classList.contains('expanded')) {
-editor.classList.remove('expanded');
-button.textContent = button.textContent.includes('Edit') ? '✏️ Edit' : '➕ Add ABC/Comment';
-} else {
-document.querySelectorAll('.abc-expandable.expanded').forEach(el => el.classList.remove('expanded'));
-editor.classList.add('expanded');
-button.textContent = '▲ Close';
-}
-},
+    container.prepend(entry);
+  },
 
-saveABCData(logId) {
-const logIndex = this.logs.findIndex(log => log.id === logId);
-if (logIndex === -1) return;
+  // ========== ABC EDITOR FUNCTIONS ==========
+  toggleABCEditor(logId) {
+    const editor = document.getElementById(`abcEditor-${logId}`);
+    const button = event.target;
 
-this.logs[logIndex].antecedent = document.getElementById(`antecedent-${logId}`).value.trim();
-this.logs[logIndex].consequence = document.getElementById(`consequence-${logId}`).value.trim();
+    if (editor.classList.contains('expanded')) {
+      editor.classList.remove('expanded');
+      button.textContent = button.textContent.includes('Edit') ? '✏️ Edit' : '➕ Add ABC/Comment';
+    } else {
+      document.querySelectorAll('.abc-expandable.expanded').forEach(el => el.classList.remove('expanded'));
+      editor.classList.add('expanded');
+      button.textContent = '▲ Close';
+    }
+  },
 
-localStorage.setItem('studentLogs', JSON.stringify(this.logs));
-document.getElementById(`abcEditor-${logId}`).classList.remove('expanded');
-this.refreshLogDisplay(logId);
-},
+  // ========== FIRESTORE: UPDATE ABC DATA ==========
+  async saveABCData(logId) {
+    const antecedent = document.getElementById(`antecedent-${logId}`).value.trim();
+    const consequence = document.getElementById(`consequence-${logId}`).value.trim();
 
-addComment(logId) {
-const commentText = document.getElementById(`newComment-${logId}`).value.trim();
-if (!commentText) return alert("Please enter a comment");
+    try {
+      const userId = auth.currentUser.uid;
+      await db.collection('users')
+        .doc(userId)
+        .collection('logs')
+        .doc(logId)
+        .update({
+          antecedent: antecedent,
+          consequence: consequence
+        });
 
-const logIndex = this.logs.findIndex(log => log.id === logId);
-if (logIndex === -1) return;
+      document.getElementById(`abcEditor-${logId}`).classList.remove('expanded');
+      console.log('ABC data updated');
+    } catch (error) {
+      console.error('Error updating ABC data:', error);
+      alert('Failed to save ABC data');
+    }
+  },
 
-if (!this.logs[logIndex].comments) this.logs[logIndex].comments = [];
+  // ========== FIRESTORE: ADD COMMENT ==========
+  async addComment(logId) {
+    const commentText = document.getElementById(`newComment-${logId}`).value.trim();
+    if (!commentText) return alert("Please enter a comment");
 
-this.logs[logIndex].comments.push({
-text: commentText,
-timestamp: new Date().toISOString(),
-author: "Staff"
-});
+    const log = this.logs.find(l => l.id === logId);
+    if (!log) return;
 
-localStorage.setItem('studentLogs', JSON.stringify(this.logs));
-document.getElementById(`newComment-${logId}`).value = '';
-this.refreshLogDisplay(logId);
-},
+    const newComment = {
+      text: commentText,
+      timestamp: new Date().toISOString(),
+      author: "Staff"
+    };
 
-refreshLogDisplay(logId) {
-const log = this.logs.find(log => log.id === logId);
-if (!log) return;
+    const updatedComments = [...(log.comments || []), newComment];
 
-const oldEntry = document.querySelector(`[data-id="${logId}"]`);
-if (oldEntry) oldEntry.remove();
+    try {
+      const userId = auth.currentUser.uid;
+      await db.collection('users')
+        .doc(userId)
+        .collection('logs')
+        .doc(logId)
+        .update({ comments: updatedComments });
 
-this.displayLog(log);
-},
+      document.getElementById(`newComment-${logId}`).value = '';
+      console.log('Comment added');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Failed to add comment');
+    }
+  },
 
-deleteLog(id) {
-if (!confirm('Delete this behavior log?')) return;
+  // ========== FIRESTORE: DELETE LOG ==========
+  async deleteLog(id) {
+    if (!confirm('Delete this behavior log?')) return;
 
-this.logs = this.logs.filter(log => log.id !== id);
-localStorage.setItem('studentLogs', JSON.stringify(this.logs));
+    try {
+      const userId = auth.currentUser.uid;
+      await db.collection('users')
+        .doc(userId)
+        .collection('logs')
+        .doc(id)
+        .delete();
 
-const entry = document.querySelector(`[data-id="${id}"]`);
-if (entry) entry.remove();
+      console.log('Log deleted');
+    } catch (error) {
+      console.error('Error deleting log:', error);
+      alert('Failed to delete log');
+    }
+  },
 
-if (this.logs.length === 0) {
-document.getElementById('logContainer').innerHTML = `
-<div style="text-align:center;padding:40px 20px;color:#95a5a6;">
-<div style="font-size:3rem;opacity:0.5;">📋</div>
-<p>No behaviors logged yet.</p>
-<p style="font-size:0.9rem;">Save your first behavior in the left column.</p>
-</div>
-`;
-}
-},
+  // ========== AI ASSISTANT (same as before) ==========
+  generateAISuggestions() {
+    const prompt = document.getElementById('aiPrompt').value.trim();
+    const focus = document.getElementById('aiFocus').value;
+    const output = document.getElementById('aiOutput');
 
-loadLogs() {
-if (this.logs.length === 0) return;
-document.getElementById('logContainer').innerHTML = '';
-this.logs.slice().reverse().forEach(log => this.displayLog(log));
-},
+    if (!prompt) return alert("Please describe a situation");
 
-// === AI ASSISTANT (Simulated) ===
-generateAISuggestions() {
-const prompt = document.getElementById('aiPrompt').value.trim();
-const focus = document.getElementById('aiFocus').value;
-const output = document.getElementById('aiOutput');
+    output.innerHTML = `<div style="text-align:center;padding:30px;color:#7f8c8d;">🤔 AI is thinking...</div>`;
 
-if (!prompt) return alert("Please describe a situation");
+    setTimeout(() => {
+      const suggestions = this.getAISuggestions(prompt, focus);
+      output.innerHTML = `
+        <h3 style="color:#2c3e50;margin-bottom:20px;">🤖 AI Suggestions</h3>
+        ${suggestions.map((s, i) => `
+          <div style="background:white;padding:15px;margin-bottom:10px;border-radius:8px;border-left:4px solid #9b59b6;">
+            <h4 style="color:#2c3e50;margin-bottom:8px;">Suggestion ${i+1}</h4>
+            <p>${s}</p>
+          </div>
+        `).join('')}
+      `;
+    }, 1000);
+  },
 
-output.innerHTML = `<div style="text-align:center;padding:30px;color:#7f8c8d;">🤔 AI is thinking...</div>`;
+  getAISuggestions(prompt, focus) {
+    const strategies = [
+      "Implement visual schedule with transition warnings.",
+      "Use 'break card' system for sensory breaks.",
+      "Try token economy with immediate reinforcement.",
+      "Provide alternative seating options."
+    ];
+    return strategies.slice(0, 3);
+  },
 
-setTimeout(() => {
-const suggestions = this.getAISuggestions(prompt, focus);
-output.innerHTML = `
-<h3 style="color:#2c3e50;margin-bottom:20px;">🤖 AI Suggestions</h3>
-${suggestions.map((s, i) => `
-<div style="background:white;padding:15px;margin-bottom:10px;border-radius:8px;border-left:4px solid #9b59b6;">
-<h4 style="color:#2c3e50;margin-bottom:8px;">Suggestion ${i+1}</h4>
-<p>${s}</p>
-</div>
-`).join('')}
-`;
-}, 1000);
-},
-
-getAISuggestions(prompt, focus) {
-const strategies = [
-"Implement visual schedule with transition warnings.",
-"Use 'break card' system for sensory breaks.",
-"Try token economy with immediate reinforcement.",
-"Provide alternative seating options."
-];
-return strategies.slice(0, 3);
-},
-
-// === EXPORT ===
-exportToDocs() {
+  // ========== EXPORT TO DOCS ==========
+  exportToDocs() {
     if (this.logs.length === 0) return alert('No behaviors to export');
 
     let content = `STUDENTSCOPE REPORT\n${new Date().toLocaleDateString()}\n\n`;
     this.logs.forEach(log => {
-        const logDate = new Date(log.date);
-        const dateTime = logDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        content += `${log.studentName} - ${dateTime}\n`;
-        content += `Behavior: ${log.behavior}\n`;
-        if (log.antecedent) content += `Antecedent: ${log.antecedent}\n`;
-        if (log.consequence) content += `Consequence: ${log.consequence}\n\n`;
+      const logDate = new Date(log.date);
+      const dateTime = logDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+     
+      content += `${log.studentName} - ${dateTime}\n`;
+      content += `Behavior: ${log.behavior}\n`;
+      if (log.antecedent) content += `Antecedent: ${log.antecedent}\n`;
+      if (log.consequence) content += `Consequence: ${log.consequence}\n\n`;
     });
 
     const blob = new Blob([content], { type: 'text/plain' });
@@ -393,30 +611,15 @@ exportToDocs() {
     URL.revokeObjectURL(url);
 
     alert(`Report exported with ${this.logs.length} behaviors`);
-}
+  }
 };
 
-// Start the app
-document.addEventListener('DOMContentLoaded', () => App.init());
-</script>
-<!-- SUPABASE TEST -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = 'https://knpabzrjqhqiauvxwxdf.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_m5LJX6cdZ3zNGQHcWb-6SQ_doi97rR7';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-  const testBtn = document.createElement('button');
-  testBtn.innerHTML = '🧪 TEST';
-  testBtn.style.cssText = 'position:fixed; top:20px; right:20px; padding:20px; background:red; color:white; z-index:99999; font-size:20px;';
-  testBtn.onclick = async () => {
-    const test = await supabase.from('behavior_events').insert([{
-      student_name: "TEST",
-      behavior: "Test at " + new Date().toLocaleTimeString()
-    }]);
-    alert(test.error ? '❌ ' + test.error.message : '✅ SAVED!');
-  };
-  document.body.appendChild(testBtn);
+// ========== START THE APP ==========
+document.addEventListener('DOMContentLoaded', () => {
+  AuthManager.init();
+});
 </script>
 </body>
 </html>
+
+

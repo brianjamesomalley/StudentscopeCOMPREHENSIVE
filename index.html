@@ -54,8 +54,55 @@ color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight:
 border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
 .ai-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #9b59b6, #8e44ad);
 color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; }
-.docs-button { padding: 12px 24px; background: #4285f4; color: white; border: none; border-radius: 8px;
-font-size: 1rem; cursor: pointer; margin-left: auto; }
+
+/* Export Buttons Container */
+.export-buttons { display: flex; gap: 10px; margin-top: 15px; }
+.email-button {
+  flex: 1;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.email-button:hover { transform: translateY(-2px); }
+
+.docs-button {
+  flex: 1;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #4285f4, #3367d6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.docs-button:hover { transform: translateY(-2px); }
+
+.google-signin-button {
+  width: 100%;
+  padding: 12px 20px;
+  background: white;
+  color: #757575;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+.google-signin-button:hover { background-color: #f8f9fa; }
 
 /* Log Display */
 #logContainer { max-height: 400px; overflow-y: auto; margin-top: 20px; padding-top: 20px; }
@@ -73,6 +120,18 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 /* Loading/Hidden */
 .hidden { display: none; }
 .loading { text-align: center; padding: 40px; color: #7f8c8d; }
+
+/* Status Messages */
+.status-message {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.status-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.status-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.status-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 </style>
 </head>
 <body>
@@ -144,13 +203,15 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 </div>
 </div>
 
-<!-- COLUMN 3: LOGS WITH ABC EDIT -->
+<!-- COLUMN 3: LOGS WITH EXPORT OPTIONS -->
 <div class="card card-3">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-<h2 style="margin:0;">📋 3. Behavior Logs</h2>
-<button id="googleDocsBtn" class="docs-button">📄 Export to Docs</button>
+<h2 style="margin-bottom: 10px;">📋 3. Behavior Log</h2>
+<p style="margin-bottom: 15px;"><em>All logged behaviors appear here automatically</em></p>
+<div class="export-buttons">
+<button id="emailReportBtn" class="email-button">📧 Email Report</button>
+<button id="googleDocsBtn" class="docs-button">📄 Create Google Doc</button>
 </div>
-<p><em>All logged behaviors appear here automatically</em></p>
+<div id="googleAuthStatus" class="hidden"></div>
 <div id="logContainer">
 <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
 <div style="font-size:3rem;opacity:0.5;">📋</div>
@@ -168,10 +229,13 @@ font-size: 1rem; cursor: pointer; margin-left: auto; }
 </div>
 
 <!-- ========== FIREBASE SDK ========== -->
-<!-- Step 1: Load Firebase libraries -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- ========== GOOGLE API SDK ========== -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 
 <script>
 // ========== FIREBASE CONFIG ==========
@@ -188,6 +252,180 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// ========== GOOGLE DOCS API CONFIG ==========
+// IMPORTANT: Replace this with your actual Google Cloud Project credentials
+const GOOGLE_CLIENT_ID = '748816477844-tl5ed24gov0dv6sbmtq8ds10ee1aomir.apps.googleusercontent.com' ;
+
+const GOOGLE_API_KEY = 'AIzaSyAJGiPrtsgat2NgPMbSEzMwKbrh38KkUjI' ;
+const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
+
+// ========== GOOGLE DOCS MANAGER ==========
+const GoogleDocsManager = {
+  isSignedIn: false,
+  accessToken: null,
+
+  init() {
+    // Load the Google API client
+    gapi.load('client', () => {
+      gapi.client.init({
+        apiKey: GOOGLE_API_KEY,
+        discoveryDocs: ['https://docs.googleapis.com/$discovery/rest?version=v1'],
+      }).then(() => {
+        console.log('Google API client initialized');
+      }).catch(err => {
+        console.error('Error initializing Google API:', err);
+      });
+    });
+  },
+
+  async signIn() {
+    return new Promise((resolve, reject) => {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+          if (response.access_token) {
+            this.accessToken = response.access_token;
+            this.isSignedIn = true;
+            this.updateAuthStatus('Connected to Google Docs ✓', 'success');
+            resolve(response.access_token);
+          } else {
+            reject('No access token received');
+          }
+        },
+      });
+      client.requestAccessToken();
+    });
+  },
+
+  async createDocument(logs) {
+    if (!this.isSignedIn) {
+      try {
+        await this.signIn();
+      } catch (error) {
+        this.updateAuthStatus('Please authorize Google Docs access', 'error');
+        return;
+      }
+    }
+
+    try {
+      // Create a new Google Doc
+      const createResponse = await fetch('https://docs.googleapis.com/v1/documents', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `StudentScope Report - ${new Date().toLocaleDateString()}`
+        })
+      });
+
+      const doc = await createResponse.json();
+     
+      if (!doc.documentId) {
+        throw new Error('Failed to create document');
+      }
+
+      // Build the content for the document
+      const requests = this.buildDocumentContent(logs);
+
+      // Update the document with content
+      await fetch(`https://docs.googleapis.com/v1/documents/${doc.documentId}:batchUpdate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ requests })
+      });
+
+      // Open the document in a new tab
+      window.open(`https://docs.google.com/document/d/${doc.documentId}/edit`, '_blank');
+     
+      this.updateAuthStatus(`Document created! Opening in new tab...`, 'success');
+     
+    } catch (error) {
+      console.error('Error creating Google Doc:', error);
+      this.updateAuthStatus('Error creating document. Please try again.', 'error');
+    }
+  },
+
+  buildDocumentContent(logs) {
+    const requests = [];
+    let currentIndex = 1;
+
+    // Title
+    requests.push({
+      insertText: {
+        location: { index: 1 },
+        text: `STUDENTSCOPE BEHAVIOR REPORT\n${new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}\n\n`
+      }
+    });
+
+    // Title formatting
+    requests.push({
+      updateParagraphStyle: {
+        range: { startIndex: 1, endIndex: 30 },
+        paragraphStyle: {
+          namedStyleType: 'HEADING_1',
+          alignment: 'CENTER'
+        },
+        fields: 'namedStyleType,alignment'
+      }
+    });
+
+    // Add each log entry
+    logs.forEach((log, index) => {
+      const logDate = new Date(log.date);
+      const dateTime = logDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let logText = `${index + 1}. ${log.studentName} - ${dateTime}\n`;
+      logText += `Behavior: ${log.behavior}\n`;
+     
+      if (log.antecedent) {
+        logText += `Antecedent: ${log.antecedent}\n`;
+      }
+      if (log.consequence) {
+        logText += `Consequence: ${log.consequence}\n`;
+      }
+     
+      logText += '\n';
+
+      requests.push({
+        insertText: {
+          location: { index: currentIndex },
+          text: logText
+        }
+      });
+    });
+
+    return requests;
+  },
+
+  updateAuthStatus(message, type) {
+    const statusDiv = document.getElementById('googleAuthStatus');
+    statusDiv.className = `status-message status-${type}`;
+    statusDiv.textContent = message;
+    statusDiv.classList.remove('hidden');
+   
+    setTimeout(() => {
+      statusDiv.classList.add('hidden');
+    }, 5000);
+  }
+};
 
 // ========== AUTHENTICATION LOGIC ==========
 const AuthManager = {
@@ -295,13 +533,15 @@ const App = {
   init() {
     this.setupEventListeners();
     this.listenToLogs();
+    GoogleDocsManager.init();
     console.log("StudentScope Firebase ready");
   },
 
   setupEventListeners() {
     document.getElementById('saveBtn').addEventListener('click', () => this.saveBehavior());
     document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());
-    document.getElementById('googleDocsBtn').addEventListener('click', () => this.exportToDocs());
+    document.getElementById('emailReportBtn').addEventListener('click', () => this.emailReport());
+    document.getElementById('googleDocsBtn').addEventListener('click', () => this.createGoogleDoc());
     document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
   },
 
@@ -384,7 +624,7 @@ const App = {
     const log = {
       studentName: studentName,
       date: new Date().toISOString(),
-      behavior: `***GOOD BEHAVIOR ALERT***\n${behavior}`,
+      behavior: `⭐ GOOD BEHAVIOR ALERT ⭐\n${behavior}`,
       antecedent: "",
       consequence: "",
       comments: []
@@ -403,7 +643,7 @@ const App = {
     }
   },
 
-  // ========== DISPLAY LOG (same as before) ==========
+  // ========== DISPLAY LOG ==========
   displayLog(log) {
     const container = document.getElementById('logContainer');
     const emptyState = container.querySelector('.empty-state');
@@ -545,7 +785,69 @@ const App = {
     }
   },
 
-  // ========== AI ASSISTANT (same as before) ==========
+  // ========== EMAIL REPORT ==========
+  emailReport() {
+    if (this.logs.length === 0) {
+      alert('No behaviors to email. Log some behaviors first!');
+      return;
+    }
+
+    // Build email subject and body
+    const subject = `StudentScope Behavior Report - ${new Date().toLocaleDateString()}`;
+   
+    let body = `STUDENTSCOPE BEHAVIOR REPORT\n`;
+    body += `Generated: ${new Date().toLocaleString()}\n`;
+    body += `Total Entries: ${this.logs.length}\n`;
+    body += `\n${'='.repeat(60)}\n\n`;
+
+    this.logs.forEach((log, index) => {
+      const logDate = new Date(log.date);
+      const dateTime = logDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+     
+      body += `${index + 1}. ${log.studentName} - ${dateTime}\n`;
+      body += `   Behavior: ${log.behavior}\n`;
+     
+      if (log.antecedent) {
+        body += `   Antecedent: ${log.antecedent}\n`;
+      }
+      if (log.consequence) {
+        body += `   Consequence: ${log.consequence}\n`;
+      }
+     
+      if (log.comments && log.comments.length > 0) {
+        body += `   Comments: ${log.comments.length} note(s)\n`;
+      }
+     
+      body += `\n`;
+    });
+
+    body += `${'='.repeat(60)}\n`;
+    body += `\nGenerated by StudentScope - Behavior Tracking System`;
+
+    // Create mailto link
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+   
+    // Open email client
+    window.location.href = mailtoLink;
+  },
+
+  // ========== CREATE GOOGLE DOC ==========
+  async createGoogleDoc() {
+    if (this.logs.length === 0) {
+      alert('No behaviors to export. Log some behaviors first!');
+      return;
+    }
+
+    await GoogleDocsManager.createDocument(this.logs);
+  },
+
+  // ========== AI ASSISTANT ==========
   generateAISuggestions() {
     const prompt = document.getElementById('aiPrompt').value.trim();
     const focus = document.getElementById('aiFocus').value;
@@ -577,40 +879,6 @@ const App = {
       "Provide alternative seating options."
     ];
     return strategies.slice(0, 3);
-  },
-
-  // ========== EXPORT TO DOCS ==========
-  exportToDocs() {
-    if (this.logs.length === 0) return alert('No behaviors to export');
-
-    let content = `STUDENTSCOPE REPORT\n${new Date().toLocaleDateString()}\n\n`;
-    this.logs.forEach(log => {
-      const logDate = new Date(log.date);
-      const dateTime = logDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-     
-      content += `${log.studentName} - ${dateTime}\n`;
-      content += `Behavior: ${log.behavior}\n`;
-      if (log.antecedent) content += `Antecedent: ${log.antecedent}\n`;
-      if (log.consequence) content += `Consequence: ${log.consequence}\n\n`;
-    });
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `StudentScope_Report_${new Date().toISOString().slice(0,10)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    alert(`Report exported with ${this.logs.length} behaviors`);
   }
 };
 
@@ -620,6 +888,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
-
-

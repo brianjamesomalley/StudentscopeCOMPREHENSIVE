@@ -15,6 +15,23 @@ header { text-align: center; margin-bottom: 30px; padding: 25px;
 background: linear-gradient(135deg, #4a6fa5 0%, #2c3e50 100%); border-radius: 15px; color: white; }
 h1 { font-size: 2.8rem; margin-bottom: 10px; }
 
+/* MOBILE HEADER FIX */
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.header-left { flex: 1; }
+.header-right { display: flex; align-items: center; }
+.user-info { display: inline-block; margin-right: 15px; color: white; opacity: 0.9; }
+.logout-button { padding: 10px 20px; background: #e74c3c; color: white; border: none;
+border-radius: 8px; cursor: pointer; }
+
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  .header-content { flex-direction: column; text-align: center; }
+  .header-left { margin-bottom: 15px; }
+  .header-right { flex-direction: column; width: 100%; }
+  .user-info { margin: 10px 0 0 0; display: block; font-size: 0.9rem; }
+  .logout-button { margin: 10px 0 0 0; width: 100%; max-width: 200px; }
+}
+
 /* LOGIN SCREEN STYLES */
 .login-container { max-width: 450px; margin: 100px auto; }
 .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
@@ -27,9 +44,6 @@ cursor: pointer; margin-top: 10px; }
 .login-button:hover { opacity: 0.9; }
 .toggle-auth { text-align: center; margin-top: 20px; color: #7f8c8d; }
 .toggle-auth a { color: #4a6fa5; cursor: pointer; text-decoration: underline; }
-.logout-button { padding: 10px 20px; background: #e74c3c; color: white; border: none;
-border-radius: 8px; cursor: pointer; margin-left: 15px; }
-.user-info { display: inline-block; margin-right: 15px; color: white; opacity: 0.9; }
 
 /* 3-Column Grid */
 .three-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
@@ -55,54 +69,58 @@ border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margi
 .ai-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #9b59b6, #8e44ad);
 color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; }
 
-/* Export Buttons Container */
-.export-buttons { display: flex; gap: 10px; margin-top: 15px; }
-.email-button {
-  flex: 1;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #e67e22, #d35400);
+/* Weekly Report Cards */
+.weekly-report-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
-.email-button:hover { transform: translateY(-2px); }
-
-.docs-button {
-  flex: 1;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #4285f4, #3367d6);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.docs-button:hover { transform: translateY(-2px); }
-
-.google-signin-button {
-  width: 100%;
-  padding: 12px 20px;
-  background: white;
-  color: #757575;
-  border: 1px solid #dadce0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
+.weekly-report-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-  transition: background-color 0.2s;
+  gap: 8px;
 }
-.google-signin-button:hover { background-color: #f8f9fa; }
+.weekly-date-range {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+.weekly-count {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+.weekly-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+.weekly-email-btn, .weekly-print-btn {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.weekly-email-btn:hover, .weekly-print-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .weekly-buttons { flex-direction: column; }
+}
 
 /* Log Display */
 #logContainer { max-height: 400px; overflow-y: auto; margin-top: 20px; padding-top: 20px; }
@@ -156,12 +174,12 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 <div id="mainApp" class="hidden">
 <div class="container">
 <header>
-<div style="display:flex;justify-content:space-between;align-items:center;">
-<div>
+<div class="header-content">
+<div class="header-left">
 <h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">FIREBASE</span></h1>
 <p style="font-size:1.2rem;opacity:0.9;">AI-assisted behavior tracking for modern educators</p>
 </div>
-<div>
+<div class="header-right">
 <span class="user-info" id="userEmail"></span>
 <button id="logoutBtn" class="logout-button">🚪 Logout</button>
 </div>
@@ -203,15 +221,34 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 </div>
 </div>
 
-<!-- COLUMN 3: LOGS WITH EXPORT OPTIONS -->
+<!-- COLUMN 3: WEEKLY REPORTS & LOGS -->
 <div class="card card-3">
-<h2 style="margin-bottom: 10px;">📋 3. Behavior Log</h2>
-<p style="margin-bottom: 15px;"><em>All logged behaviors appear here automatically</em></p>
-<div class="export-buttons">
-<button id="emailReportBtn" class="email-button">📧 Email Report</button>
-<button id="googleDocsBtn" class="docs-button">📄 Create Google Doc</button>
+<h2 style="margin-bottom: 15px;">📋 3. Weekly Reports & Log</h2>
+
+<!-- THIS WEEK'S REPORT -->
+<div class="weekly-report-card" id="thisWeekCard">
+<h3>📊 This Week's Report</h3>
+<div class="weekly-date-range" id="thisWeekRange">Loading...</div>
+<div class="weekly-count" id="thisWeekCount">0 behaviors logged</div>
+<div class="weekly-buttons">
+<button class="weekly-email-btn" onclick="App.emailWeeklyReport('current')">📧 Email</button>
+<button class="weekly-print-btn" onclick="App.printWeeklyReport('current')">🖨️ Print</button>
 </div>
-<div id="googleAuthStatus" class="hidden"></div>
+</div>
+
+<!-- LAST WEEK'S REPORT -->
+<div class="weekly-report-card" id="lastWeekCard" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+<h3>📅 Last Week's Report</h3>
+<div class="weekly-date-range" id="lastWeekRange">Loading...</div>
+<div class="weekly-count" id="lastWeekCount">0 behaviors logged</div>
+<div class="weekly-buttons">
+<button class="weekly-email-btn" onclick="App.emailWeeklyReport('last')">📧 Email</button>
+<button class="weekly-print-btn" onclick="App.printWeeklyReport('last')">🖨️ Print</button>
+</div>
+</div>
+
+<p style="margin: 20px 0 15px 0;"><em>All logged behaviors appear below</em></p>
+
 <div id="logContainer">
 <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
 <div style="font-size:3rem;opacity:0.5;">📋</div>
@@ -233,10 +270,6 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<!-- ========== GOOGLE API SDK ========== -->
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
-
 <script>
 // ========== FIREBASE CONFIG ==========
 const firebaseConfig = {
@@ -253,177 +286,51 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ========== GOOGLE DOCS API CONFIG ==========
-// IMPORTANT: Replace this with your actual Google Cloud Project credentials
-const GOOGLE_CLIENT_ID = '748816477844-tl5ed24gov0dv6sbmtq8ds10ee1aomir.apps.googleusercontent.com' ;
-
-const GOOGLE_API_KEY = 'AIzaSyAJGiPrtsgat2NgPMbSEzMwKbrh38KkUjI' ;
-const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
-
-// ========== GOOGLE DOCS MANAGER ==========
-const GoogleDocsManager = {
-  isSignedIn: false,
-  accessToken: null,
-
-  init() {
-    // Load the Google API client
-    gapi.load('client', () => {
-      gapi.client.init({
-        apiKey: GOOGLE_API_KEY,
-        discoveryDocs: ['https://docs.googleapis.com/$discovery/rest?version=v1'],
-      }).then(() => {
-        console.log('Google API client initialized');
-      }).catch(err => {
-        console.error('Error initializing Google API:', err);
-      });
-    });
+// ========== WEEK CALCULATION UTILITIES ==========
+const WeekUtils = {
+  // Get Monday of current week
+  getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    return new Date(d.setDate(diff));
   },
 
-  async signIn() {
-    return new Promise((resolve, reject) => {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: SCOPES,
-        callback: (response) => {
-          if (response.access_token) {
-            this.accessToken = response.access_token;
-            this.isSignedIn = true;
-            this.updateAuthStatus('Connected to Google Docs ✓', 'success');
-            resolve(response.access_token);
-          } else {
-            reject('No access token received');
-          }
-        },
-      });
-      client.requestAccessToken();
-    });
+  // Get Friday of current week
+  getFriday(date) {
+    const monday = this.getMonday(date);
+    return new Date(monday.getTime() + 4 * 24 * 60 * 60 * 1000);
   },
 
-  async createDocument(logs) {
-    if (!this.isSignedIn) {
-      try {
-        await this.signIn();
-      } catch (error) {
-        this.updateAuthStatus('Please authorize Google Docs access', 'error');
-        return;
-      }
-    }
-
-    try {
-      // Create a new Google Doc
-      const createResponse = await fetch('https://docs.googleapis.com/v1/documents', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: `StudentScope Report - ${new Date().toLocaleDateString()}`
-        })
-      });
-
-      const doc = await createResponse.json();
-     
-      if (!doc.documentId) {
-        throw new Error('Failed to create document');
-      }
-
-      // Build the content for the document
-      const requests = this.buildDocumentContent(logs);
-
-      // Update the document with content
-      await fetch(`https://docs.googleapis.com/v1/documents/${doc.documentId}:batchUpdate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ requests })
-      });
-
-      // Open the document in a new tab
-      window.open(`https://docs.google.com/document/d/${doc.documentId}/edit`, '_blank');
-     
-      this.updateAuthStatus(`Document created! Opening in new tab...`, 'success');
-     
-    } catch (error) {
-      console.error('Error creating Google Doc:', error);
-      this.updateAuthStatus('Error creating document. Please try again.', 'error');
-    }
+  // Get date range for current week
+  getCurrentWeek() {
+    const now = new Date();
+    const monday = this.getMonday(now);
+    const friday = this.getFriday(now);
+    return { start: monday, end: friday };
   },
 
-  buildDocumentContent(logs) {
-    const requests = [];
-    let currentIndex = 1;
-
-    // Title
-    requests.push({
-      insertText: {
-        location: { index: 1 },
-        text: `STUDENTSCOPE BEHAVIOR REPORT\n${new Date().toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}\n\n`
-      }
-    });
-
-    // Title formatting
-    requests.push({
-      updateParagraphStyle: {
-        range: { startIndex: 1, endIndex: 30 },
-        paragraphStyle: {
-          namedStyleType: 'HEADING_1',
-          alignment: 'CENTER'
-        },
-        fields: 'namedStyleType,alignment'
-      }
-    });
-
-    // Add each log entry
-    logs.forEach((log, index) => {
-      const logDate = new Date(log.date);
-      const dateTime = logDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-
-      let logText = `${index + 1}. ${log.studentName} - ${dateTime}\n`;
-      logText += `Behavior: ${log.behavior}\n`;
-     
-      if (log.antecedent) {
-        logText += `Antecedent: ${log.antecedent}\n`;
-      }
-      if (log.consequence) {
-        logText += `Consequence: ${log.consequence}\n`;
-      }
-     
-      logText += '\n';
-
-      requests.push({
-        insertText: {
-          location: { index: currentIndex },
-          text: logText
-        }
-      });
-    });
-
-    return requests;
+  // Get date range for last week
+  getLastWeek() {
+    const now = new Date();
+    const lastWeekDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monday = this.getMonday(lastWeekDate);
+    const friday = this.getFriday(lastWeekDate);
+    return { start: monday, end: friday };
   },
 
-  updateAuthStatus(message, type) {
-    const statusDiv = document.getElementById('googleAuthStatus');
-    statusDiv.className = `status-message status-${type}`;
-    statusDiv.textContent = message;
-    statusDiv.classList.remove('hidden');
-   
-    setTimeout(() => {
-      statusDiv.classList.add('hidden');
-    }, 5000);
+  // Format date range for display
+  formatDateRange(start, end) {
+    const options = { month: 'short', day: 'numeric' };
+    const startStr = start.toLocaleDateString('en-US', options);
+    const endStr = end.toLocaleDateString('en-US', options);
+    return `${startStr} - ${endStr}`;
+  },
+
+  // Check if a date falls within a week range
+  isInWeek(dateStr, weekStart, weekEnd) {
+    const date = new Date(dateStr);
+    return date >= weekStart && date <= weekEnd;
   }
 };
 
@@ -525,31 +432,62 @@ const AuthManager = {
   }
 };
 
-// ========== MAIN APP LOGIC (with Firestore) ==========
+// ========== MAIN APP LOGIC (with Firestore & Weekly Reports) ==========
 const App = {
   logs: [],
-  unsubscribe: null, // For real-time listener
+  unsubscribe: null,
 
   init() {
     this.setupEventListeners();
     this.listenToLogs();
-    GoogleDocsManager.init();
-    console.log("StudentScope Firebase ready");
+    this.updateWeeklyReportCards();
+    console.log("StudentScope Firebase ready with weekly reports");
   },
 
   setupEventListeners() {
     document.getElementById('saveBtn').addEventListener('click', () => this.saveBehavior());
     document.getElementById('goodBehaviorBtn').addEventListener('click', () => this.saveGoodBehavior());
-    document.getElementById('emailReportBtn').addEventListener('click', () => this.emailReport());
-    document.getElementById('googleDocsBtn').addEventListener('click', () => this.createGoogleDoc());
     document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
+  },
+
+  // ========== UPDATE WEEKLY REPORT CARDS ==========
+  updateWeeklyReportCards() {
+    const currentWeek = WeekUtils.getCurrentWeek();
+    const lastWeek = WeekUtils.getLastWeek();
+
+    // Update THIS WEEK card
+    document.getElementById('thisWeekRange').textContent = WeekUtils.formatDateRange(currentWeek.start, currentWeek.end);
+    
+    // Update LAST WEEK card
+    document.getElementById('lastWeekRange').textContent = WeekUtils.formatDateRange(lastWeek.start, lastWeek.end);
+
+    // Count logs for each week
+    this.updateWeeklyCounts();
+  },
+
+  updateWeeklyCounts() {
+    const currentWeek = WeekUtils.getCurrentWeek();
+    const lastWeek = WeekUtils.getLastWeek();
+
+    const currentWeekLogs = this.logs.filter(log => 
+      WeekUtils.isInWeek(log.date, currentWeek.start, currentWeek.end)
+    );
+
+    const lastWeekLogs = this.logs.filter(log => 
+      WeekUtils.isInWeek(log.date, lastWeek.start, lastWeek.end)
+    );
+
+    document.getElementById('thisWeekCount').textContent = 
+      `${currentWeekLogs.length} behavior${currentWeekLogs.length !== 1 ? 's' : ''} logged`;
+    
+    document.getElementById('lastWeekCount').textContent = 
+      `${lastWeekLogs.length} behavior${lastWeekLogs.length !== 1 ? 's' : ''} logged`;
   },
 
   // ========== FIRESTORE: LISTEN TO LOGS IN REAL-TIME ==========
   listenToLogs() {
     const userId = auth.currentUser.uid;
    
-    // Real-time listener - updates automatically when data changes
     this.unsubscribe = db.collection('users')
       .doc(userId)
       .collection('logs')
@@ -566,6 +504,7 @@ const App = {
               <p style="font-size:0.9rem;">Save your first behavior in the left column.</p>
             </div>
           `;
+          this.updateWeeklyCounts();
           return;
         }
 
@@ -574,6 +513,9 @@ const App = {
           this.logs.push(log);
           this.displayLog(log);
         });
+
+        // Update weekly counts whenever logs change
+        this.updateWeeklyCounts();
       });
   },
 
@@ -600,7 +542,6 @@ const App = {
       const userId = auth.currentUser.uid;
       await db.collection('users').doc(userId).collection('logs').add(log);
      
-      // Clear form
       document.getElementById('studentName').value = '';
       document.getElementById('behavior').value = '';
       document.getElementById('studentName').focus();
@@ -710,7 +651,6 @@ const App = {
     }
   },
 
-  // ========== FIRESTORE: UPDATE ABC DATA ==========
   async saveABCData(logId) {
     const antecedent = document.getElementById(`antecedent-${logId}`).value.trim();
     const consequence = document.getElementById(`consequence-${logId}`).value.trim();
@@ -734,7 +674,6 @@ const App = {
     }
   },
 
-  // ========== FIRESTORE: ADD COMMENT ==========
   async addComment(logId) {
     const commentText = document.getElementById(`newComment-${logId}`).value.trim();
     if (!commentText) return alert("Please enter a comment");
@@ -766,7 +705,6 @@ const App = {
     }
   },
 
-  // ========== FIRESTORE: DELETE LOG ==========
   async deleteLog(id) {
     if (!confirm('Delete this behavior log?')) return;
 
@@ -785,66 +723,136 @@ const App = {
     }
   },
 
-  // ========== EMAIL REPORT ==========
-  emailReport() {
-    if (this.logs.length === 0) {
-      alert('No behaviors to email. Log some behaviors first!');
+  // ========== WEEKLY REPORT GENERATION ==========
+  getWeeklyLogs(weekType) {
+    const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
+    return this.logs.filter(log => WeekUtils.isInWeek(log.date, week.start, week.end));
+  },
+
+  buildWeeklyReportText(weekType) {
+    const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
+    const weeklyLogs = this.getWeeklyLogs(weekType);
+    const weekLabel = weekType === 'current' ? 'THIS WEEK' : 'LAST WEEK';
+
+    let report = `STUDENTSCOPE ${weekLabel}'S BEHAVIOR REPORT\n`;
+    report += `${WeekUtils.formatDateRange(week.start, week.end)}\n`;
+    report += `Generated: ${new Date().toLocaleString()}\n`;
+    report += `Total Entries: ${weeklyLogs.length}\n`;
+    report += `\n${'='.repeat(60)}\n\n`;
+
+    if (weeklyLogs.length === 0) {
+      report += 'No behaviors logged for this week.\n';
+    } else {
+      weeklyLogs.forEach((log, index) => {
+        const logDate = new Date(log.date);
+        const dateTime = logDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+       
+        report += `${index + 1}. ${log.studentName} - ${dateTime}\n`;
+        report += `   Behavior: ${log.behavior}\n`;
+       
+        if (log.antecedent) {
+          report += `   Antecedent: ${log.antecedent}\n`;
+        }
+        if (log.consequence) {
+          report += `   Consequence: ${log.consequence}\n`;
+        }
+       
+        if (log.comments && log.comments.length > 0) {
+          report += `   Comments: ${log.comments.length} note(s)\n`;
+        }
+       
+        report += `\n`;
+      });
+    }
+
+    report += `${'='.repeat(60)}\n`;
+    report += `\nGenerated by StudentScope - Behavior Tracking System`;
+
+    return report;
+  },
+
+  emailWeeklyReport(weekType) {
+    const weeklyLogs = this.getWeeklyLogs(weekType);
+    
+    if (weeklyLogs.length === 0) {
+      alert(`No behaviors logged for ${weekType === 'current' ? 'this' : 'last'} week.`);
       return;
     }
 
-    // Build email subject and body
-    const subject = `StudentScope Behavior Report - ${new Date().toLocaleDateString()}`;
-   
-    let body = `STUDENTSCOPE BEHAVIOR REPORT\n`;
-    body += `Generated: ${new Date().toLocaleString()}\n`;
-    body += `Total Entries: ${this.logs.length}\n`;
-    body += `\n${'='.repeat(60)}\n\n`;
+    const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
+    const subject = `StudentScope ${weekType === 'current' ? 'This' : 'Last'} Week's Report - ${WeekUtils.formatDateRange(week.start, week.end)}`;
+    const body = this.buildWeeklyReportText(weekType);
 
-    this.logs.forEach((log, index) => {
-      const logDate = new Date(log.date);
-      const dateTime = logDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-     
-      body += `${index + 1}. ${log.studentName} - ${dateTime}\n`;
-      body += `   Behavior: ${log.behavior}\n`;
-     
-      if (log.antecedent) {
-        body += `   Antecedent: ${log.antecedent}\n`;
-      }
-      if (log.consequence) {
-        body += `   Consequence: ${log.consequence}\n`;
-      }
-     
-      if (log.comments && log.comments.length > 0) {
-        body += `   Comments: ${log.comments.length} note(s)\n`;
-      }
-     
-      body += `\n`;
-    });
-
-    body += `${'='.repeat(60)}\n`;
-    body += `\nGenerated by StudentScope - Behavior Tracking System`;
-
-    // Create mailto link
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-   
-    // Open email client
     window.location.href = mailtoLink;
   },
 
-  // ========== CREATE GOOGLE DOC ==========
-  async createGoogleDoc() {
-    if (this.logs.length === 0) {
-      alert('No behaviors to export. Log some behaviors first!');
+  printWeeklyReport(weekType) {
+    const weeklyLogs = this.getWeeklyLogs(weekType);
+    
+    if (weeklyLogs.length === 0) {
+      alert(`No behaviors logged for ${weekType === 'current' ? 'this' : 'last'} week.`);
       return;
     }
 
-    await GoogleDocsManager.createDocument(this.logs);
+    const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
+    const weekLabel = weekType === 'current' ? 'THIS WEEK' : 'LAST WEEK';
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>StudentScope ${weekLabel}'s Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
+            h1 { color: #2c3e50; margin-bottom: 10px; }
+            .meta { color: #7f8c8d; margin-bottom: 30px; }
+            .entry { margin-bottom: 30px; border-bottom: 2px solid #ecf0f1; padding-bottom: 20px; }
+            .entry:last-child { border-bottom: none; }
+            .student-name { font-size: 1.3rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+            .date { color: #7f8c8d; font-size: 0.9rem; margin-bottom: 10px; }
+            .label { font-weight: 600; color: #34495e; }
+            .footer { margin-top: 40px; text-align: center; color: #95a5a6; font-size: 0.9rem; }
+          </style>
+        </head>
+        <body>
+          <h1>STUDENTSCOPE ${weekLabel}'S BEHAVIOR REPORT</h1>
+          <div class="meta">
+            <strong>${WeekUtils.formatDateRange(week.start, week.end)}</strong><br>
+            Generated: ${new Date().toLocaleString()}<br>
+            Total Entries: ${weeklyLogs.length}
+          </div>
+          ${weeklyLogs.map(log => {
+            const logDate = new Date(log.date).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            return `
+              <div class="entry">
+                <div class="student-name">${log.studentName}</div>
+                <div class="date">${logDate}</div>
+                <p><span class="label">Behavior:</span> ${log.behavior}</p>
+                ${log.antecedent ? `<p><span class="label">Antecedent:</span> ${log.antecedent}</p>` : ''}
+                ${log.consequence ? `<p><span class="label">Consequence:</span> ${log.consequence}</p>` : ''}
+                ${log.comments && log.comments.length > 0 ? `<p><span class="label">Comments:</span> ${log.comments.length} note(s)</p>` : ''}
+              </div>
+            `;
+          }).join('')}
+          <div class="footer">Generated by StudentScope - Behavior Tracking System</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   },
 
   // ========== AI ASSISTANT ==========
@@ -888,3 +896,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
+</html>

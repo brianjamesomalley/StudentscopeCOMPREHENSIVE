@@ -176,8 +176,8 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 <header>
 <div class="header-content">
 <div class="header-left">
-<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">FIREBASE</span></h1>
-<p style="font-size:1.2rem;opacity:0.9;">AI-assisted behavior tracking for modern educators</p>
+<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">FIREBASE + AI</span></h1>
+<p style="font-size:1.2rem;opacity:0.9;">AI-powered behavior tracking for modern educators</p>
 </div>
 <div class="header-right">
 <span class="user-info" id="userEmail"></span>
@@ -200,23 +200,28 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 
 <!-- COLUMN 2: AI ASSISTANT -->
 <div class="card card-2">
-<h2>🧠 2. AI Assistant</h2>
-<p><em>Get AI suggestions for strategies and report wording</em></p>
-<div class="form-group"><label>Describe the situation</label><textarea id="aiPrompt" placeholder="E.g., 'Student becomes agitated during transitions...'"></textarea></div>
-<div class="form-group"><label>Focus area</label>
+<h2>🤖 2. Claude AI Assistant</h2>
+<p style="margin-bottom:15px;"><em>Professional documentation powered by Claude AI</em></p>
+<div class="form-group">
+<label>Describe the behavior or situation</label>
+<textarea id="aiPrompt" placeholder="E.g., 'Student became upset during math transition and refused to return to seat'"></textarea>
+</div>
+<div class="form-group">
+<label>What do you need?</label>
 <select id="aiFocus">
-<option value="strategies">Behavior Strategies</option>
-<option value="report">Report Wording</option>
-<option value="intervention">Intervention Ideas</option>
-<option value="parent">Parent Communication</option>
+<option value="report">Professional Documentation Language</option>
+<option value="parent">Parent Email Draft</option>
+<option value="strategies">Behavior Strategy Suggestions</option>
+<option value="intervention">Intervention Plan Ideas</option>
 </select>
 </div>
-<button id="aiButton" class="ai-button">🤖 GET AI SUGGESTIONS</button>
+<button id="aiButton" class="ai-button">✨ GENERATE WITH CLAUDE AI</button>
 <div id="aiOutput" style="margin-top:20px;padding:20px;background:#f8f5ff;border-radius:10px;min-height:200px;">
 <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
 <div style="font-size:3rem;opacity:0.5;">🤖</div>
-<p>AI suggestions will appear here</p>
-<p style="font-size:0.9rem;">Describe a situation above and click the button.</p>
+<p style="font-weight:600;margin-bottom:8px;">Real AI-Powered Assistance</p>
+<p style="font-size:0.9rem;">Describe a situation above and select what you need.</p>
+<p style="font-size:0.85rem;margin-top:10px;color:#bbb;">Powered by Claude 3.5 Sonnet</p>
 </div>
 </div>
 </div>
@@ -260,7 +265,7 @@ color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight:
 </div>
 
 <footer style="text-align:center;margin-top:40px;color:#7f8c8d;padding:20px;">
-<p>StudentScope LLC • <span style="color:#9b59b6;font-weight:600;">Powered by Firebase</span> • Secure Cloud Storage • Made for educators</p>
+<p>StudentScope LLC • <span style="color:#9b59b6;font-weight:600;">Powered by Firebase + Claude AI</span> • Secure Cloud Storage • Made for educators</p>
 </footer>
 </div>
 </div>
@@ -286,23 +291,151 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ========== CLAUDE API CONFIG ==========
+// IMPORTANT: Replace with your actual Claude API key
+const CLAUDE_API_KEY = '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';
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+// ========== CLAUDE AI INTEGRATION ==========
+const ClaudeAI = {
+  async generateSuggestion(prompt, focus) {
+    try {
+      const systemPrompt = this.getSystemPrompt(focus);
+      
+      const response = await fetch(CLAUDE_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: prompt
+          }],
+          system: systemPrompt
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      return data.content[0].text;
+    } catch (error) {
+      console.error('Claude API Error:', error);
+      throw error;
+    }
+  },
+
+  getSystemPrompt(focus) {
+    const prompts = {
+      report: `You are an expert educational professional helping teachers and paraprofessionals write professional behavior documentation. 
+
+Your task: Take informal notes about student behavior and rewrite them in professional, objective, appropriate language suitable for IEP meetings, progress reports, and official documentation.
+
+Guidelines:
+- Use professional educational terminology
+- Remain objective and factual
+- Avoid judgmental language
+- Focus on observable behaviors
+- Be concise but complete (2-3 sentences maximum)
+- Maintain dignity and respect for the student
+- Use person-first language
+
+Examples:
+Input: "kid freaked out wouldn't sit down"
+Output: "Student demonstrated difficulty remaining in assigned seat and exhibited signs of emotional dysregulation during the transition period."
+
+Input: "Tommy hit another kid for no reason"
+Output: "Student engaged in physical contact with a peer. The antecedent to this behavior is unclear and requires further observation."
+
+Provide ONLY the rewritten professional version. No explanations, no preamble, just the improved text.`,
+
+      parent: `You are an expert at helping teachers write sensitive, professional communications to parents about challenging student behaviors.
+
+Your task: Draft a tactful, supportive email to parents about a behavior incident.
+
+Guidelines:
+- Start with something positive about the student
+- Describe the behavior objectively without blame
+- Express partnership and support
+- Suggest a collaborative approach
+- End on a hopeful, constructive note
+- Keep it brief (3-4 sentences)
+- Avoid educational jargon
+- Be warm but professional
+
+Format your response as:
+Subject: [Suggest a non-alarming subject line]
+
+Dear [Parent Name],
+
+[Your drafted email - 3-4 sentences]
+
+Best regards,
+[Teacher Name]`,
+
+      strategies: `You are a behavior intervention specialist helping educators develop practical, evidence-based strategies for challenging behaviors.
+
+Your task: Suggest 3 specific, actionable behavior strategies based on the described situation.
+
+Guidelines:
+- Focus on positive, proactive interventions
+- Suggest evidence-based approaches (visual supports, reinforcement systems, environmental modifications)
+- Be specific and immediately actionable
+- Consider antecedent management and teaching replacement behaviors
+- Keep suggestions realistic for busy classroom staff
+- Number your suggestions 1, 2, 3
+
+Format each suggestion as:
+1. [Strategy name]: [2-3 sentence practical description]
+2. [Strategy name]: [2-3 sentence practical description]
+3. [Strategy name]: [2-3 sentence practical description]`,
+
+      intervention: `You are a behavior analyst helping design intervention plans for students with challenging behaviors.
+
+Your task: Suggest a structured intervention approach based on the described behavior pattern.
+
+Guidelines:
+- Start with function-based thinking
+- Suggest both preventive strategies and teaching alternatives
+- Include data collection recommendations
+- Be practical for general education settings
+- Focus on teaching replacement behaviors
+- Keep suggestions actionable and specific
+
+Provide:
+1. Hypothesized Function: [1-2 sentences]
+2. Prevention Strategies: [2-3 specific strategies]
+3. Replacement Behaviors: [What to teach instead]
+4. Response Strategies: [How to respond when behavior occurs]
+5. Data to Collect: [What to track]`
+    };
+
+    return prompts[focus] || prompts.strategies;
+  }
+};
+
 // ========== WEEK CALCULATION UTILITIES ==========
 const WeekUtils = {
-  // Get Monday of current week
   getMonday(date) {
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   },
 
-  // Get Friday of current week
   getFriday(date) {
     const monday = this.getMonday(date);
     return new Date(monday.getTime() + 4 * 24 * 60 * 60 * 1000);
   },
 
-  // Get date range for current week
   getCurrentWeek() {
     const now = new Date();
     const monday = this.getMonday(now);
@@ -310,7 +443,6 @@ const WeekUtils = {
     return { start: monday, end: friday };
   },
 
-  // Get date range for last week
   getLastWeek() {
     const now = new Date();
     const lastWeekDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -319,7 +451,6 @@ const WeekUtils = {
     return { start: monday, end: friday };
   },
 
-  // Format date range for display
   formatDateRange(start, end) {
     const options = { month: 'short', day: 'numeric' };
     const startStr = start.toLocaleDateString('en-US', options);
@@ -327,7 +458,6 @@ const WeekUtils = {
     return `${startStr} - ${endStr}`;
   },
 
-  // Check if a date falls within a week range
   isInWeek(dateStr, weekStart, weekEnd) {
     const date = new Date(dateStr);
     return date >= weekStart && date <= weekEnd;
@@ -340,7 +470,6 @@ const AuthManager = {
   currentUser: null,
 
   init() {
-    // Listen for auth state changes
     auth.onAuthStateChanged(user => {
       if (user) {
         this.currentUser = user;
@@ -352,12 +481,10 @@ const AuthManager = {
       }
     });
 
-    // Setup login/signup toggle
     document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
     document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
     document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
 
-    // Enter key to submit
     document.getElementById('authPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.handleAuth();
     });
@@ -371,7 +498,6 @@ const AuthManager = {
       ? 'Already have an account? <a id="authToggle">Sign in</a>'
       : 'Don\'t have an account? <a id="authToggle">Sign up</a>';
    
-    // Re-attach the toggle listener
     document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
   },
 
@@ -388,10 +514,8 @@ const AuthManager = {
     try {
       if (this.isSignUp) {
         await auth.createUserWithEmailAndPassword(email, password);
-        console.log('Account created successfully');
       } else {
         await auth.signInWithEmailAndPassword(email, password);
-        console.log('Signed in successfully');
       }
       errorDiv.style.display = 'none';
     } catch (error) {
@@ -432,7 +556,7 @@ const AuthManager = {
   }
 };
 
-// ========== MAIN APP LOGIC (with Firestore & Weekly Reports) ==========
+// ========== MAIN APP LOGIC ==========
 const App = {
   logs: [],
   unsubscribe: null,
@@ -441,7 +565,7 @@ const App = {
     this.setupEventListeners();
     this.listenToLogs();
     this.updateWeeklyReportCards();
-    console.log("StudentScope Firebase ready with weekly reports");
+    console.log("StudentScope ready with Claude AI");
   },
 
   setupEventListeners() {
@@ -450,18 +574,13 @@ const App = {
     document.getElementById('aiButton').addEventListener('click', () => this.generateAISuggestions());
   },
 
-  // ========== UPDATE WEEKLY REPORT CARDS ==========
   updateWeeklyReportCards() {
     const currentWeek = WeekUtils.getCurrentWeek();
     const lastWeek = WeekUtils.getLastWeek();
 
-    // Update THIS WEEK card
     document.getElementById('thisWeekRange').textContent = WeekUtils.formatDateRange(currentWeek.start, currentWeek.end);
-    
-    // Update LAST WEEK card
     document.getElementById('lastWeekRange').textContent = WeekUtils.formatDateRange(lastWeek.start, lastWeek.end);
 
-    // Count logs for each week
     this.updateWeeklyCounts();
   },
 
@@ -484,7 +603,6 @@ const App = {
       `${lastWeekLogs.length} behavior${lastWeekLogs.length !== 1 ? 's' : ''} logged`;
   },
 
-  // ========== FIRESTORE: LISTEN TO LOGS IN REAL-TIME ==========
   listenToLogs() {
     const userId = auth.currentUser.uid;
    
@@ -514,12 +632,10 @@ const App = {
           this.displayLog(log);
         });
 
-        // Update weekly counts whenever logs change
         this.updateWeeklyCounts();
       });
   },
 
-  // ========== FIRESTORE: SAVE BEHAVIOR ==========
   async saveBehavior() {
     const studentName = document.getElementById('studentName').value.trim();
     const behavior = document.getElementById('behavior').value.trim();
@@ -545,8 +661,6 @@ const App = {
       document.getElementById('studentName').value = '';
       document.getElementById('behavior').value = '';
       document.getElementById('studentName').focus();
-     
-      console.log('Behavior saved to Firestore');
     } catch (error) {
       console.error('Error saving behavior:', error);
       alert('Failed to save behavior. Please try again.');
@@ -584,7 +698,6 @@ const App = {
     }
   },
 
-  // ========== DISPLAY LOG ==========
   displayLog(log) {
     const container = document.getElementById('logContainer');
     const emptyState = container.querySelector('.empty-state');
@@ -636,7 +749,6 @@ const App = {
     container.prepend(entry);
   },
 
-  // ========== ABC EDITOR FUNCTIONS ==========
   toggleABCEditor(logId) {
     const editor = document.getElementById(`abcEditor-${logId}`);
     const button = event.target;
@@ -667,7 +779,6 @@ const App = {
         });
 
       document.getElementById(`abcEditor-${logId}`).classList.remove('expanded');
-      console.log('ABC data updated');
     } catch (error) {
       console.error('Error updating ABC data:', error);
       alert('Failed to save ABC data');
@@ -698,7 +809,6 @@ const App = {
         .update({ comments: updatedComments });
 
       document.getElementById(`newComment-${logId}`).value = '';
-      console.log('Comment added');
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Failed to add comment');
@@ -715,15 +825,13 @@ const App = {
         .collection('logs')
         .doc(id)
         .delete();
-
-      console.log('Log deleted');
     } catch (error) {
       console.error('Error deleting log:', error);
       alert('Failed to delete log');
     }
   },
 
-  // ========== WEEKLY REPORT GENERATION ==========
+  // ========== WEEKLY REPORT FUNCTIONS ==========
   getWeeklyLogs(weekType) {
     const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
     return this.logs.filter(log => WeekUtils.isInWeek(log.date, week.start, week.end));
@@ -855,38 +963,129 @@ const App = {
     printWindow.print();
   },
 
-  // ========== AI ASSISTANT ==========
-  generateAISuggestions() {
+  // ========== REAL CLAUDE AI ASSISTANT ==========
+  async generateAISuggestions() {
     const prompt = document.getElementById('aiPrompt').value.trim();
     const focus = document.getElementById('aiFocus').value;
     const output = document.getElementById('aiOutput');
 
-    if (!prompt) return alert("Please describe a situation");
+    if (!prompt) {
+      alert("Please describe a situation");
+      return;
+    }
 
-    output.innerHTML = `<div style="text-align:center;padding:30px;color:#7f8c8d;">🤔 AI is thinking...</div>`;
+    // Show loading state
+    output.innerHTML = `
+      <div style="text-align:center;padding:30px;color:#7f8c8d;">
+        <div style="font-size:2.5rem;margin-bottom:15px;">🤔</div>
+        <p style="font-size:1.1rem;font-weight:600;">Claude is analyzing...</p>
+        <p style="font-size:0.9rem;margin-top:8px;">Generating professional suggestions</p>
+      </div>
+    `;
 
-    setTimeout(() => {
-      const suggestions = this.getAISuggestions(prompt, focus);
-      output.innerHTML = `
-        <h3 style="color:#2c3e50;margin-bottom:20px;">🤖 AI Suggestions</h3>
-        ${suggestions.map((s, i) => `
-          <div style="background:white;padding:15px;margin-bottom:10px;border-radius:8px;border-left:4px solid #9b59b6;">
-            <h4 style="color:#2c3e50;margin-bottom:8px;">Suggestion ${i+1}</h4>
-            <p>${s}</p>
+    try {
+      // Call Claude API
+      const suggestion = await ClaudeAI.generateSuggestion(prompt, focus);
+
+      // Display result based on focus type
+      if (focus === 'report') {
+        // Professional rewrite - show before/after
+        output.innerHTML = `
+          <div style="background:white;padding:20px;border-radius:10px;margin-bottom:15px;border-left:4px solid #e67e22;">
+            <h4 style="color:#7f8c8d;margin-bottom:8px;font-size:0.9rem;text-transform:uppercase;">Original Notes</h4>
+            <p style="color:#2c3e50;font-style:italic;line-height:1.6;">"${prompt}"</p>
           </div>
-        `).join('')}
+          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #27ae60;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h4 style="color:#27ae60;margin:0;font-size:0.9rem;text-transform:uppercase;">✨ Professional Version</h4>
+              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
+                      style="padding:6px 12px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
+                📋 Copy
+              </button>
+            </div>
+            <p style="color:#2c3e50;line-height:1.7;font-size:1.05rem;">${suggestion}</p>
+          </div>
+          <p style="text-align:center;margin-top:15px;color:#95a5a6;font-size:0.85rem;">
+            ✓ Ready for IEP meetings, progress reports, and official documentation
+          </p>
+        `;
+      } else if (focus === 'parent') {
+        // Parent email - show full draft
+        output.innerHTML = `
+          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #9b59b6;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+              <h4 style="color:#9b59b6;margin:0;">📧 Parent Email Draft</h4>
+              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
+                      style="padding:6px 12px;background:#9b59b6;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
+                📋 Copy Email
+              </button>
+            </div>
+            <div style="background:#f8f5ff;padding:15px;border-radius:8px;font-family:monospace;font-size:0.9rem;white-space:pre-wrap;line-height:1.6;">${suggestion}</div>
+          </div>
+          <p style="text-align:center;margin-top:15px;color:#95a5a6;font-size:0.85rem;">
+            ✓ Review and personalize before sending
+          </p>
+        `;
+      } else {
+        // Strategies/Interventions - show as list
+        output.innerHTML = `
+          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #3498db;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+              <h4 style="color:#3498db;margin:0;">💡 ${focus === 'strategies' ? 'Behavior Strategies' : 'Intervention Plan'}</h4>
+              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
+                      style="padding:6px 12px;background:#3498db;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
+                📋 Copy
+              </button>
+            </div>
+            <div style="color:#2c3e50;line-height:1.8;white-space:pre-wrap;">${suggestion}</div>
+          </div>
+        `;
+      }
+
+    } catch (error) {
+      console.error('AI Generation Error:', error);
+      output.innerHTML = `
+        <div style="text-align:center;padding:30px;color:#e74c3c;">
+          <div style="font-size:2.5rem;margin-bottom:15px;">⚠️</div>
+          <p style="font-size:1.1rem;font-weight:600;margin-bottom:10px;">Error Connecting to Claude AI</p>
+          <p style="font-size:0.9rem;color:#7f8c8d;">Please check your API key configuration.</p>
+          <p style="font-size:0.85rem;color:#95a5a6;margin-top:15px;">Error: ${error.message}</p>
+        </div>
       `;
-    }, 1000);
+    }
   },
 
-  getAISuggestions(prompt, focus) {
-    const strategies = [
-      "Implement visual schedule with transition warnings.",
-      "Use 'break card' system for sensory breaks.",
-      "Try token economy with immediate reinforcement.",
-      "Provide alternative seating options."
-    ];
-    return strategies.slice(0, 3);
+  // ========== COPY TO CLIPBOARD HELPER ==========
+  copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          const tempMsg = document.createElement('div');
+          tempMsg.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-weight: 600;
+          `;
+          tempMsg.textContent = '✓ Copied to clipboard!';
+          document.body.appendChild(tempMsg);
+          
+          setTimeout(() => {
+            document.body.removeChild(tempMsg);
+          }, 2000);
+        })
+        .catch(err => {
+          alert('Failed to copy. Please select and copy manually.');
+        });
+    } else {
+      alert('Clipboard not supported. Please select and copy manually.');
+    }
   }
 };
 
@@ -896,4 +1095,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>

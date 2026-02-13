@@ -1,1 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentScope Teacher | Behavior Tracking</title>
+<style>
+/* === CORE STYLES === */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #f8fafc; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
 
+/* Header */
+header { text-align: center; margin-bottom: 30px; padding: 25px;
+background: linear-gradient(135deg, #4a6fa5 0%, #2c3e50 100%); border-radius: 15px; color: white; }
+h1 { font-size: 2.8rem; margin-bottom: 10px; }
+
+/* MOBILE HEADER FIX */
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.header-left { flex: 1; }
+.header-right { display: flex; align-items: center; gap: 15px; }
+.user-info { display: inline-block; color: white; opacity: 0.9; }
+.logout-button { padding: 10px 20px; background: #e74c3c; color: white; border: none;
+border-radius: 8px; cursor: pointer; }
+.inbox-button { padding: 10px 20px; background: #3498db; color: white; border: none;
+border-radius: 8px; cursor: pointer; position: relative; }
+.badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
+border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex;
+align-items: center; justify-content: center; font-weight: bold; }
+
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  .header-content { flex-direction: column; text-align: center; gap: 15px; }
+  .header-right { flex-direction: column; width: 100%; }
+}
+
+/* LOGIN SCREEN STYLES */
+.login-container { max-width: 450px; margin: 100px auto; }
+.login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+.login-card h2 { color: #2c3e50; margin-bottom: 30px; text-align: center; }
+.login-input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e0e6ed;
+border-radius: 10px; font-size: 1rem; }
+.login-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #4a6fa5, #2c3e50);
+color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600;
+cursor: pointer; margin-top: 10px; }
+.login-button:hover { opacity: 0.9; }
+.toggle-auth { text-align: center; margin-top: 20px; color: #7f8c8d; }
+.toggle-auth a { color: #4a6fa5; cursor: pointer; text-decoration: underline; }
+
+/* 4-Column Grid */
+.four-columns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+@media (max-width: 1200px) { .four-columns { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .four-columns { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+.card h2 { color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid; }
+.card-1 h2 { border-color: #27ae60; }
+.card-2 h2 { border-color: #9b59b6; }
+.card-3 h2 { border-color: #3498db; }
+.card-4 h2 { border-color: #f39c12; }
+
+/* Form Elements */
+.form-group { margin-bottom: 20px; }
+label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+input, textarea, select { width: 100%; padding: 14px; border: 2px solid #e0e6ed; border-radius: 10px; font-size: 1rem; }
+textarea { min-height: 120px; resize: vertical; }
+
+/* Buttons */
+.save-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #27ae60, #219653);
+color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+.secondary-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #3498db, #2980b9);
+color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+/* Student List */
+.student-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.student-item { background: #f8fafc; padding: 15px; border-radius: 10px; display: flex;
+justify-content: space-between; align-items: center; border-left: 4px solid #4a6fa5; }
+.student-code { background: #e0e6ed; padding: 8px 12px; border-radius: 6px; font-family: monospace;
+font-weight: bold; font-size: 1.1rem; }
+.parent-linked { color: #27ae60; font-weight: 600; }
+
+/* Message Inbox */
+.message-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+.message-item { background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #3498db; cursor: pointer; }
+.message-item.unread { background: #e3f2fd; border-left-color: #2196f3; }
+.message-item:hover { background: #e0e6ed; }
+
+/* Chat Interface */
+.chat-container { background: #f8fafc; border-radius: 10px; padding: 20px; height: 400px;
+display: flex; flex-direction: column; }
+.chat-messages { flex: 1; overflow-y: auto; margin-bottom: 20px; display: flex;
+flex-direction: column; gap: 10px; }
+.chat-bubble { max-width: 70%; padding: 12px 16px; border-radius: 12px; }
+.chat-bubble.teacher { background: #4a6fa5; color: white; align-self: flex-end; }
+.chat-bubble.parent { background: white; border: 2px solid #e0e6ed; align-self: flex-start; }
+.chat-input-area { display: flex; gap: 10px; }
+.chat-input { flex: 1; padding: 12px; border: 2px solid #e0e6ed; border-radius: 10px; }
+.chat-send { padding: 12px 24px; background: #4a6fa5; color: white; border: none;
+border-radius: 10px; cursor: pointer; font-weight: 600; }
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 40px; border-radius: 15px; max-width: 600px;
+width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+/* Loading/Hidden */
+.hidden { display: none; }
+.loading { text-align: center; padding: 40px; color: #7f8c8d; }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" class="login-container">
+<div class="login-card">
+<h1 style="text-align:center;color:#4a6fa5;margin-bottom:10px;">🤖 StudentScope Teacher</h1>
+<p style="text-align:center;color:#7f8c8d;margin-bottom:30px;">Secure Teacher Login</p>
+<h2 id="authTitle">Sign In</h2>
+<input type="email" id="authEmail" class="login-input" placeholder="Email address" required>
+<input type="password" id="authPassword" class="login-input" placeholder="Password" required>
+<button id="authButton" class="login-button">SIGN IN</button>
+<div class="toggle-auth">
+<span id="authToggleText">Don't have an account? <a id="authToggle">Sign up</a></span>
+</div>
+<div id="authError" style="color:#e74c3c;text-align:center;margin-top:15px;display:none;"></div>
+</div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp" class="hidden">
+<div class="container">
+<header>
+<div class="header-content">
+<div class="header-left">
+<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">TEACHER</span></h1>
+<p style="font-size:1.2rem;opacity:0.9;">Behavior tracking with parent portal integration</p>
+</div>
+<div class="header-right">
+<button id="inboxBtn" class="inbox-button">
+📬 Inbox
+<span class="badge hidden" id="inboxBadge">0</span>
+</button>
+<span class="user-info" id="userEmail"></span>
+<button id="logoutBtn" class="logout-button">🚪 Logout</button>
+</div>
+</div>
+</header>
+
+<div class="four-columns">
+<!-- COLUMN 1: LOG BEHAVIOR -->
+<div class="card card-1">
+<h2>📝 Log Behavior</h2>
+<div class="form-group">
+<label>Student</label>
+<select id="studentSelect">
+<option value="">Select student...</option>
+</select>
+</div>
+<div class="form-group">
+<label>Behavior</label>
+<textarea id="behaviorText" placeholder="Describe what happened..."></textarea>
+</div>
+<div class="form-group">
+<label>Type</label>
+<select id="behaviorType">
+<option value="negative">Negative (-)</option>
+<option value="positive">Positive (+)</option>
+</select>
+</div>
+<button id="logBehaviorBtn" class="save-button">💾 LOG BEHAVIOR</button>
+</div>
+
+<!-- COLUMN 2: STUDENT MANAGEMENT -->
+<div class="card card-2">
+<h2>👥 Student Management</h2>
+<div class="form-group">
+<label>Add New Student</label>
+<input type="text" id="newStudentName" placeholder="Student name">
+</div>
+<div class="form-group">
+<label>Grade</label>
+<input type="text" id="newStudentGrade" placeholder="Grade level">
+</div>
+<button id="addStudentBtn" class="secondary-button">➕ ADD STUDENT</button>
+<div class="student-list" id="studentList">
+<p style="text-align:center;color:#7f8c8d;">No students yet</p>
+</div>
+</div>
+
+<!-- COLUMN 3: RECENT BEHAVIORS -->
+<div class="card card-3">
+<h2>📋 Recent Behaviors</h2>
+<div id="recentBehaviors" style="max-height:400px;overflow-y:auto;">
+<p style="text-align:center;color:#7f8c8d;padding:40px;">No behaviors logged yet</p>
+</div>
+</div>
+
+<!-- COLUMN 4: PARENT PORTAL STATUS -->
+<div class="card card-4">
+<h2>🔗 Parent Portal</h2>
+<div style="background:#fff3cd;padding:15px;border-radius:8px;margin-bottom:15px;">
+<strong>Optional Service</strong><br>
+<small>Parents can link to students using access codes</small>
+</div>
+<div id="parentPortalStats">
+<div style="text-align:center;padding:20px;">
+<div style="font-size:3rem;font-weight:bold;color:#4a6fa5;" id="linkedParentsCount">0</div>
+<div style="color:#7f8c8d;">Parents Linked</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ========== INBOX MODAL ========== -->
+<div id="inboxModal" class="modal">
+<div class="modal-content">
+<span class="modal-close" onclick="closeInbox()">&times;</span>
+<h2 style="margin-bottom:20px;">📬 Parent Messages</h2>
+<div id="conversationList" class="message-list">
+<p style="text-align:center;color:#7f8c8d;padding:40px;">No messages yet</p>
+</div>
+</div>
+</div>
+
+<!-- ========== CHAT MODAL ========== -->
+<div id="chatModal" class="modal">
+<div class="modal-content">
+<span class="modal-close" onclick="closeChat()">&times;</span>
+<h2 id="chatStudentName" style="margin-bottom:20px;"></h2>
+<div class="chat-container">
+<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-input-area">
+<input type="text" id="chatInput" class="chat-input" placeholder="Type your reply...">
+<button onclick="sendTeacherMessage()" class="chat-send">Send</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ========== FIREBASE SDK ========== -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain: "studentscopebehaviorcenter.firebaseapp.com",
+  projectId: "studentscopebehaviorcenter",
+  storageBucket: "studentscopebehaviorcenter.firebasestorage.app",
+  messagingSenderId: "311398911099",
+  appId: "1:311398911099:web:6703268a2b65cdd969a6de"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ========== GLOBAL STATE ==========
+let currentTeacherId = null;
+let currentConversationId = null;
+let students = [];
+let conversations = [];
+
+// ========== AUTH MANAGER ==========
+const AuthManager = {
+  isSignUp: false,
+  currentUser: null,
+
+  init() {
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        this.currentUser = user;
+        currentTeacherId = user.uid;
+        this.showMainApp();
+        App.init();
+      } else {
+        this.currentUser = null;
+        this.showLoginScreen();
+      }
+    });
+
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+    document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
+    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+    document.getElementById('authPassword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.handleAuth();
+    });
+  },
+
+  toggleAuthMode() {
+    this.isSignUp = !this.isSignUp;
+    document.getElementById('authTitle').textContent = this.isSignUp ? 'Sign Up' : 'Sign In';
+    document.getElementById('authButton').textContent = this.isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN';
+    document.getElementById('authToggleText').innerHTML = this.isSignUp
+      ? 'Already have an account? <a id="authToggle">Sign in</a>'
+      : 'Don\'t have an account? <a id="authToggle">Sign up</a>';
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+  },
+
+  async handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+
+    if (!email || !password) {
+      this.showError('Please enter both email and password');
+      return;
+    }
+
+    try {
+      if (this.isSignUp) {
+        await auth.createUserWithEmailAndPassword(email, password);
+      } else {
+        await auth.signInWithEmailAndPassword(email, password);
+      }
+      errorDiv.style.display = 'none';
+    } catch (error) {
+      this.showError(this.getErrorMessage(error.code));
+    }
+  },
+
+  showError(message) {
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+  },
+
+  getErrorMessage(code) {
+    switch(code) {
+      case 'auth/invalid-email': return 'Invalid email format';
+      case 'auth/user-not-found': return 'No account found with this email';
+      case 'auth/wrong-password': return 'Incorrect password';
+      case 'auth/email-already-in-use': return 'Email already registered';
+      case 'auth/weak-password': return 'Password must be at least 6 characters';
+      default: return 'Authentication error. Please try again.';
+    }
+  },
+
+  logout() {
+    auth.signOut();
+  },
+
+  showLoginScreen() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+  },
+
+  showMainApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('userEmail').textContent = this.currentUser.email;
+  }
+};
+
+// ========== MAIN APP ==========
+const App = {
+  init() {
+    this.setupEventListeners();
+    this.loadStudents();
+    this.loadConversations();
+    this.loadRecentBehaviors();
+  },
+
+  setupEventListeners() {
+    document.getElementById('addStudentBtn').addEventListener('click', () => this.addStudent());
+    document.getElementById('logBehaviorBtn').addEventListener('click', () => this.logBehavior());
+    document.getElementById('inboxBtn').addEventListener('click', () => this.openInbox());
+  },
+
+  // ========== STUDENT MANAGEMENT ==========
+  async loadStudents() {
+    const snapshot = await db.collection('students')
+      .where('teacherId', '==', currentTeacherId)
+      .get();
+
+    students = [];
+    const studentSelect = document.getElementById('studentSelect');
+    studentSelect.innerHTML = '<option value="">Select student...</option>';
+    const studentList = document.getElementById('studentList');
+    studentList.innerHTML = '';
+
+    if (snapshot.empty) {
+      studentList.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No students yet</p>';
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const student = { id: doc.id, ...doc.data() };
+      students.push(student);
+
+      // Add to dropdown
+      const option = document.createElement('option');
+      option.value = student.id;
+      option.textContent = student.name;
+      studentSelect.appendChild(option);
+
+      // Add to list
+      const item = document.createElement('div');
+      item.className = 'student-item';
+      item.innerHTML = `
+        <div>
+          <strong>${student.name}</strong> (Grade ${student.grade})
+          ${student.parentId ? '<div class="parent-linked">✓ Parent Linked</div>' : ''}
+        </div>
+        <div class="student-code">${student.accessCode}</div>
+      `;
+      studentList.appendChild(item);
+    });
+
+    this.updateParentPortalStats();
+  },
+
+  async addStudent() {
+    const name = document.getElementById('newStudentName').value.trim();
+    const grade = document.getElementById('newStudentGrade').value.trim();
+
+    if (!name || !grade) {
+      alert('Please enter student name and grade');
+      return;
+    }
+
+    // Generate 6-character access code
+    const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    try {
+      await db.collection('students').add({
+        name: name,
+        grade: grade,
+        teacherId: currentTeacherId,
+        accessCode: accessCode,
+        parentId: null,
+        createdAt: new Date().toISOString()
+      });
+
+      document.getElementById('newStudentName').value = '';
+      document.getElementById('newStudentGrade').value = '';
+      this.loadStudents();
+      alert(`Student added!\n\nAccess Code: ${accessCode}\n\nParents can use this code to link their account.`);
+    } catch (error) {
+      console.error('Error adding student:', error);
+      alert('Failed to add student');
+    }
+  },
+
+  updateParentPortalStats() {
+    const linkedCount = students.filter(s => s.parentId).length;
+    document.getElementById('linkedParentsCount').textContent = linkedCount;
+  },
+
+  // ========== BEHAVIOR LOGGING ==========
+  async logBehavior() {
+    const studentId = document.getElementById('studentSelect').value;
+    const behaviorText = document.getElementById('behaviorText').value.trim();
+    const behaviorType = document.getElementById('behaviorType').value;
+
+    if (!studentId || !behaviorText) {
+      alert('Please select a student and describe the behavior');
+      return;
+    }
+
+    const student = students.find(s => s.id === studentId);
+
+    try {
+      // Save behavior log
+      const logRef = await db.collection('behaviors').add({
+        studentId: studentId,
+        studentName: student.name,
+        teacherId: currentTeacherId,
+        behavior: behaviorText,
+        type: behaviorType,
+        timestamp: new Date().toISOString()
+      });
+
+      // If student has parent linked, create notification
+      if (student.parentId) {
+        await db.collection('notifications').add({
+          parentId: student.parentId,
+          studentId: studentId,
+          studentName: student.name,
+          logId: logRef.id,
+          type: 'behavior_logged',
+          behaviorType: behaviorType,
+          behaviorText: behaviorText,
+          timestamp: new Date().toISOString(),
+          read: false
+        });
+      }
+
+      // Clear form
+      document.getElementById('behaviorText').value = '';
+      document.getElementById('studentSelect').selectedIndex = 0;
+
+      this.loadRecentBehaviors();
+      alert(`Behavior logged!${student.parentId ? '\n✓ Parent notified' : ''}`);
+    } catch (error) {
+      console.error('Error logging behavior:', error);
+      alert('Failed to log behavior');
+    }
+  },
+
+  async loadRecentBehaviors() {
+    const snapshot = await db.collection('behaviors')
+      .where('teacherId', '==', currentTeacherId)
+      .orderBy('timestamp', 'desc')
+      .limit(10)
+      .get();
+
+    const container = document.getElementById('recentBehaviors');
+    container.innerHTML = '';
+
+    if (snapshot.empty) {
+      container.innerHTML = '<p style="text-align:center;color:#7f8c8d;padding:40px;">No behaviors logged yet</p>';
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const log = doc.data();
+      const date = new Date(log.timestamp).toLocaleString();
+      const item = document.createElement('div');
+      item.className = 'student-item';
+      item.style.borderLeftColor = log.type === 'positive' ? '#27ae60' : '#e74c3c';
+      item.innerHTML = `
+        <div>
+          <strong>${log.studentName}</strong>
+          <div style="color:#7f8c8d;font-size:0.9rem;margin-top:5px;">${log.behavior}</div>
+          <div style="color:#95a5a6;font-size:0.85rem;margin-top:3px;">${date}</div>
+        </div>
+        <div style="font-weight:bold;color:${log.type === 'positive' ? '#27ae60' : '#e74c3c'}">
+          ${log.type === 'positive' ? '✓' : '⚠️'}
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  },
+
+  // ========== MESSAGING ==========
+  async loadConversations() {
+    db.collection('conversations')
+      .where('teacherId', '==', currentTeacherId)
+      .onSnapshot(snapshot => {
+        conversations = [];
+        let unreadCount = 0;
+
+        snapshot.forEach(doc => {
+          const conv = { id: doc.id, ...doc.data() };
+          conversations.push(conv);
+
+          // Count unread messages from parents
+          const lastMessage = conv.messages && conv.messages.length > 0 
+            ? conv.messages[conv.messages.length - 1] 
+            : null;
+          if (lastMessage && lastMessage.senderId !== currentTeacherId && !lastMessage.read) {
+            unreadCount++;
+          }
+        });
+
+        // Update inbox badge
+        const badge = document.getElementById('inboxBadge');
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      });
+  },
+
+  openInbox() {
+    const modal = document.getElementById('inboxModal');
+    const list = document.getElementById('conversationList');
+    list.innerHTML = '';
+
+    if (conversations.length === 0) {
+      list.innerHTML = '<p style="text-align:center;color:#7f8c8d;padding:40px;">No messages yet</p>';
+    } else {
+      conversations.forEach(conv => {
+        const lastMessage = conv.messages && conv.messages.length > 0 
+          ? conv.messages[conv.messages.length - 1] 
+          : null;
+        const isUnread = lastMessage && lastMessage.senderId !== currentTeacherId && !lastMessage.read;
+
+        const item = document.createElement('div');
+        item.className = `message-item ${isUnread ? 'unread' : ''}`;
+        item.onclick = () => openChat(conv.id);
+        item.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <strong>${conv.studentName} - ${conv.parentEmail || 'Parent'}</strong>
+            ${isUnread ? '<span style="color:#2196f3;font-weight:bold;">NEW</span>' : ''}
+          </div>
+          <div style="color:#7f8c8d;font-size:0.9rem;">
+            ${lastMessage ? lastMessage.text.substring(0, 60) + '...' : 'No messages yet'}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    modal.classList.add('active');
+  }
+};
+
+// ========== CHAT FUNCTIONS ==========
+function closeInbox() {
+  document.getElementById('inboxModal').classList.remove('active');
+}
+
+async function openChat(conversationId) {
+  currentConversationId = conversationId;
+  const conv = conversations.find(c => c.id === conversationId);
+
+  document.getElementById('chatStudentName').textContent = `💬 ${conv.studentName}`;
+  document.getElementById('chatModal').classList.add('active');
+  closeInbox();
+
+  // Load messages
+  loadChatMessages();
+
+  // Mark messages as read
+  if (conv.messages) {
+    const updatedMessages = conv.messages.map(msg => {
+      if (msg.senderId !== currentTeacherId) {
+        return { ...msg, read: true };
+      }
+      return msg;
+    });
+
+    await db.collection('conversations').doc(conversationId).update({
+      messages: updatedMessages
+    });
+  }
+}
+
+function loadChatMessages() {
+  const conv = conversations.find(c => c.id === currentConversationId);
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+
+  if (!conv.messages || conv.messages.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No messages yet</p>';
+    return;
+  }
+
+  conv.messages.forEach(msg => {
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${msg.senderId === currentTeacherId ? 'teacher' : 'parent'}`;
+    bubble.innerHTML = `
+      <div>${msg.text}</div>
+      <div style="font-size:0.8rem;margin-top:5px;opacity:0.7;">
+        ${new Date(msg.timestamp).toLocaleTimeString()}
+      </div>
+    `;
+    container.appendChild(bubble);
+  });
+
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendTeacherMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  const conv = conversations.find(c => c.id === currentConversationId);
+  const newMessage = {
+    text: text,
+    senderId: currentTeacherId,
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+
+  const updatedMessages = [...(conv.messages || []), newMessage];
+
+  try {
+    await db.collection('conversations').doc(currentConversationId).update({
+      messages: updatedMessages,
+      parentCanReply: true  // Unlock parent for next message
+    });
+
+    input.value = '';
+    App.loadConversations();
+    setTimeout(() => loadChatMessages(), 500);
+  } catch (error) {
+    console.error('Error sending message:', error);
+    alert('Failed to send message');
+  }
+}
+
+function closeChat() {
+  document.getElementById('chatModal').classList.remove('active');
+  currentConversationId = null;
+}
+
+// ========== START APP ==========
+document.addEventListener('DOMContentLoaded', () => {
+  AuthManager.init();
+});
+</script>
+</body>
+</html>

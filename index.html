@@ -275,12 +275,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<!-- ========== VERCEL CONFIGURATION ========== -->
-<script>
-// Vercel environment detection - this helps with build process
-window.VERCEL_ENV = process.env.VERCEL_ENV || 'development';
-console.log(`StudentScope running on Vercel: ${window.VERCEL_ENV}`);
-</script>
 
 <script>
 // ========== FIREBASE CONFIG ==========
@@ -298,151 +292,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ========== CLAUDE API CONFIG ==========
+// ========== CLAUDE API ==========
 const CLAUDE_API_KEY = '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';
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-// ========== CLAUDE AI INTEGRATION ==========
-const ClaudeAI = {
- async generateAISuggestions() {
-  const prompt = document.getElementById('aiPrompt').value.trim();
-  const focus = document.getElementById('aiFocus').value;
-  const output = document.getElementById('aiOutput');
 
-  if (!prompt) {
-    alert("Please describe a situation");
-    return;
-  }
-
-  // Show loading
-  output.innerHTML = '<div style="text-align:center;padding:30px;">🤔 Thinking...</div>';
-
-  try {
-    // Get the right system prompt
-    const systemPrompt = this.getSystemPrompt(focus);
-    
-    // Call Claude DIRECTLY (with the dangerous header)
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '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',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    const suggestion = data.content[0].text;
-    
-    // Display it simply
-    output.innerHTML = `<div style="background:white;padding:20px;border-radius:10px;white-space:pre-wrap;">${suggestion}</div>`;
-    
-  } catch (error) {
-    output.innerHTML = `<div style="color:red;padding:20px;">Error: ${error.message}</div>`;
-    console.error(error);
-  }
-}
-
-  getSystemPrompt(focus) {
-    const prompts = {
-      report: `You are an expert educational professional helping teachers and paraprofessionals write professional behavior documentation. 
-
-Your task: Take informal notes about student behavior and rewrite them in professional, objective, appropriate language suitable for IEP meetings, progress reports, and official documentation.
-
-Guidelines:
-- Use professional educational terminology
-- Remain objective and factual
-- Avoid judgmental language
-- Focus on observable behaviors
-- Be concise but complete (2-3 sentences maximum)
-- Maintain dignity and respect for the student
-- Use person-first language
-
-Examples:
-Input: "kid freaked out wouldn't sit down"
-Output: "Student demonstrated difficulty remaining in assigned seat and exhibited signs of emotional dysregulation during the transition period."
-
-Input: "Tommy hit another kid for no reason"
-Output: "Student engaged in physical contact with a peer. The antecedent to this behavior is unclear and requires further observation."
-
-Provide ONLY the rewritten professional version. No explanations, no preamble, just the improved text.`,
-
-      parent: `You are an expert at helping teachers write sensitive, professional communications to parents about challenging student behaviors.
-
-Your task: Draft a tactful, supportive email to parents about a behavior incident.
-
-Guidelines:
-- Start with something positive about the student
-- Describe the behavior objectively without blame
-- Express partnership and support
-- Suggest a collaborative approach
-- End on a hopeful, constructive note
-- Keep it brief (3-4 sentences)
-- Avoid educational jargon
-- Be warm but professional
-
-Format your response as:
-Subject: [Suggest a non-alarming subject line]
-
-Dear [Parent Name],
-
-[Your drafted email - 3-4 sentences]
-
-Best regards,
-[Teacher Name]`,
-
-      strategies: `You are a behavior intervention specialist helping educators develop practical, evidence-based strategies for challenging behaviors.
-
-Your task: Suggest 3 specific, actionable behavior strategies based on the described situation.
-
-Guidelines:
-- Focus on positive, proactive interventions
-- Suggest evidence-based approaches (visual supports, reinforcement systems, environmental modifications)
-- Be specific and immediately actionable
-- Consider antecedent management and teaching replacement behaviors
-- Keep suggestions realistic for busy classroom staff
-- Number your suggestions 1, 2, 3
-
-Format each suggestion as:
-1. [Strategy name]: [2-3 sentence practical description]
-2. [Strategy name]: [2-3 sentence practical description]
-3. [Strategy name]: [2-3 sentence practical description]`,
-
-      intervention: `You are a behavior analyst helping design intervention plans for students with challenging behaviors.
-
-Your task: Suggest a structured intervention approach based on the described behavior pattern.
-
-Guidelines:
-- Start with function-based thinking
-- Suggest both preventive strategies and teaching alternatives
-- Include data collection recommendations
-- Be practical for general education settings
-- Focus on teaching replacement behaviors
-- Keep suggestions actionable and specific
-
-Provide:
-1. Hypothesized Function: [1-2 sentences]
-2. Prevention Strategies: [2-3 specific strategies]
-3. Replacement Behaviors: [What to teach instead]
-4. Response Strategies: [How to respond when behavior occurs]
-5. Data to Collect: [What to track]`
-    };
-
-    return prompts[focus] || prompts.strategies;
-  }
-};
-
-// ========== WEEK CALCULATION UTILITIES ==========
+// ========== WEEK UTILITIES ==========
 const WeekUtils = {
   getMonday(date) {
     const d = new Date(date);
@@ -484,7 +337,7 @@ const WeekUtils = {
   }
 };
 
-// ========== AUTHENTICATION LOGIC ==========
+// ========== AUTH MANAGER ==========
 const AuthManager = {
   isSignUp: false,
   currentUser: null,
@@ -576,7 +429,7 @@ const AuthManager = {
   }
 };
 
-// ========== MAIN APP LOGIC ==========
+// ========== MAIN APP ==========
 const App = {
   logs: [],
   unsubscribe: null,
@@ -585,7 +438,6 @@ const App = {
     this.setupEventListeners();
     this.listenToLogs();
     this.updateWeeklyReportCards();
-    console.log("StudentScope ready with Claude AI");
   },
 
   setupEventListeners() {
@@ -720,9 +572,6 @@ const App = {
 
   displayLog(log) {
     const container = document.getElementById('logContainer');
-    const emptyState = container.querySelector('.empty-state');
-    if (emptyState) container.removeChild(emptyState);
-
     const entry = document.createElement('div');
     entry.className = 'log-entry';
     entry.dataset.id = log.id;
@@ -731,108 +580,14 @@ const App = {
       month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
 
-    const hasABC = log.antecedent || log.consequence;
-    const hasComments = log.comments?.length > 0;
-
     entry.innerHTML = `
       <div class="student-name">${log.studentName}</div>
       <div class="log-date">${date}</div>
-      <div style="margin-top:15px;line-height:1.5;"><strong>Behavior:</strong> ${log.behavior}</div>
-      ${log.antecedent ? `<div style="margin-top:8px;"><strong>Antecedent:</strong> ${log.antecedent}</div>` : ''}
-      ${log.consequence ? `<div style="margin-top:8px;"><strong>Consequence:</strong> ${log.consequence}</div>` : ''}
-      ${hasComments ? `<div style="margin-top:15px;"><strong>Comments:</strong> ${log.comments.length}</div>` : ''}
-
-      <button class="edit-abc-btn" onclick="App.toggleABCEditor('${log.id}')">
-        ${hasABC || hasComments ? '✏️ Edit' : '➕ Add ABC/Comment'}
-      </button>
-
-      <div class="abc-expandable" id="abcEditor-${log.id}">
-        <div style="margin-bottom:15px;">
-          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Antecedent (What happened BEFORE?)</label>
-          <textarea id="antecedent-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.antecedent || ''}</textarea>
-        </div>
-        <div style="margin-bottom:15px;">
-          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Consequence (What happened AFTER?)</label>
-          <textarea id="consequence-${log.id}" style="width:100%;min-height:60px;padding:10px;">${log.consequence || ''}</textarea>
-        </div>
-        <div style="border-top:1px dashed #c8d6e5;padding-top:15px;">
-          <label style="color:#2c3e50;font-size:0.9rem;font-weight:600;">Add a Comment</label>
-          <textarea id="newComment-${log.id}" style="width:100%;min-height:60px;padding:10px;" placeholder="Optional notes..."></textarea>
-          <button onclick="App.addComment('${log.id}')" class="save-abc-btn">💬 Add Comment</button>
-        </div>
-        <button onclick="App.saveABCData('${log.id}')" class="save-abc-btn">💾 Save ABC Data</button>
-      </div>
-
+      <div style="margin-top:15px;"><strong>Behavior:</strong> ${log.behavior}</div>
       <button onclick="App.deleteLog('${log.id}')" class="delete-btn">🗑️ Delete</button>
     `;
 
     container.prepend(entry);
-  },
-
-  toggleABCEditor(logId) {
-    const editor = document.getElementById(`abcEditor-${logId}`);
-    const button = event.target;
-
-    if (editor.classList.contains('expanded')) {
-      editor.classList.remove('expanded');
-      button.textContent = button.textContent.includes('Edit') ? '✏️ Edit' : '➕ Add ABC/Comment';
-    } else {
-      document.querySelectorAll('.abc-expandable.expanded').forEach(el => el.classList.remove('expanded'));
-      editor.classList.add('expanded');
-      button.textContent = '▲ Close';
-    }
-  },
-
-  async saveABCData(logId) {
-    const antecedent = document.getElementById(`antecedent-${logId}`).value.trim();
-    const consequence = document.getElementById(`consequence-${logId}`).value.trim();
-
-    try {
-      const userId = auth.currentUser.uid;
-      await db.collection('users')
-        .doc(userId)
-        .collection('logs')
-        .doc(logId)
-        .update({
-          antecedent: antecedent,
-          consequence: consequence
-        });
-
-      document.getElementById(`abcEditor-${logId}`).classList.remove('expanded');
-    } catch (error) {
-      console.error('Error updating ABC data:', error);
-      alert('Failed to save ABC data');
-    }
-  },
-
-  async addComment(logId) {
-    const commentText = document.getElementById(`newComment-${logId}`).value.trim();
-    if (!commentText) return alert("Please enter a comment");
-
-    const log = this.logs.find(l => l.id === logId);
-    if (!log) return;
-
-    const newComment = {
-      text: commentText,
-      timestamp: new Date().toISOString(),
-      author: "Staff"
-    };
-
-    const updatedComments = [...(log.comments || []), newComment];
-
-    try {
-      const userId = auth.currentUser.uid;
-      await db.collection('users')
-        .doc(userId)
-        .collection('logs')
-        .doc(logId)
-        .update({ comments: updatedComments });
-
-      document.getElementById(`newComment-${logId}`).value = '';
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      alert('Failed to add comment');
-    }
   },
 
   async deleteLog(id) {
@@ -851,7 +606,6 @@ const App = {
     }
   },
 
-  // ========== WEEKLY REPORT FUNCTIONS ==========
   getWeeklyLogs(weekType) {
     const week = weekType === 'current' ? WeekUtils.getCurrentWeek() : WeekUtils.getLastWeek();
     return this.logs.filter(log => WeekUtils.isInWeek(log.date, week.start, week.end));
@@ -883,19 +637,6 @@ const App = {
        
         report += `${index + 1}. ${log.studentName} - ${dateTime}\n`;
         report += `   Behavior: ${log.behavior}\n`;
-       
-        if (log.antecedent) {
-          report += `   Antecedent: ${log.antecedent}\n`;
-        }
-        if (log.consequence) {
-          report += `   Consequence: ${log.consequence}\n`;
-        }
-       
-        if (log.comments && log.comments.length > 0) {
-          report += `   Comments: ${log.comments.length} note(s)\n`;
-        }
-       
-        report += `\n`;
       });
     }
 
@@ -938,44 +679,24 @@ const App = {
         <head>
           <title>StudentScope ${weekLabel}'s Report</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
-            h1 { color: #2c3e50; margin-bottom: 10px; }
-            .meta { color: #7f8c8d; margin-bottom: 30px; }
-            .entry { margin-bottom: 30px; border-bottom: 2px solid #ecf0f1; padding-bottom: 20px; }
-            .entry:last-child { border-bottom: none; }
-            .student-name { font-size: 1.3rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-            .date { color: #7f8c8d; font-size: 0.9rem; margin-bottom: 10px; }
-            .label { font-weight: 600; color: #34495e; }
-            .footer { margin-top: 40px; text-align: center; color: #95a5a6; font-size: 0.9rem; }
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { color: #2c3e50; }
+            .entry { margin-bottom: 20px; }
           </style>
         </head>
         <body>
           <h1>STUDENTSCOPE ${weekLabel}'S BEHAVIOR REPORT</h1>
-          <div class="meta">
-            <strong>${WeekUtils.formatDateRange(week.start, week.end)}</strong><br>
-            Generated: ${new Date().toLocaleString()}<br>
-            Total Entries: ${weeklyLogs.length}
-          </div>
-          ${weeklyLogs.map(log => {
-            const logDate = new Date(log.date).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-            return `
-              <div class="entry">
-                <div class="student-name">${log.studentName}</div>
-                <div class="date">${logDate}</div>
-                <p><span class="label">Behavior:</span> ${log.behavior}</p>
-                ${log.antecedent ? `<p><span class="label">Antecedent:</span> ${log.antecedent}</p>` : ''}
-                ${log.consequence ? `<p><span class="label">Consequence:</span> ${log.consequence}</p>` : ''}
-                ${log.comments && log.comments.length > 0 ? `<p><span class="label">Comments:</span> ${log.comments.length} note(s)</p>` : ''}
-              </div>
-            `;
-          }).join('')}
-          <div class="footer">Generated by StudentScope - Behavior Tracking System</div>
+          <p><strong>${WeekUtils.formatDateRange(week.start, week.end)}</strong></p>
+          <p>Generated: ${new Date().toLocaleString()}</p>
+          <p>Total Entries: ${weeklyLogs.length}</p>
+          <hr>
+          ${weeklyLogs.map(log => `
+            <div class="entry">
+              <h3>${log.studentName}</h3>
+              <p><strong>Date:</strong> ${new Date(log.date).toLocaleString()}</p>
+              <p><strong>Behavior:</strong> ${log.behavior}</p>
+            </div>
+          `).join('')}
         </body>
       </html>
     `);
@@ -983,7 +704,6 @@ const App = {
     printWindow.print();
   },
 
-  // ========== REAL CLAUDE AI ASSISTANT ==========
   async generateAISuggestions() {
     const prompt = document.getElementById('aiPrompt').value.trim();
     const focus = document.getElementById('aiFocus').value;
@@ -994,118 +714,50 @@ const App = {
       return;
     }
 
-    // Show loading state
-    output.innerHTML = `
-      <div style="text-align:center;padding:30px;color:#7f8c8d;">
-        <div style="font-size:2.5rem;margin-bottom:15px;">🤔</div>
-        <p style="font-size:1.1rem;font-weight:600;">Claude is analyzing...</p>
-        <p style="font-size:0.9rem;margin-top:8px;">Generating professional suggestions</p>
-      </div>
-    `;
+    output.innerHTML = '<div style="text-align:center;padding:30px;">🤔 Thinking...</div>';
 
     try {
-      // Call Claude API
-      const suggestion = await ClaudeAI.generateSuggestion(prompt, focus);
+      const systemPrompt = this.getSystemPrompt(focus);
+      
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
 
-      // Display result based on focus type
-      if (focus === 'report') {
-        // Professional rewrite - show before/after
-        output.innerHTML = `
-          <div style="background:white;padding:20px;border-radius:10px;margin-bottom:15px;border-left:4px solid #e67e22;">
-            <h4 style="color:#7f8c8d;margin-bottom:8px;font-size:0.9rem;text-transform:uppercase;">Original Notes</h4>
-            <p style="color:#2c3e50;font-style:italic;line-height:1.6;">"${prompt}"</p>
-          </div>
-          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #27ae60;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-              <h4 style="color:#27ae60;margin:0;font-size:0.9rem;text-transform:uppercase;">✨ Professional Version</h4>
-              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
-                      style="padding:6px 12px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
-                📋 Copy
-              </button>
-            </div>
-            <p style="color:#2c3e50;line-height:1.7;font-size:1.05rem;">${suggestion}</p>
-          </div>
-          <p style="text-align:center;margin-top:15px;color:#95a5a6;font-size:0.85rem;">
-            ✓ Ready for IEP meetings, progress reports, and official documentation
-          </p>
-        `;
-      } else if (focus === 'parent') {
-        // Parent email - show full draft
-        output.innerHTML = `
-          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #9b59b6;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-              <h4 style="color:#9b59b6;margin:0;">📧 Parent Email Draft</h4>
-              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
-                      style="padding:6px 12px;background:#9b59b6;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
-                📋 Copy Email
-              </button>
-            </div>
-            <div style="background:#f8f5ff;padding:15px;border-radius:8px;font-family:monospace;font-size:0.9rem;white-space:pre-wrap;line-height:1.6;">${suggestion}</div>
-          </div>
-          <p style="text-align:center;margin-top:15px;color:#95a5a6;font-size:0.85rem;">
-            ✓ Review and personalize before sending
-          </p>
-        `;
-      } else {
-        // Strategies/Interventions - show as list
-        output.innerHTML = `
-          <div style="background:white;padding:20px;border-radius:10px;border-left:4px solid #3498db;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-              <h4 style="color:#3498db;margin:0;">💡 ${focus === 'strategies' ? 'Behavior Strategies' : 'Intervention Plan'}</h4>
-              <button onclick="App.copyToClipboard(this.parentElement.nextElementSibling.textContent)" 
-                      style="padding:6px 12px;background:#3498db;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">
-                📋 Copy
-              </button>
-            </div>
-            <div style="color:#2c3e50;line-height:1.8;white-space:pre-wrap;">${suggestion}</div>
-          </div>
-        `;
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
 
+      const data = await response.json();
+      const suggestion = data.content[0].text;
+      
+      output.innerHTML = `<div style="background:white;padding:20px;border-radius:10px;white-space:pre-wrap;">${suggestion}</div>`;
+      
     } catch (error) {
-      console.error('AI Generation Error:', error);
-      output.innerHTML = `
-        <div style="text-align:center;padding:30px;color:#e74c3c;">
-          <div style="font-size:2.5rem;margin-bottom:15px;">⚠️</div>
-          <p style="font-size:1.1rem;font-weight:600;margin-bottom:10px;">Error Connecting to Claude AI</p>
-          <p style="font-size:0.9rem;color:#7f8c8d;">Please check your API key configuration.</p>
-          <p style="font-size:0.85rem;color:#95a5a6;margin-top:15px;">Error: ${error.message}</p>
-        </div>
-      `;
+      output.innerHTML = `<div style="color:red;padding:20px;">Error: ${error.message}</div>`;
+      console.error(error);
     }
   },
 
-  // ========== COPY TO CLIPBOARD HELPER ==========
-  copyToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text)
-        .then(() => {
-          const tempMsg = document.createElement('div');
-          tempMsg.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #27ae60;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 10000;
-            font-weight: 600;
-          `;
-          tempMsg.textContent = '✓ Copied to clipboard!';
-          document.body.appendChild(tempMsg);
-          
-          setTimeout(() => {
-            document.body.removeChild(tempMsg);
-          }, 2000);
-        })
-        .catch(err => {
-          alert('Failed to copy. Please select and copy manually.');
-        });
-    } else {
-      alert('Clipboard not supported. Please select and copy manually.');
-    }
+  getSystemPrompt(focus) {
+    const prompts = {
+      report: "You are an expert educational professional. Rewrite the following informal notes about student behavior into professional, objective language suitable for documentation. Keep it to 2-3 sentences. Be factual and use educational terminology.",
+      parent: "Draft a brief, professional email to parents about the following behavior. Be positive, objective, and collaborative.",
+      strategies: "Suggest 3 specific, actionable behavior strategies based on the described situation. Format as a numbered list.",
+      intervention: "Provide a brief intervention plan based on the behavior described. Include hypothesized function, prevention strategies, and replacement behaviors."
+    };
+    return prompts[focus] || prompts.strategies;
   }
 };
 

@@ -299,9 +299,8 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ========== CLAUDE API CONFIG ==========
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+const CLAUDE_API_KEY = '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';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-
 // ========== CLAUDE AI INTEGRATION ==========
 const ClaudeAI = {
  async generateAISuggestions() {

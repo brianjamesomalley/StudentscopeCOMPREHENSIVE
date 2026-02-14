@@ -262,7 +262,27 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-
+// ========== ANALYTICS (The Quiet Listener) ==========
+const Analytics = {
+  async track(metric, value = 1) {
+    try {
+      const teacherId = auth.currentUser?.uid;
+      if (!teacherId) return;
+      
+      await db.collection('analytics').add({
+        teacherId,
+        metric,
+        value,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent
+      });
+    } catch (error) {
+      // Fail silently - never break the app for analytics
+      console.log('Analytics hiccup (non-critical):', error.message);
+    }
+  }
+};
 // ========== GLOBAL STATE ==========
 let currentTeacherId = null;
 let currentConversationId = null;

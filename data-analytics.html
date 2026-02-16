@@ -599,6 +599,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
 // Analytics Engine
 const Analytics = {
+  dataListener: null,
   async init() {
     await this.loadStudents();
     await this.loadData();
@@ -623,7 +624,7 @@ const Analytics = {
     });
   },
 
-  async loadData() {
+  loadData() {
     const days = parseInt(document.getElementById('timePeriodFilter').value);
     const studentId = document.getElementById('studentFilter').value;
     const behaviorType = document.getElementById('behaviorTypeFilter').value;
@@ -631,28 +632,49 @@ const Analytics = {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
     
-    let query = db.collection('behaviors')
-      .where('teacherId', '==', currentTeacherId)
-      .where('timestamp', '>=', cutoffDate.toISOString());
+    // Unsubscribe from previous listener if exists
+    if (this.dataListener) {
+      this.dataListener();
+    }
     
-    const snapshot = await query.get();
-    allBehaviors = [];
-    
-    snapshot.forEach(doc => {
-      const behavior = { id: doc.id, ...doc.data() };
-      
-      // Apply filters
-      if (studentId !== 'all' && behavior.studentId !== studentId) return;
-      if (behaviorType !== 'all' && behavior.type !== behaviorType) return;
-      
-      allBehaviors.push(behavior);
-    });
-    
-    this.updateStats();
-    this.updateCharts();
-    this.updateHeatmap();
-    this.updateInsights();
-    this.updateStudentTable();
+    // Real-time listener - reads from ORIGINAL tracker: /users/{teacherId}/logs
+    this.dataListener = db.collection('users')
+      .doc(currentTeacherId)
+      .collection('logs')
+      .where('date', '>=', cutoffDate.toISOString())
+      .onSnapshot(snapshot => {
+        allBehaviors = [];
+        
+        snapshot.forEach(doc => {
+          const log = { id: doc.id, ...doc.data() };
+          
+          // Map original tracker's structure to analytics format
+          const behavior = {
+            id: log.id,
+            studentId: log.studentId || 'unknown',
+            studentName: log.studentName,
+            teacherId: currentTeacherId,
+            behavior: log.behavior,
+            // Detect type from behavior text (original tracker marks good behaviors with ⭐)
+            type: (log.behavior && (log.behavior.includes('GOOD BEHAVIOR') || log.behavior.includes('⭐'))) ? 'positive' : 'negative',
+            timestamp: log.date,  // Original tracker uses 'date' field
+            antecedent: log.antecedent || '',
+            consequence: log.consequence || ''
+          };
+          
+          // Apply filters
+          if (studentId !== 'all' && behavior.studentId !== studentId) return;
+          if (behaviorType !== 'all' && behavior.type !== behaviorType) return;
+          
+          allBehaviors.push(behavior);
+        });
+        
+        this.updateStats();
+        this.updateCharts();
+        this.updateHeatmap();
+        this.updateInsights();
+        this.updateStudentTable();
+      });
   },
 
   updateStats() {
@@ -976,5 +998,3 @@ async function exportToPDF() {
   alert('📄 PDF Report Generated!');
 }
 </script>
-</body>
-</html>

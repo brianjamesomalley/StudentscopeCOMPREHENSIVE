@@ -72,6 +72,12 @@ color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight:
 .secondary-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #3498db, #2980b9);
 color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
 
+/* WEEK REPORT BUTTONS */
+.week-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+.week-button { flex: 1; padding: 12px; background: #f39c12; color: white; border: none;
+border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
+.week-button.active { background: #e67e22; }
+
 /* Student List */
 .student-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
 .student-item { background: #f8fafc; padding: 15px; border-radius: 10px; display: flex;
@@ -79,6 +85,14 @@ justify-content: space-between; align-items: center; border-left: 4px solid #4a6
 .student-code { background: #e0e6ed; padding: 8px 12px; border-radius: 6px; font-family: monospace;
 font-weight: bold; font-size: 1.1rem; }
 .parent-linked { color: #27ae60; font-weight: 600; }
+
+/* Filter Banner */
+.filter-banner { background: #fff3cd; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px;
+display: none; align-items: center; justify-content: space-between; }
+.filter-banner.active { display: flex; }
+.filter-text { font-weight: 600; color: #856404; }
+.clear-filter { background: transparent; border: none; color: #856404; text-decoration: underline;
+cursor: pointer; font-weight: 600; }
 
 /* Message Inbox */
 .message-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
@@ -191,9 +205,18 @@ width: 90%; max-height: 80vh; overflow-y: auto; }
 </div>
 </div>
 
-<!-- COLUMN 3: RECENT BEHAVIORS -->
+<!-- COLUMN 3: RECENT BEHAVIORS (FILTERED) -->
 <div class="card card-3">
 <h2>📋 Recent Behaviors</h2>
+<div class="filter-banner" id="filterBanner">
+<span class="filter-text" id="filterText">Showing: All Students</span>
+<button class="clear-filter" id="clearFilterBtn">Clear Filter</button>
+</div>
+<div class="week-buttons">
+<button class="week-button" id="thisWeekBtn">📅 This Week</button>
+<button class="week-button" id="lastWeekBtn">📆 Last Week</button>
+<button class="week-button" id="emailReportBtn">📧 Email Report</button>
+</div>
 <div id="recentBehaviors" style="max-height:400px;overflow-y:auto;">
 <p style="text-align:center;color:#7f8c8d;padding:40px;">No behaviors logged yet</p>
 </div>
@@ -262,32 +285,43 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-// ========== ANALYTICS (The Quiet Listener) ==========
-const Analytics = {
-  async track(metric, value = 1) {
-    try {
-      const teacherId = auth.currentUser?.uid;
-      if (!teacherId) return;
-      
-      await db.collection('analytics').add({
-        teacherId,
-        metric,
-        value,
-        timestamp: new Date().toISOString(),
-        url: window.location.href,
-        userAgent: navigator.userAgent
-      });
-    } catch (error) {
-      // Fail silently - never break the app for analytics
-      console.log('Analytics hiccup (non-critical):', error.message);
-    }
-  }
-};
+
 // ========== GLOBAL STATE ==========
 let currentTeacherId = null;
 let currentConversationId = null;
 let students = [];
 let conversations = [];
+let currentFilterStudentId = null; // NEW: Track filtered student
+let currentWeekView = 'all'; // NEW: 'all', 'thisWeek', 'lastWeek'
+
+// ========== DATE UTILITIES (from original tracker) ==========
+const WeekUtils = {
+  getWeekRange(weeksAgo = 0) {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    
+    const monday = new Date(now.setDate(diff));
+    monday.setDate(monday.getDate() - (weeksAgo * 7));
+    monday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    
+    return { start: monday, end: sunday };
+  },
+
+  formatDateRange(startDate, endDate) {
+    const options = { month: 'short', day: 'numeric' };
+    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+  },
+
+  isInWeek(timestamp, weekRange) {
+    const date = new Date(timestamp);
+    return date >= weekRange.start && date <= weekRange.end;
+  }
+};
 
 // ========== AUTH MANAGER ==========
 const AuthManager = {
@@ -393,6 +427,105 @@ const App = {
     document.getElementById('addStudentBtn').addEventListener('click', () => this.addStudent());
     document.getElementById('logBehaviorBtn').addEventListener('click', () => this.logBehavior());
     document.getElementById('inboxBtn').addEventListener('click', () => this.openInbox());
+    
+    // NEW: Student selection triggers filter
+    document.getElementById('studentSelect').addEventListener('change', (e) => {
+      currentFilterStudentId = e.target.value;
+      this.updateFilterBanner();
+      this.loadRecentBehaviors();
+    });
+
+    // NEW: Week view buttons
+    document.getElementById('thisWeekBtn').addEventListener('click', () => this.showThisWeek());
+    document.getElementById('lastWeekBtn').addEventListener('click', () => this.showLastWeek());
+    document.getElementById('emailReportBtn').addEventListener('click', () => this.emailWeeklyReport());
+    document.getElementById('clearFilterBtn').addEventListener('click', () => this.clearFilter());
+  },
+
+  updateFilterBanner() {
+    const banner = document.getElementById('filterBanner');
+    const filterText = document.getElementById('filterText');
+    
+    if (currentFilterStudentId) {
+      const student = students.find(s => s.id === currentFilterStudentId);
+      filterText.textContent = `Showing: ${student ? student.name : 'Selected Student'}`;
+      banner.classList.add('active');
+    } else {
+      banner.classList.remove('active');
+    }
+  },
+
+  clearFilter() {
+    currentFilterStudentId = null;
+    document.getElementById('studentSelect').selectedIndex = 0;
+    this.updateFilterBanner();
+    this.loadRecentBehaviors();
+  },
+
+  showThisWeek() {
+    currentWeekView = 'thisWeek';
+    document.getElementById('thisWeekBtn').classList.add('active');
+    document.getElementById('lastWeekBtn').classList.remove('active');
+    this.loadRecentBehaviors();
+  },
+
+  showLastWeek() {
+    currentWeekView = 'lastWeek';
+    document.getElementById('lastWeekBtn').classList.add('active');
+    document.getElementById('thisWeekBtn').classList.remove('active');
+    this.loadRecentBehaviors();
+  },
+
+  async emailWeeklyReport() {
+    const weekRange = currentWeekView === 'lastWeek' ? WeekUtils.getWeekRange(1) : WeekUtils.getWeekRange(0);
+    const dateRange = WeekUtils.formatDateRange(weekRange.start, weekRange.end);
+    
+    let query = db.collection('behaviors').where('teacherId', '==', currentTeacherId);
+    
+    if (currentFilterStudentId) {
+      query = query.where('studentId', '==', currentFilterStudentId);
+    }
+    
+    const snapshot = await query.get();
+    const weekBehaviors = [];
+    
+    snapshot.forEach(doc => {
+      const log = doc.data();
+      if (WeekUtils.isInWeek(log.timestamp, weekRange)) {
+        weekBehaviors.push(log);
+      }
+    });
+
+    if (weekBehaviors.length === 0) {
+      alert('No behaviors logged for this week.');
+      return;
+    }
+
+    // Sort by date
+    weekBehaviors.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Build email body
+    const studentName = currentFilterStudentId 
+      ? students.find(s => s.id === currentFilterStudentId)?.name 
+      : 'All Students';
+    
+    let emailBody = `WEEKLY BEHAVIOR REPORT\n`;
+    emailBody += `Student: ${studentName}\n`;
+    emailBody += `Week: ${dateRange}\n`;
+    emailBody += `Total Behaviors: ${weekBehaviors.length}\n\n`;
+    emailBody += `---\n\n`;
+    
+    weekBehaviors.forEach(log => {
+      const date = new Date(log.timestamp).toLocaleDateString();
+      const type = log.type === 'positive' ? '✓ POSITIVE' : '⚠ NEGATIVE';
+      emailBody += `${date} - ${log.studentName}\n`;
+      emailBody += `${type}: ${log.behavior}\n\n`;
+    });
+
+    // Create mailto link
+    const subject = `Weekly Behavior Report: ${studentName} (${dateRange})`;
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailtoLink;
   },
 
   // ========== STUDENT MANAGEMENT ==========
@@ -457,6 +590,7 @@ const App = {
         teacherId: currentTeacherId,
         accessCode: accessCode,
         parentId: null,
+        points: 0, // Initialize arcade points
         createdAt: new Date().toISOString()
       });
 
@@ -499,6 +633,11 @@ const App = {
         timestamp: new Date().toISOString()
       });
 
+      // Update arcade points
+      const pointChange = behaviorType === 'positive' ? 10 : -5;
+      const newPoints = Math.max(0, (student.points || 0) + pointChange);
+      await db.collection('students').doc(studentId).update({ points: newPoints });
+
       // If student has parent linked, create notification
       if (student.parentId) {
         await db.collection('notifications').add({
@@ -517,9 +656,11 @@ const App = {
       // Clear form
       document.getElementById('behaviorText').value = '';
       document.getElementById('studentSelect').selectedIndex = 0;
+      currentFilterStudentId = null;
+      this.updateFilterBanner();
 
       this.loadRecentBehaviors();
-      alert(`Behavior logged!${student.parentId ? '\n✓ Parent notified' : ''}`);
+      alert(`Behavior logged!${student.parentId ? '\n✓ Parent notified' : ''}\nArcade Points: ${newPoints}`);
     } catch (error) {
       console.error('Error logging behavior:', error);
       alert('Failed to log behavior');
@@ -527,12 +668,14 @@ const App = {
   },
 
   async loadRecentBehaviors() {
-    const snapshot = await db.collection('behaviors')
-      .where('teacherId', '==', currentTeacherId)
-      .orderBy('timestamp', 'desc')
-      .limit(10)
-      .get();
+    let query = db.collection('behaviors').where('teacherId', '==', currentTeacherId);
+    
+    // Apply student filter if active
+    if (currentFilterStudentId) {
+      query = query.where('studentId', '==', currentFilterStudentId);
+    }
 
+    const snapshot = await query.orderBy('timestamp', 'desc').limit(50).get();
     const container = document.getElementById('recentBehaviors');
     container.innerHTML = '';
 
@@ -541,8 +684,27 @@ const App = {
       return;
     }
 
+    const behaviors = [];
     snapshot.forEach(doc => {
-      const log = doc.data();
+      behaviors.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Filter by week if needed
+    let filteredBehaviors = behaviors;
+    if (currentWeekView === 'thisWeek') {
+      const weekRange = WeekUtils.getWeekRange(0);
+      filteredBehaviors = behaviors.filter(log => WeekUtils.isInWeek(log.timestamp, weekRange));
+    } else if (currentWeekView === 'lastWeek') {
+      const weekRange = WeekUtils.getWeekRange(1);
+      filteredBehaviors = behaviors.filter(log => WeekUtils.isInWeek(log.timestamp, weekRange));
+    }
+
+    if (filteredBehaviors.length === 0) {
+      container.innerHTML = '<p style="text-align:center;color:#7f8c8d;padding:40px;">No behaviors for this period</p>';
+      return;
+    }
+
+    filteredBehaviors.forEach(log => {
       const date = new Date(log.timestamp).toLocaleString();
       const item = document.createElement('div');
       item.className = 'student-item';

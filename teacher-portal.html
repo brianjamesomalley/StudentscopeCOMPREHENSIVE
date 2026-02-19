@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,6 +78,12 @@ color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight:
 .week-button { flex: 1; padding: 12px; background: #f39c12; color: white; border: none;
 border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
 .week-button.active { background: #e67e22; }
+
+/* QUICK FILTER BUTTONS */
+.quick-filter-btn { padding: 8px 14px; background: #e0e6ed; color: #2c3e50; border: none;
+border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+.quick-filter-btn:hover { background: #d1d5db; }
+.quick-filter-btn.active { background: #4a6fa5; color: white; }
 
 /* Student List */
 .student-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
@@ -211,6 +218,12 @@ width: 90%; max-height: 80vh; overflow-y: auto; }
 <div class="filter-banner" id="filterBanner">
 <span class="filter-text" id="filterText">Showing: All Students</span>
 <button class="clear-filter" id="clearFilterBtn">Clear Filter</button>
+</div>
+<div style="margin-bottom:15px;">
+<label style="font-size:0.9rem;margin-bottom:8px;display:block;">Quick Filter by Student:</label>
+<div id="quickFilterButtons" style="display:flex;flex-wrap:wrap;gap:8px;">
+<button class="quick-filter-btn active" data-student-id="">All Students</button>
+</div>
 </div>
 <div class="week-buttons">
 <button class="week-button" id="thisWeekBtn">📅 This Week</button>
@@ -427,13 +440,6 @@ const App = {
     document.getElementById('addStudentBtn').addEventListener('click', () => this.addStudent());
     document.getElementById('logBehaviorBtn').addEventListener('click', () => this.logBehavior());
     document.getElementById('inboxBtn').addEventListener('click', () => this.openInbox());
-    
-    // NEW: Student selection triggers filter
-    document.getElementById('studentSelect').addEventListener('change', (e) => {
-      currentFilterStudentId = e.target.value;
-      this.updateFilterBanner();
-      this.loadRecentBehaviors();
-    });
 
     // NEW: Week view buttons
     document.getElementById('thisWeekBtn').addEventListener('click', () => this.showThisWeek());
@@ -457,7 +463,16 @@ const App = {
 
   clearFilter() {
     currentFilterStudentId = null;
-    document.getElementById('studentSelect').selectedIndex = 0;
+    
+    // Reset all filter buttons to inactive except "All Students"
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+      if (btn.dataset.studentId === '') {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    
     this.updateFilterBanner();
     this.loadRecentBehaviors();
   },
@@ -569,6 +584,40 @@ const App = {
     });
 
     this.updateParentPortalStats();
+    this.renderQuickFilterButtons(); // NEW: Render filter buttons after students load
+  },
+
+  renderQuickFilterButtons() {
+    const container = document.getElementById('quickFilterButtons');
+    container.innerHTML = '<button class="quick-filter-btn active" data-student-id="">All Students</button>';
+    
+    students.forEach(student => {
+      const btn = document.createElement('button');
+      btn.className = 'quick-filter-btn';
+      btn.dataset.studentId = student.id;
+      btn.textContent = student.name;
+      btn.addEventListener('click', () => this.setStudentFilter(student.id));
+      container.appendChild(btn);
+    });
+
+    // Add listener to "All Students" button
+    container.querySelector('[data-student-id=""]').addEventListener('click', () => this.clearFilter());
+  },
+
+  setStudentFilter(studentId) {
+    currentFilterStudentId = studentId;
+    
+    // Update active button state
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+      if (btn.dataset.studentId === studentId) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    this.updateFilterBanner();
+    this.loadRecentBehaviors();
   },
 
   async addStudent() {
@@ -656,8 +705,6 @@ const App = {
       // Clear form
       document.getElementById('behaviorText').value = '';
       document.getElementById('studentSelect').selectedIndex = 0;
-      currentFilterStudentId = null;
-      this.updateFilterBanner();
 
       this.loadRecentBehaviors();
       alert(`Behavior logged!${student.parentId ? '\n✓ Parent notified' : ''}\nArcade Points: ${newPoints}`);

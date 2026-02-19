@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentScope Teacher | Behavior Tracking</title>
+<style>
+/* === CORE STYLES === */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #f8fafc; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+
+/* Header */
+header { text-align: center; margin-bottom: 30px; padding: 25px;
+background: linear-gradient(135deg, #4a6fa5 0%, #2c3e50 100%); border-radius: 15px; color: white; }
+h1 { font-size: 2.8rem; margin-bottom: 10px; }
+
+/* MOBILE HEADER FIX */
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.header-left { flex: 1; }
+.header-right { display: flex; align-items: center; gap: 15px; }
+.user-info { display: inline-block; color: white; opacity: 0.9; }
+.logout-button { padding: 10px 20px; background: #e74c3c; color: white; border: none;
+border-radius: 8px; cursor: pointer; }
+.inbox-button { padding: 10px 20px; background: #3498db; color: white; border: none;
+border-radius: 8px; cursor: pointer; position: relative; }
+.badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
+border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex;
+align-items: center; justify-content: center; font-weight: bold; }
+
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  .header-content { flex-direction: column; text-align: center; gap: 15px; }
+  .header-right { flex-direction: column; width: 100%; }
+}
+
+/* LOGIN SCREEN STYLES */
+.login-container { max-width: 450px; margin: 100px auto; }
+.login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+.login-card h2 { color: #2c3e50; margin-bottom: 30px; text-align: center; }
+.login-input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e0e6ed;
+border-radius: 10px; font-size: 1rem; }
+.login-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #4a6fa5, #2c3e50);
+color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600;
+cursor: pointer; margin-top: 10px; }
+.login-button:hover { opacity: 0.9; }
+.toggle-auth { text-align: center; margin-top: 20px; color: #7f8c8d; }
+.toggle-auth a { color: #4a6fa5; cursor: pointer; text-decoration: underline; }
+
+/* 4-Column Grid */
+.four-columns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+@media (max-width: 1200px) { .four-columns { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .four-columns { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+.card h2 { color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid; }
+.card-1 h2 { border-color: #27ae60; }
+.card-2 h2 { border-color: #9b59b6; }
+.card-3 h2 { border-color: #3498db; }
+.card-4 h2 { border-color: #f39c12; }
+
+/* Form Elements */
+.form-group { margin-bottom: 20px; }
+label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+input, textarea, select { width: 100%; padding: 14px; border: 2px solid #e0e6ed; border-radius: 10px; font-size: 1rem; }
+textarea { min-height: 120px; resize: vertical; }
+
+/* Buttons */
+.save-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #27ae60, #219653);
+color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+.secondary-button { width: 100%; padding: 16px; background: linear-gradient(135deg, #3498db, #2980b9);
+color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+/* WEEK REPORT BUTTONS */
+.week-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+.week-button { flex: 1; padding: 12px; background: #f39c12; color: white; border: none;
+border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
+.week-button.active { background: #e67e22; }
+
+/* Student List */
+.student-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-height: 400px; overflow-y: auto; }
+.student-item { background: #f8fafc; padding: 15px; border-radius: 10px; display: flex;
+justify-content: space-between; align-items: center; border-left: 4px solid #4a6fa5; }
+.student-code { background: #e0e6ed; padding: 8px 12px; border-radius: 6px; font-family: monospace;
+font-weight: bold; font-size: 1.1rem; }
+.parent-linked { color: #27ae60; font-weight: 600; }
+
+/* Report Button */
+.report-btn { background: #3498db; color: white; border: none; padding: 6px 12px; 
+border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+.report-btn:hover { background: #2980b9; }
+
+/* Filter Banner */
+.filter-banner { background: #fff3cd; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px;
+display: none; align-items: center; justify-content: space-between; }
+.filter-banner.active { display: flex; }
+.filter-text { font-weight: 600; color: #856404; }
+.clear-filter { background: transparent; border: none; color: #856404; text-decoration: underline;
+cursor: pointer; font-weight: 600; }
+
+/* Quick Filter Buttons */
+.quick-filters { display: flex; gap: 8px; margin-bottom: 15px; }
+.quick-filter { flex: 1; padding: 8px; border: none; border-radius: 6px; 
+font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.quick-filter.all { background: #ecf0f1; color: #2c3e50; }
+.quick-filter.positive { background: #d4edda; color: #155724; }
+.quick-filter.negative { background: #f8d7da; color: #721c24; }
+.quick-filter:hover { opacity: 0.8; }
+
+/* Message Inbox */
+.message-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+.message-item { background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #3498db; cursor: pointer; }
+.message-item.unread { background: #e3f2fd; border-left-color: #2196f3; }
+.message-item:hover { background: #e0e6ed; }
+
+/* Chat Interface */
+.chat-container { background: #f8fafc; border-radius: 10px; padding: 20px; height: 400px;
+display: flex; flex-direction: column; }
+.chat-messages { flex: 1; overflow-y: auto; margin-bottom: 20px; display: flex;
+flex-direction: column; gap: 10px; }
+.chat-bubble { max-width: 70%; padding: 12px 16px; border-radius: 12px; }
+.chat-bubble.teacher { background: #4a6fa5; color: white; align-self: flex-end; }
+.chat-bubble.parent { background: white; border: 2px solid #e0e6ed; align-self: flex-start; }
+.chat-input-area { display: flex; gap: 10px; }
+.chat-input { flex: 1; padding: 12px; border: 2px solid #e0e6ed; border-radius: 10px; }
+.chat-send { padding: 12px 24px; background: #4a6fa5; color: white; border: none;
+border-radius: 10px; cursor: pointer; font-weight: 600; }
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 40px; border-radius: 15px; max-width: 600px;
+width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+/* Loading/Hidden */
+.hidden { display: none; }
+.loading { text-align: center; padding: 40px; color: #7f8c8d; }
+
+/* Portal Links */
+.portal-links { display: flex; gap: 12px; margin-right: 15px; }
+.portal-link { display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+transition: all 0.2s ease; border: 2px solid transparent; }
+.portal-link.comprehensive { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+.portal-link.parent { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+color: white; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4); }
+.portal-link.arcade { background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+color: white; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); }
+.portal-link:hover { transform: translateY(-3px); }
+.portal-icon { font-size: 1.3rem; }
+.portal-badge { background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 30px;
+font-size: 0.75rem; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" class="login-container">
+<div class="login-card">
+<h1 style="text-align:center;color:#4a6fa5;margin-bottom:10px;">🤖 StudentScope Teacher</h1>
+<p style="text-align:center;color:#7f8c8d;margin-bottom:30px;">Secure Teacher Login</p>
+<h2 id="authTitle">Sign In</h2>
+<input type="email" id="authEmail" class="login-input" placeholder="Email address" required>
+<input type="password" id="authPassword" class="login-input" placeholder="Password" required>
+<button id="authButton" class="login-button">SIGN IN</button>
+<div class="toggle-auth">
+<span id="authToggleText">Don't have an account? <a id="authToggle">Sign up</a></span>
+</div>
+<div id="authError" style="color:#e74c3c;text-align:center;margin-top:15px;display:none;"></div>
+</div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp" class="hidden">
+<div class="container">
+<header>
+<div class="header-content">
+<div class="header-left">
+<h1>🤖 StudentScope <span style="background:#ff6b6b;color:white;padding:4px 12px;border-radius:20px;font-size:0.8rem;">TEACHER</span></h1>
+<p style="font-size:1.2rem;opacity:0.9;">Behavior tracking with parent portal integration</p>
+</div>
+<div class="header-right">
+<div class="portal-links">
+<a href="https://studentscope.org" target="_blank" class="portal-link comprehensive" title="Open COMPREHENSIVE Tracker">
+<span class="portal-icon">📊</span>
+<span class="portal-label">Tracker</span>
+<span class="portal-badge">AI</span>
+</a>
+<a href="https://parents.studentscope.org" target="_blank" class="portal-link parent" title="Open Parent Portal">
+<span class="portal-icon">👨‍👩‍👧</span>
+<span class="portal-label">Parents</span>
+<span class="portal-badge" id="parentCountBadge">0</span>
+</a>
+<a href="https://arcade.studentscope.org" target="_blank" class="portal-link arcade" title="Student Arcade">
+<span class="portal-icon">🎮</span>
+<span class="portal-label">Arcade</span>
+<span class="portal-badge" id="arcadePointsBadge">✨</span>
+</a>
+</div>
+<button id="inboxBtn" class="inbox-button">
+📬 Inbox
+<span class="badge hidden" id="inboxBadge">0</span>
+</button>
+<span class="user-info" id="userEmail"></span>
+<button id="logoutBtn" class="logout-button">🚪 Logout</button>
+</div>
+</div>
+</header>
+
+<div class="four-columns">
+<!-- COLUMN 1: LOG BEHAVIOR -->
+<div class="card card-1">
+<h2>📝 Log Behavior</h2>
+<div class="form-group">
+<label>Student</label>
+<select id="studentSelect">
+<option value="">Select student...</option>
+</select>
+</div>
+<div class="form-group">
+<label>Behavior</label>
+<textarea id="behaviorText" placeholder="Describe what happened..."></textarea>
+</div>
+<div class="form-group">
+<label>Type</label>
+<select id="behaviorType">
+<option value="negative">Negative (-)</option>
+<option value="positive">Positive (+)</option>
+</select>
+</div>
+<button id="logBehaviorBtn" class="save-button">💾 LOG BEHAVIOR</button>
+</div>
+
+<!-- COLUMN 2: STUDENT MANAGEMENT -->
+<div class="card card-2">
+<h2>👥 Student Management</h2>
+<div class="form-group">
+<label>Add New Student</label>
+<input type="text" id="newStudentName" placeholder="Student name">
+</div>
+<div class="form-group">
+<label>Grade</label>
+<input type="text" id="newStudentGrade" placeholder="Grade level">
+</div>
+<button id="addStudentBtn" class="secondary-button">➕ ADD STUDENT</button>
+<div class="student-list" id="studentList">
+<p style="text-align:center;color:#7f8c8d;">No students yet</p>
+</div>
+</div>
+
+<!-- COLUMN 3: RECENT BEHAVIORS (FILTERED) -->
+<div class="card card-3">
+<h2>📋 Recent Behaviors</h2>
+
+<!-- Dedicated filter dropdown -->
+<div class="form-group" style="margin-bottom: 15px;">
+<label style="display: flex; align-items: center; gap: 5px;">
+🔍 Filter by Student
+<span style="font-size: 0.8rem; font-weight: normal; color: #7f8c8d;">
+(select to view individual reports)
+</span>
+</label>
+<select id="reportFilterSelect" style="width: 100%; padding: 12px; border: 2px solid #3498db; border-radius: 8px;">
+<option value="">All Students</option>
+</select>
+</div>
+
+<!-- Quick filter buttons -->
+<div class="quick-filters">
+<button class="quick-filter all" onclick="App.quickFilter('all')">All</button>
+<button class="quick-filter positive" onclick="App.quickFilter('positive')">✓ Positive Only</button>
+<button class="quick-filter negative" onclick="App.quickFilter('negative')">⚠️ Negative Only</button>
+</div>
+
+<!-- Active filter banner -->
+<div class="filter-banner" id="filterBanner">
+<span class="filter-text" id="filterText">Showing: All Students</span>
+<button class="clear-filter" id="clearFilterBtn">Clear Filter</button>
+</div>
+
+<!-- Week view buttons -->
+<div class="week-buttons">
+<button class="week-button" id="thisWeekBtn">📅 This Week</button>
+<button class="week-button" id="lastWeekBtn">📆 Last Week</button>
+<button class="week-button" id="emailReportBtn">📧 Email Report</button>
+</div>
+
+<!-- Behaviors list -->
+<div id="recentBehaviors" style="max-height:400px;overflow-y:auto;">
+<p style="text-align:center;color:#7f8c8d;padding:40px;">No behaviors logged yet</p>
+</div>
+</div>
+
+<!-- COLUMN 4: PARENT PORTAL STATUS -->
+<div class="card card-4">
+<h2>🔗 Parent Portal</h2>
+<div style="background:#fff3cd;padding:15px;border-radius:8px;margin-bottom:15px;">
+<strong>Optional Service</strong><br>
+<small>Parents can link to students using access codes</small>
+</div>
+<div id="parentPortalStats">
+<div style="text-align:center;padding:20px;">
+<div style="font-size:3rem;font-weight:bold;color:#4a6fa5;" id="linkedParentsCount">0</div>
+<div style="color:#7f8c8d;">Parents Linked</div>
+<div style="font-size:2rem;font-weight:bold;color:#f39c12;margin-top:15px;" id="totalPoints">0</div>
+<div style="color:#7f8c8d;">Total Arcade Points</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ========== INBOX MODAL ========== -->
+<div id="inboxModal" class="modal">
+<div class="modal-content">
+<span class="modal-close" onclick="closeInbox()">&times;</span>
+<h2 style="margin-bottom:20px;">📬 Parent Messages</h2>
+<div id="conversationList" class="message-list">
+<p style="text-align:center;color:#7f8c8d;padding:40px;">No messages yet</p>
+</div>
+</div>
+</div>
+
+<!-- ========== CHAT MODAL ========== -->
+<div id="chatModal" class="modal">
+<div class="modal-content">
+<span class="modal-close" onclick="closeChat()">&times;</span>
+<h2 id="chatStudentName" style="margin-bottom:20px;"></h2>
+<div class="chat-container">
+<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-input-area">
+<input type="text" id="chatInput" class="chat-input" placeholder="Type your reply...">
+<button onclick="sendTeacherMessage()" class="chat-send">Send</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ========== FIREBASE SDK ========== -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain: "studentscopebehaviorcenter.firebaseapp.com",
+  projectId: "studentscopebehaviorcenter",
+  storageBucket: "studentscopebehaviorcenter.firebasestorage.app",
+  messagingSenderId: "311398911099",
+  appId: "1:311398911099:web:6703268a2b65cdd969a6de"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ========== GLOBAL STATE ==========
+let currentTeacherId = null;
+let currentConversationId = null;
+let students = [];
+let conversations = [];
+let currentFilterStudentId = null;
+let currentWeekView = 'all';
+
+// ========== DATE UTILITIES ==========
+const WeekUtils = {
+  getWeekRange(weeksAgo = 0) {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    
+    const monday = new Date(now.setDate(diff));
+    monday.setDate(monday.getDate() - (weeksAgo * 7));
+    monday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    
+    return { start: monday, end: sunday };
+  },
+
+  formatDateRange(startDate, endDate) {
+    const options = { month: 'short', day: 'numeric' };
+    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+  },
+
+  isInWeek(timestamp, weekRange) {
+    const date = new Date(timestamp);
+    return date >= weekRange.start && date <= weekRange.end;
+  }
+};
+
+// ========== AUTH MANAGER ==========
+const AuthManager = {
+  isSignUp: false,
+  currentUser: null,
+
+  init() {
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        this.currentUser = user;
+        currentTeacherId = user.uid;
+        this.showMainApp();
+        App.init();
+      } else {
+        this.currentUser = null;
+        this.showLoginScreen();
+      }
+    });
+
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+    document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
+    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+    document.getElementById('authPassword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.handleAuth();
+    });
+  },
+
+  toggleAuthMode() {
+    this.isSignUp = !this.isSignUp;
+    document.getElementById('authTitle').textContent = this.isSignUp ? 'Sign Up' : 'Sign In';
+    document.getElementById('authButton').textContent = this.isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN';
+    document.getElementById('authToggleText').innerHTML = this.isSignUp
+      ? 'Already have an account? <a id="authToggle">Sign in</a>'
+      : 'Don\'t have an account? <a id="authToggle">Sign up</a>';
+    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
+  },
+
+  async handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+
+    if (!email || !password) {
+      this.showError('Please enter both email and password');
+      return;
+    }
+
+    try {
+      if (this.isSignUp) {
+        await auth.createUserWithEmailAndPassword(email, password);
+      } else {
+        await auth.signInWithEmailAndPassword(email, password);
+      }
+      errorDiv.style.display = 'none';
+    } catch (error) {
+      this.showError(this.getErrorMessage(error.code));
+    }
+  },
+
+  showError(message) {
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+  },
+
+  getErrorMessage(code) {
+    switch(code) {
+      case 'auth/invalid-email': return 'Invalid email format';
+      case 'auth/user-not-found': return 'No account found with this email';
+      case 'auth/wrong-password': return 'Incorrect password';
+      case 'auth/email-already-in-use': return 'Email already registered';
+      case 'auth/weak-password': return 'Password must be at least 6 characters';
+      default: return 'Authentication error. Please try again.';
+    }
+  },
+
+  logout() {
+    auth.signOut();
+  },
+
+  showLoginScreen() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+  },
+
+  showMainApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('userEmail').textContent = this.currentUser.email;
+  }
+};
+
+// ========== MAIN APP ==========
+const App = {
+  init() {
+    this.setupEventListeners();
+    this.loadStudents();
+    this.loadConversations();
+    this.loadRecentBehaviors();
+  },
+
+  setupEventListeners() {
+    document.getElementById('addStudentBtn').addEventListener('click', () => this.addStudent());
+    document.getElementById('logBehaviorBtn').addEventListener('click', () => this.logBehavior());
+    document.getElementById('inboxBtn').addEventListener('click', () => this.openInbox());
+    document.getElementById('reportFilterSelect').addEventListener('change', (e) => {
+      currentFilterStudentId = e.target.value;
+      this.updateFilterBanner();
+      this.loadRecentBehaviors();
+    });
+    document.getElementById('thisWeekBtn').addEventListener('click', () => this.showThisWeek());
+    document.getElementById('lastWeekBtn').addEventListener('click', () => this.showLastWeek());
+    document.getElementById('emailReportBtn').addEventListener('click', () => this.emailWeeklyReport());
+    document.getElementById('clearFilterBtn').addEventListener('click', () => this.clearFilter());
+  },
+
+  updateFilterBanner() {
+    const banner = document.getElementById('filterBanner');
+    const filterText = document.getElementById('filterText');
+    const reportFilter = document.getElementById('reportFilterSelect');
+    
+    if (currentFilterStudentId) {
+      const student = students.find(s => s.id === currentFilterStudentId);
+      filterText.textContent = `Showing: ${student ? student.name : 'Selected Student'}`;
+      banner.classList.add('active');
+      reportFilter.value = currentFilterStudentId;
+    } else {
+      banner.classList.remove('active');
+      reportFilter.value = '';
+    }
+  },
+
+  clearFilter() {
+    currentFilterStudentId = null;
+    document.getElementById('reportFilterSelect').value = '';
+    this.updateFilterBanner();
+    this.loadRecentBehaviors();
+  },
+
+  showThisWeek() {
+    currentWeekView = 'thisWeek';
+    document.getElementById('thisWeekBtn').classList.add('active');
+    document.getElementById('lastWeekBtn').classList.remove('active');
+    this.loadRecentBehaviors();
+  },
+
+  showLastWeek() {
+    currentWeekView = 'lastWeek';
+    document.getElementById('lastWeekBtn').classList.add('active');
+    document.getElementById('thisWeekBtn').classList.remove('active');
+    this.loadRecentBehaviors();
+  },
+
+  quickFilter(type) {
+    const container = document.getElementById('recentBehaviors');
+    const items = container.children;
+    
+    for (let item of items) {
+      if (item.classList?.contains('student-item')) {
+        if (type === 'all') {
+          item.style.display = 'flex';
+        } else {
+          const isPositive = item.style.borderLeftColor === 'rgb(39, 174, 96)' || item.style.borderLeftColor === '#27ae60';
+          if ((type === 'positive' && isPositive) || (type === 'negative' && !isPositive)) {
+            item.style.display = 'flex';
+          } else {
+            item.style.display = 'none';
+          }
+        }
+      }
+    }
+  },
+
+  async emailWeeklyReport() {
+    const weekRange = currentWeekView === 'lastWeek' ? WeekUtils.getWeekRange(1) : WeekUtils.getWeekRange(0);
+    const dateRange = WeekUtils.formatDateRange(weekRange.start, weekRange.end);
+    
+    let query = db.collection('behaviors').where('teacherId', '==', currentTeacherId);
+    
+    if (currentFilterStudentId) {
+      query = query.where('studentId', '==', currentFilterStudentId);
+    }
+    
+    const snapshot = await query.get();
+    const weekBehaviors = [];
+    
+    snapshot.forEach(doc => {
+      const log = doc.data();
+      if (WeekUtils.isInWeek(log.timestamp, weekRange)) {
+        weekBehaviors.push(log);
+      }
+    });
+
+    if (weekBehaviors.length === 0) {
+      alert('No behaviors logged for this week.');
+      return;
+    }
+
+    weekBehaviors.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    const studentName = currentFilterStudentId 
+      ? students.find(s => s.id === currentFilterStudentId)?.name 
+      : 'All Students';
+    
+    let emailBody = `WEEKLY BEHAVIOR REPORT\n`;
+    emailBody += `Student: ${studentName}\n`;
+    emailBody += `Week: ${dateRange}\n`;
+    emailBody += `Total Behaviors: ${weekBehaviors.length}\n\n`;
+    emailBody += `---\n\n`;
+    
+    weekBehaviors.forEach(log => {
+      const date = new Date(log.timestamp).toLocaleDateString();
+      const type = log.type === 'positive' ? '✓ POSITIVE' : '⚠ NEGATIVE';
+      emailBody += `${date} - ${log.studentName}\n`;
+      emailBody += `${type}: ${log.behavior}\n\n`;
+    });
+
+    const subject = `Weekly Behavior Report: ${studentName} (${dateRange})`;
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailtoLink;
+  },
+
+  async generateStudentReport(studentId) {
+    const student = students.find(s => s.id === studentId);
+    
+    const snapshot = await db.collection('behaviors')
+      .where('studentId', '==', studentId)
+      .orderBy('timestamp', 'desc')
+      .get();
+
+    if (snapshot.empty) {
+      alert('No behaviors logged for this student yet.');
+      return;
+    }
+
+    const behaviors = [];
+    let positive = 0;
+    let negative = 0;
+
+    snapshot.forEach(doc => {
+      const b = doc.data();
+      behaviors.push(b);
+      if (b.type === 'positive') positive++;
+      else negative++;
+    });
+
+    const dates = behaviors.map(b => new Date(b.timestamp));
+    const firstDate = new Date(Math.min(...dates));
+    const lastDate = new Date(Math.max(...dates));
+
+    const report = `
+STUDENT BEHAVIOR REPORT
+══════════════════════════════
+Student: ${student.name}
+Grade: ${student.grade}
+Report Period: ${firstDate.toLocaleDateString()} - ${lastDate.toLocaleDateString()}
+Total Behaviors: ${behaviors.length}
+Positive: ${positive} (${Math.round(positive/behaviors.length*100)}%)
+Negative: ${negative} (${Math.round(negative/behaviors.length*100)}%)
+Arcade Points: ${student.points || 0}
+
+BEHAVIOR LOG
+══════════════════════════════
+${behaviors.map(b => {
+  const date = new Date(b.timestamp).toLocaleString();
+  const type = b.type === 'positive' ? '✓' : '⚠️';
+  return `${date} ${type}\n${b.behavior}\n`;
+}).join('\n')}
+
+Generated by StudentScope Teacher Portal
+    `;
+
+    if (confirm('Email this report?')) {
+      const subject = `Behavior Report: ${student.name}`;
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(report)}`;
+      window.location.href = mailtoLink;
+    } else {
+      navigator.clipboard.writeText(report).then(() => {
+        alert('Report copied to clipboard!');
+      });
+    }
+  },
+
+  // ========== STUDENT MANAGEMENT ==========
+  async loadStudents() {
+    const snapshot = await db.collection('students')
+      .where('teacherId', '==', currentTeacherId)
+      .get();
+
+    students = [];
+    const logSelect = document.getElementById('studentSelect');
+    const filterSelect = document.getElementById('reportFilterSelect');
+    
+    logSelect.innerHTML = '<option value="">Select student...</option>';
+    filterSelect.innerHTML = '<option value="">All Students</option>';
+    
+    const studentList = document.getElementById('studentList');
+    studentList.innerHTML = '';
+
+    if (snapshot.empty) {
+      studentList.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No students yet</p>';
+      return;
+    }
+
+    let totalPoints = 0;
+
+    snapshot.forEach(doc => {
+      const student = { id: doc.id, ...doc.data() };
+      students.push(student);
+      totalPoints += student.points || 0;
+
+      const logOption = document.createElement('option');
+      logOption.value = student.id;
+      logOption.textContent = student.name;
+      logSelect.appendChild(logOption);
+
+      const filterOption = document.createElement('option');
+      filterOption.value = student.id;
+      filterOption.textContent = student.name;
+      filterSelect.appendChild(filterOption);
+
+      const item = document.createElement('div');
+      item.className = 'student-item';
+      item.innerHTML = `
+        <div>
+          <strong>${student.name}</strong> (Grade ${student.grade})
+          ${student.parentId ? '<div class="parent-linked">✓ Parent Linked</div>' : ''}
+          <div style="font-size:0.85rem; color:#4a6fa5;">Points: ${student.points || 0}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="report-btn" onclick="App.generateStudentReport('${student.id}')">📊 Report</button>
+          <div

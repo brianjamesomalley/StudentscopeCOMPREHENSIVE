@@ -164,6 +164,12 @@
     .status-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .status-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     .status-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+    /* Role selector on signup */
+    .role-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+    .role-option { flex: 1; padding: 12px; border: 2px solid #e0e6ed; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s; font-weight: 600; color: #7f8c8d; }
+    .role-option.selected { border-color: #4a6fa5; background: #eef2f8; color: #4a6fa5; }
+    .role-option:hover { border-color: #4a6fa5; }
   </style>
 </head>
 <body>
@@ -172,10 +178,13 @@
 <div id="loginScreen" class="login-container">
   <div class="login-card">
     <h1 style="text-align:center;color:#4a6fa5;margin-bottom:10px;">🤖 StudentScope</h1>
-    <p style="text-align:center;color:#7f8c8d;margin-bottom:30px;">Secure Teacher Login</p>
+    <p style="text-align:center;color:#7f8c8d;margin-bottom:30px;">ESP Staff Login</p>
     <h2 id="authTitle">Sign In</h2>
     <input type="email" id="authEmail" class="login-input" placeholder="Email address" required>
     <input type="password" id="authPassword" class="login-input" placeholder="Password" required>
+
+    <!-- No role selector needed — index.html users are always stamped as ESP -->
+
     <button id="authButton" class="login-button">SIGN IN</button>
     <div class="toggle-auth">
       <span id="authToggleText">Don't have an account? <a id="authToggle">Sign up</a></span>
@@ -195,6 +204,7 @@
         </div>
         <div class="header-right">
           <span class="user-info" id="userEmail"></span>
+          <span id="userRoleBadge" style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:12px;font-size:0.8rem;margin-right:10px;font-weight:600;"></span>
           <button id="logoutBtn" class="logout-button">🚪 Logout</button>
         </div>
       </div>
@@ -353,25 +363,29 @@ const WeekUtils = {
 const AuthManager = {
   isSignUp: false,
   currentUser: null,
+  currentUserRole: null,
 
   init() {
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
       if (user) {
         this.currentUser = user;
+        // Fetch or create the user's role doc
+        await this.ensureUserRole(user);
         this.showMainApp();
         App.init();
       } else {
         this.currentUser = null;
+        this.currentUserRole = null;
         this.showLoginScreen();
       }
     });
 
     document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
     document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
-    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
     document.getElementById('authPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.handleAuth();
     });
+    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
   },
 
   toggleAuthMode() {
@@ -384,6 +398,25 @@ const AuthManager = {
     document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
   },
 
+  // ========== KEY: Stamp role on every user — index.html users are always ESP ==========
+  async ensureUserRole(user) {
+    const userRef = db.collection('userRoles').doc(user.uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+      // New user — always stamp as 'esp' from this app
+      await userRef.set({
+        uid: user.uid,
+        email: user.email,
+        role: 'esp',
+        createdAt: new Date().toISOString()
+      });
+      this.currentUserRole = 'esp';
+    } else {
+      this.currentUserRole = doc.data().role;
+    }
+  },
+
   async handleAuth() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
@@ -391,6 +424,7 @@ const AuthManager = {
     try {
       if (this.isSignUp) {
         await auth.createUserWithEmailAndPassword(email, password);
+        // ensureUserRole runs via onAuthStateChanged after signup
       } else {
         await auth.signInWithEmailAndPassword(email, password);
       }
@@ -428,6 +462,10 @@ const AuthManager = {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
     document.getElementById('userEmail').textContent = this.currentUser.email;
+
+    // Show role badge
+    const roleLabel = this.currentUserRole === 'admin' ? '🛡️ Admin' : this.currentUserRole === 'esp' ? '🧑‍💼 ESP' : '👩‍🏫 Teacher';
+    document.getElementById('userRoleBadge').textContent = roleLabel;
   }
 };
 
@@ -507,6 +545,7 @@ const App = {
     }
 
     const userId = auth.currentUser.uid;
+    const userEmail = auth.currentUser.email;
     const isPositive = type === 'positive';
     const behaviorContent = isPositive ? `⭐ GOOD BEHAVIOR ALERT ⭐\n${behaviorText}` : behaviorText;
     const timestamp = new Date().toISOString();
@@ -519,14 +558,15 @@ const App = {
       antecedent: '',
       consequence: '',
       comments: [],
-      teacherId: userId
+      teacherId: userId,
+      teacherEmail: userEmail   // ← store teacher email so portal can display it
     };
 
     try {
       // WRITE 1: Original tracker — primary source of truth
       const logRef = await db.collection('users').doc(userId).collection('logs').add(log);
 
-      // WRITE 2: /behaviors — feeds analytics dashboard
+      // WRITE 2: /behaviors — feeds analytics dashboard (ALL teachers see this)
       await db.collection('behaviors').add({
         ...log,
         logId: logRef.id,
@@ -561,7 +601,6 @@ const App = {
           });
           parentNotified = true;
 
-          // Unlock parent messaging after behavior logged
           const convSnapshot = await db.collection('conversations')
             .where('studentId', '==', studentDoc.id)
             .where('parentId', '==', student.parentId)
@@ -571,7 +610,7 @@ const App = {
           }
         }
 
-        // WRITE 4: Student arcade points (+10 positive / -5 negative, floor 0)
+        // WRITE 4: Student arcade points
         const currentPoints = student.points || 0;
         const pointChange = isPositive ? 10 : -5;
         await studentDoc.ref.update({
@@ -584,7 +623,6 @@ const App = {
       document.getElementById('behavior').value = '';
       document.getElementById('studentName').focus();
 
-      // Show confirmation banner
       this.showBroadcastStatus(parentNotified, isPositive);
 
     } catch (error) {
@@ -754,4 +792,5 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
   AuthManager.init();
 });
-</script>
+</script></body>
+</html>

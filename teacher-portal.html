@@ -64,7 +64,37 @@ textarea { min-height: 100px; resize: vertical; }
 .btn-secondary:hover { background: #f8fafc; }
 .btn-success { background: #10b981; color: white; }
 .btn-success:hover { background: #059669; }
+.btn-danger { background: #ef4444; color: white; }
 .btn-full { width: 100%; justify-content: center; }
+
+/* Teacher Filter Bar */
+.filter-bar {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 15px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.filter-bar label { margin: 0; font-weight: 600; color: #0f172a; white-space: nowrap; }
+.filter-bar select { width: auto; min-width: 200px; padding: 8px 12px; }
+.filter-bar input[type="date"] { width: auto; padding: 8px 12px; }
+.filter-count { margin-left: auto; color: #64748b; font-size: 0.9rem; font-weight: 600; }
+
+/* Teacher Tag */
+.teacher-tag {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
 
 /* Student List */
 .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
@@ -91,6 +121,15 @@ textarea { min-height: 100px; resize: vertical; }
 .message-item:hover { background: #e0e6ed; }
 .message-item.unread { background: #dbeafe; }
 
+/* Teachers Tab */
+.teachers-list { margin-top: 10px; }
+.teacher-row { background: #f8fafc; padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #3b82f6; }
+.teacher-row .teacher-email { font-weight: 600; color: #0f172a; }
+.teacher-row .teacher-role-badge { background: #dbeafe; color: #1d4ed8; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; }
+.teacher-row .teacher-role-badge.admin { background: #fef3c7; color: #92400e; }
+.teacher-row .teacher-role-badge.esp { background: #d1fae5; color: #065f46; }
+.teacher-stats { color: #64748b; font-size: 0.85rem; }
+
 /* Modal */
 .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
 .modal.active { display: flex; }
@@ -114,14 +153,27 @@ textarea { min-height: 100px; resize: vertical; }
 .chat-input-area { display: flex; gap: 10px; }
 .chat-input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; }
 
+/* Access Denied */
+.access-denied {
+  text-align: center;
+  padding: 60px 40px;
+  background: white;
+  border-radius: 20px;
+  border: 2px solid #fee2e2;
+  max-width: 500px;
+  margin: 100px auto;
+}
+.access-denied h2 { color: #ef4444; font-size: 1.8rem; margin-bottom: 15px; }
+.access-denied p { color: #64748b; line-height: 1.6; }
+
 .hidden { display: none; }
 .loading { text-align: center; padding: 40px; color: #64748b; }
 </style>
 </head>
 <body>
 
-<!-- Dashboard -->
-<div class="dashboard">
+<!-- Dashboard (hidden until auth check passes) -->
+<div class="dashboard hidden" id="dashboardWrapper">
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
@@ -140,10 +192,16 @@ textarea { min-height: 100px; resize: vertical; }
     <div class="nav-item" onclick="showSection('messages')">
       <span>📬</span> Messages <span id="sidebarBadge" class="hidden inbox-badge">0</span>
     </div>
+    <div class="nav-item" onclick="showSection('teachers')" id="teachersNavItem">
+      <span>👥</span> Users & Roles
+    </div>
     
     <div class="user-section">
-      <div class="nav-item" id="userEmail">
+      <div class="nav-item" id="userEmailNav">
         <span>👤</span> Loading...
+      </div>
+      <div class="nav-item" id="userRoleNav" style="font-size:0.85rem;opacity:0.7;">
+        <span>🏷️</span> Loading role...
       </div>
       <div class="nav-item" onclick="logout()">
         <span>🚪</span> Logout
@@ -158,7 +216,7 @@ textarea { min-height: 100px; resize: vertical; }
       <div class="dashboard-header">
         <div class="header-title">
           <h1>Command Center</h1>
-          <p>Real-time behavior tracking overview</p>
+          <p id="overviewSubtitle">Real-time behavior tracking — all teachers</p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" onclick="showSection('log')">
@@ -190,10 +248,52 @@ textarea { min-height: 100px; resize: vertical; }
           <div class="stat-change">⚠ Incidents</div>
         </div>
       </div>
+
+      <!-- Teacher Filter Bar -->
+      <div class="filter-bar">
+        <label>🔍 ESP User:</label>
+        <select id="teacherFilter" onchange="App.applyFilters()">
+          <option value="">All Staff</option>
+        </select>
+        <label>Student:</label>
+        <select id="studentFilter" onchange="App.applyFilters()">
+          <option value="">All Students</option>
+        </select>
+        <label>Type:</label>
+        <select id="typeFilter" onchange="App.applyFilters()">
+          <option value="">All Types</option>
+          <option value="positive">✓ Positive Only</option>
+          <option value="negative">⚠ Negative Only</option>
+        </select>
+        <button onclick="App.clearFilters()" style="padding:8px 16px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:0.85rem;color:#64748b;font-weight:600;">✕ Clear</button>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
       
+      <!-- Weekly Report Cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+        <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:22px;border-radius:16px;color:white;box-shadow:0 4px 15px rgba(102,126,234,0.3);">
+          <h3 style="font-size:1.1rem;margin-bottom:6px;">📊 This Week's Report</h3>
+          <div style="font-size:0.9rem;opacity:0.85;margin-bottom:4px;" id="portalThisWeekRange">Loading...</div>
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:14px;" id="portalThisWeekCount">0 behaviors</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="portalEmailWeeklyReport('current')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">📧 Email</button>
+            <button onclick="portalPrintWeeklyReport('current')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">🖨️ Print</button>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#9b59b6 0%,#8e44ad 100%);padding:22px;border-radius:16px;color:white;box-shadow:0 4px 15px rgba(155,89,182,0.3);">
+          <h3 style="font-size:1.1rem;margin-bottom:6px;">📅 Last Week's Report</h3>
+          <div style="font-size:0.9rem;opacity:0.85;margin-bottom:4px;" id="portalLastWeekRange">Loading...</div>
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:14px;" id="portalLastWeekCount">0 behaviors</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="portalEmailWeeklyReport('last')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">📧 Email</button>
+            <button onclick="portalPrintWeeklyReport('last')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">🖨️ Print</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Behaviors -->
       <div class="action-card" style="margin-bottom:20px;">
-        <h3>📋 Recent Activity</h3>
+        <h3>📋 Recent Activity — Logged by ESP Staff</h3>
         <div class="behavior-list" id="recentBehaviorsList">
           <p class="loading">Loading behaviors...</p>
         </div>
@@ -205,7 +305,7 @@ textarea { min-height: 100px; resize: vertical; }
       <div class="dashboard-header">
         <div class="header-title">
           <h1>Student Management</h1>
-          <p>Manage students and generate individual reports</p>
+          <p>All students across all teachers</p>
         </div>
       </div>
       
@@ -226,7 +326,7 @@ textarea { min-height: 100px; resize: vertical; }
         
         <!-- Student List (spans 2 columns) -->
         <div class="action-card" style="grid-column: span 2;">
-          <h3>👥 Your Students</h3>
+          <h3>👥 All Students</h3>
           <div class="student-grid" id="studentGrid">
             <p class="loading">Loading students...</p>
           </div>
@@ -245,10 +345,8 @@ textarea { min-height: 100px; resize: vertical; }
       
       <div class="action-card" style="max-width:600px;margin:0 auto;">
         <div class="form-group">
-          <label>Student</label>
-          <select id="logStudentSelect">
-            <option value="">Select student...</option>
-          </select>
+          <label>Student Name</label>
+          <input type="text" id="logStudentName" placeholder="Enter student name...">
         </div>
         <div class="form-group">
           <label>Behavior Description</label>
@@ -282,6 +380,26 @@ textarea { min-height: 100px; resize: vertical; }
         </div>
       </div>
     </div>
+
+    <!-- SECTION: TEACHERS (admin/management) -->
+    <div id="teachersSection" class="hidden">
+      <div class="dashboard-header">
+        <div class="header-title">
+          <h1>Teacher Accounts</h1>
+          <p>All registered teacher accounts in the system</p>
+        </div>
+      </div>
+
+      <div class="action-card">
+        <h3>👥 All Portal Users by Role</h3>
+        <p style="color:#64748b;margin-bottom:20px;font-size:0.9rem;">
+          <strong>ESP users</strong> log behaviors via index.html. <strong>Teachers</strong> and <strong>Admins</strong> access this portal.
+        </p>
+        <div class="teachers-list" id="teachersList">
+          <p class="loading">Loading users...</p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -308,6 +426,10 @@ textarea { min-height: 100px; resize: vertical; }
       <div class="metric-row">
         <span class="metric-label">Arcade Points</span>
         <span class="metric-value" id="reportPoints">0</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Logged By</span>
+        <span class="metric-value" id="reportTeacher">—</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Parent Linked</span>
@@ -350,15 +472,20 @@ textarea { min-height: 100px; resize: vertical; }
 <div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f0f4f8;">
   <div style="background:white;padding:40px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:400px;width:90%;">
     <h1 style="text-align:center;color:#3b82f6;margin-bottom:10px;">🎛️ StudentScope</h1>
-    <p style="text-align:center;color:#64748b;margin-bottom:30px;">Teacher Portal</p>
+    <p style="text-align:center;color:#64748b;margin-bottom:5px;">Teacher Portal</p>
+    <p style="text-align:center;color:#94a3b8;font-size:0.85rem;margin-bottom:30px;">Sign in with your StudentScope account</p>
     <h2 id="authTitle" style="text-align:center;margin-bottom:20px;">Sign In</h2>
     <input type="email" id="authEmail" placeholder="Email" style="width:100%;padding:14px;margin-bottom:15px;border:2px solid #e2e8f0;border-radius:10px;">
     <input type="password" id="authPassword" placeholder="Password" style="width:100%;padding:14px;margin-bottom:15px;border:2px solid #e2e8f0;border-radius:10px;">
-    <button id="authButton" class="btn btn-primary btn-full">SIGN IN</button>
-    <div style="text-align:center;margin-top:20px;color:#64748b;">
-      <span id="authToggleText">Don't have an account? <a id="authToggle" style="color:#3b82f6;cursor:pointer;text-decoration:underline;">Sign up</a></span>
-    </div>
+    <button id="authButton" onclick="AuthManager.handleAuth()" style="width:100%;padding:16px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:1.1rem;font-weight:600;cursor:pointer;">SIGN IN</button>
     <div id="authError" style="color:#ef4444;text-align:center;margin-top:15px;display:none;"></div>
+
+    <div style="margin-top:25px;padding-top:25px;border-top:1px solid #e2e8f0;text-align:center;">
+      <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Don't have portal access yet?</p>
+      <button onclick="AuthManager.requestAccess()" style="width:100%;padding:13px;background:white;color:#3b82f6;border:2px solid #3b82f6;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
+        📧 Request Portal Access
+      </button>
+    </div>
   </div>
 </div>
 
@@ -384,45 +511,65 @@ const db = firebase.firestore();
 
 // Global State
 let currentTeacherId = null;
+let currentTeacherRole = null;
 let students = [];
 let behaviors = [];
+let filteredBehaviors = [];
 let conversations = [];
 let currentConversationId = null;
 let currentStudentForReport = null;
 
-// Auth Manager
+// ========== AUTH MANAGER ==========
 const AuthManager = {
-  isSignUp: false,
-
   init() {
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
       if (user) {
         currentTeacherId = user.uid;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.querySelector('.dashboard').style.display = 'grid';
-        document.getElementById('userEmail').innerHTML = `<span>👤</span> ${user.email}`;
-        App.init();
+        
+        // ── ROLE CHECK ──────────────────────────────────────────────
+        // Only users with a role doc in /userRoles can access the portal.
+        // Any teacher who signed up via index.html will have this doc.
+        try {
+          const roleDoc = await db.collection('userRoles').doc(user.uid).get();
+          
+          if (!roleDoc.exists) {
+            // No role doc — deny access
+            this.showAccessDenied('Your account does not have portal access. Please sign up via the main app first.');
+            return;
+          }
+
+          currentTeacherRole = roleDoc.data().role; // 'teacher' | 'admin'
+
+          // Both 'teacher' and 'admin' can access the portal
+          if (currentTeacherRole !== 'teacher' && currentTeacherRole !== 'admin') {
+            this.showAccessDenied('Your account role does not allow portal access.');
+            return;
+          }
+
+          // ── ACCESS GRANTED ──────────────────────────────────────
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboardWrapper').classList.remove('hidden');
+
+          document.getElementById('userEmailNav').innerHTML = `<span>👤</span> ${user.email}`;
+          document.getElementById('userRoleNav').innerHTML = 
+            `<span>🏷️</span> ${currentTeacherRole === 'admin' ? '🛡️ Admin' : '👩‍🏫 Teacher'}`;
+
+          App.init();
+
+        } catch (err) {
+          console.error('Role check failed:', err);
+          this.showAccessDenied('Unable to verify account permissions. Please try again.');
+        }
+
       } else {
         document.getElementById('loginScreen').style.display = 'flex';
-        document.querySelector('.dashboard').style.display = 'none';
+        document.getElementById('dashboardWrapper').classList.add('hidden');
       }
     });
 
-    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
-    document.getElementById('authButton').addEventListener('click', () => this.handleAuth());
     document.getElementById('authPassword').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.handleAuth();
     });
-  },
-
-  toggleAuthMode() {
-    this.isSignUp = !this.isSignUp;
-    document.getElementById('authTitle').textContent = this.isSignUp ? 'Sign Up' : 'Sign In';
-    document.getElementById('authButton').textContent = this.isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN';
-    document.getElementById('authToggleText').innerHTML = this.isSignUp
-      ? 'Already have an account? <a id="authToggle">Sign in</a>'
-      : 'Don\'t have an account? <a id="authToggle">Sign up</a>';
-    document.getElementById('authToggle').addEventListener('click', () => this.toggleAuthMode());
   },
 
   async handleAuth() {
@@ -435,11 +582,7 @@ const AuthManager = {
     }
 
     try {
-      if (this.isSignUp) {
-        await auth.createUserWithEmailAndPassword(email, password);
-      } else {
-        await auth.signInWithEmailAndPassword(email, password);
-      }
+      await auth.signInWithEmailAndPassword(email, password);
     } catch (error) {
       this.showError(error.message);
     }
@@ -449,41 +592,57 @@ const AuthManager = {
     const errorDiv = document.getElementById('authError');
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
+  },
+
+  showAccessDenied(message) {
+    const userEmail = auth.currentUser ? auth.currentUser.email : '';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboardWrapper').classList.add('hidden');
+    document.body.innerHTML = `
+      <div style="text-align:center;padding:60px 40px;background:white;border-radius:20px;border:2px solid #fee2e2;max-width:500px;margin:100px auto;box-shadow:0 10px 40px rgba(0,0,0,0.08);">
+        <div style="font-size:4rem;margin-bottom:20px;">🔒</div>
+        <h2 style="color:#ef4444;font-size:1.8rem;margin-bottom:15px;">Access Denied</h2>
+        <p style="color:#64748b;line-height:1.6;margin-bottom:30px;">${message}</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <button onclick="requestAccessEmail('${userEmail}')"
+            style="padding:14px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;">
+            📧 Request Portal Access
+          </button>
+          <button onclick="auth.signOut().then(()=>location.reload())"
+            style="padding:14px;background:white;color:#64748b;border:2px solid #e2e8f0;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;">
+            ← Back to Login
+          </button>
+        </div>
+      </div>`;
+  },
+
+  requestAccess() {
+    const emailInput = document.getElementById('authEmail');
+    const userEmail = emailInput ? emailInput.value.trim() : '';
+    requestAccessEmail(userEmail);
   }
 };
 
-// Main App
+// ========== MAIN APP ==========
 const App = {
   init() {
-    this.loadStudents();
-    this.loadBehaviors();
+    // ── Load ALL data — no teacherId filter ──────────────────────
+    this.loadAllStudents();
+    this.loadAllBehaviors();
     this.loadConversations();
+    this.loadTeachersList();
   },
 
-  async loadStudents() {
-    const snapshot = await db.collection('students')
-      .where('teacherId', '==', currentTeacherId)
-      .get();
+  // ── STUDENTS: global collection, no filter ──────────────────────
+  async loadAllStudents() {
+    const snapshot = await db.collection('students').get();
 
     students = [];
     snapshot.forEach(doc => {
       students.push({ id: doc.id, ...doc.data() });
     });
 
-    this.updateStudentDropdowns();
     this.renderStudentGrid();
-  },
-
-  updateStudentDropdowns() {
-    const select = document.getElementById('logStudentSelect');
-    select.innerHTML = '<option value="">Select student...</option>';
-    
-    students.forEach(s => {
-      const option = document.createElement('option');
-      option.value = s.id;
-      option.textContent = s.name;
-      select.appendChild(option);
-    });
   },
 
   renderStudentGrid() {
@@ -496,40 +655,105 @@ const App = {
     grid.innerHTML = students.map(s => `
       <div class="student-card" onclick="openStudentReport('${s.id}')">
         <div class="student-name">${s.name}</div>
-        <div class="student-meta">Grade ${s.grade}</div>
+        <div class="student-meta">Grade ${s.grade || '—'}</div>
         ${s.parentId ? '<div class="student-meta" style="color:#10b981;">✓ Parent Linked</div>' : ''}
-        <div class="access-code">${s.accessCode}</div>
+        ${s.teacherEmail ? `<div class="teacher-tag">👩‍🏫 ${s.teacherEmail}</div>` : ''}
+        ${s.accessCode ? `<div class="access-code">${s.accessCode}</div>` : ''}
       </div>
     `).join('');
   },
 
-  async loadBehaviors() {
+  // ── BEHAVIORS: global collection, no teacherId filter ───────────
+  async loadAllBehaviors() {
     const snapshot = await db.collection('behaviors')
-      .where('teacherId', '==', currentTeacherId)
       .orderBy('timestamp', 'desc')
-      .limit(100)
+      .limit(200)
       .get();
 
     behaviors = [];
+    const teacherEmails = new Set();
+
     snapshot.forEach(doc => {
-      behaviors.push({ id: doc.id, ...doc.data() });
+      const b = { id: doc.id, ...doc.data() };
+      behaviors.push(b);
+      if (b.teacherEmail) teacherEmails.add(b.teacherEmail);
     });
 
+    // Populate teacher filter dropdown
+    this.populateTeacherFilter(teacherEmails);
+
+    filteredBehaviors = [...behaviors];
     this.updateStats();
-    this.renderRecentBehaviors();
+    this.renderRecentBehaviors(filteredBehaviors);
+    updatePortalWeeklyCards();
+  },
+
+  populateTeacherFilter(emailSet) {
+    const select = document.getElementById('teacherFilter');
+    select.innerHTML = '<option value="">All Staff</option>';
+    emailSet.forEach(email => {
+      const opt = document.createElement('option');
+      opt.value = email;
+      opt.textContent = email;
+      select.appendChild(opt);
+    });
+
+    // Also populate student dropdown from all behaviors
+    const studentSelect = document.getElementById('studentFilter');
+    const studentNames = [...new Set(behaviors.map(b => b.studentName).filter(Boolean))].sort();
+    studentSelect.innerHTML = '<option value="">All Students</option>';
+    studentNames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      studentSelect.appendChild(opt);
+    });
+  },
+
+  applyFilters() {
+    const teacherFilter = document.getElementById('teacherFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
+    const studentFilter = document.getElementById('studentFilter').value;
+
+    filteredBehaviors = behaviors.filter(b => {
+      const matchTeacher = !teacherFilter || b.teacherEmail === teacherFilter;
+      const matchType = !typeFilter || b.type === typeFilter;
+      const matchStudent = !studentFilter || b.studentName === studentFilter;
+      return matchTeacher && matchType && matchStudent;
+    });
+
+    const activeFilters = [teacherFilter, typeFilter, studentFilter].filter(Boolean).length;
+    document.getElementById('filterCount').textContent =
+      activeFilters > 0
+        ? `Showing ${filteredBehaviors.length} of ${behaviors.length} entries`
+        : '';
+
+    this.updateStats();
+    this.renderRecentBehaviors(filteredBehaviors);
+  },
+
+  clearFilters() {
+    document.getElementById('teacherFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('studentFilter').value = '';
+    filteredBehaviors = [...behaviors];
+    document.getElementById('filterCount').textContent = '';
+    this.updateStats();
+    this.renderRecentBehaviors(filteredBehaviors);
   },
 
   updateStats() {
+    const source = filteredBehaviors;
     const now = new Date();
-    const today = behaviors.filter(b => 
+    const today = source.filter(b => 
       new Date(b.timestamp).toDateString() === now.toDateString()
     ).length;
     
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thisWeek = behaviors.filter(b => new Date(b.timestamp) > weekAgo).length;
+    const thisWeek = source.filter(b => new Date(b.timestamp) > weekAgo).length;
     
-    const positive = behaviors.filter(b => b.type === 'positive').length;
-    const negative = behaviors.filter(b => b.type === 'negative').length;
+    const positive = source.filter(b => b.type === 'positive').length;
+    const negative = source.filter(b => b.type === 'negative').length;
     
     document.getElementById('statToday').textContent = today;
     document.getElementById('statWeek').textContent = thisWeek;
@@ -537,27 +761,71 @@ const App = {
     document.getElementById('statNegative').textContent = negative;
   },
 
-  renderRecentBehaviors() {
-    const list = document.getElementById('recentBehaviorsList');
-    const recent = behaviors.slice(0, 10);
+  renderRecentBehaviors(list) {
+    const el = document.getElementById('recentBehaviorsList');
+    const recent = list.slice(0, 20);
 
     if (recent.length === 0) {
-      list.innerHTML = '<p class="loading">No behaviors logged yet</p>';
+      el.innerHTML = '<p class="loading">No behaviors match your filters</p>';
       return;
     }
 
-    list.innerHTML = recent.map(b => `
+    el.innerHTML = recent.map(b => `
       <div class="behavior-item ${b.type}">
         <div class="behavior-header">
           <span class="behavior-student">${b.studentName}</span>
           <span class="behavior-type" style="color:${b.type === 'positive' ? '#10b981' : '#ef4444'}">
-            ${b.type === 'positive' ? '✓' : '⚠️'}
+            ${b.type === 'positive' ? '✓ Positive' : '⚠️ Negative'}
           </span>
         </div>
-        <div class="behavior-text">${b.behavior}</div>
+        ${b.behavior
+          ? `<div style="margin:8px 0;padding:10px;background:white;border-radius:8px;color:#1e293b;font-size:0.95rem;line-height:1.5;border-left:3px solid ${b.type === 'positive' ? '#10b981' : '#ef4444'};">
+               <strong>What happened:</strong> ${b.behavior}
+             </div>`
+          : `<div style="margin:8px 0;color:#94a3b8;font-size:0.85rem;font-style:italic;">No description recorded</div>`
+        }
         <div class="behavior-time">${new Date(b.timestamp).toLocaleString()}</div>
+        ${b.teacherEmail ? `<div class="teacher-tag">🧑‍💼 ${b.teacherEmail}</div>` : ''}
       </div>
     `).join('');
+  },
+
+  // ── USERS LIST ────────────────────────────────────────────────
+  async loadTeachersList() {
+    const snapshot = await db.collection('userRoles').get();
+    const list = document.getElementById('teachersList');
+    
+    if (snapshot.empty) {
+      list.innerHTML = '<p class="loading">No user accounts found</p>';
+      return;
+    }
+
+    const users = [];
+    snapshot.forEach(doc => users.push(doc.data()));
+
+    // Sort: admins first, then teachers, then esp
+    const roleOrder = { admin: 0, teacher: 1, esp: 2 };
+    users.sort((a, b) => (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9));
+
+    const roleMeta = {
+      admin:   { label: '🛡️ Admin',   cls: 'admin',   desc: 'Portal access + management' },
+      teacher: { label: '👩‍🏫 Teacher', cls: '',        desc: 'Portal access' },
+      esp:     { label: '🧑‍💼 ESP',    cls: 'esp',     desc: 'Behavior logger (index.html)' }
+    };
+
+    list.innerHTML = users.map(t => {
+      const behaviorCount = behaviors.filter(b => b.teacherId === t.uid).length;
+      const meta = roleMeta[t.role] || { label: t.role, cls: '', desc: '' };
+      return `
+        <div class="teacher-row">
+          <div>
+            <div class="teacher-email">${t.email}</div>
+            <div class="teacher-stats">${behaviorCount} behaviors logged · ${meta.desc} · Joined ${new Date(t.createdAt).toLocaleDateString()}</div>
+          </div>
+          <div class="teacher-role-badge ${meta.cls}">${meta.label}</div>
+        </div>
+      `;
+    }).join('');
   },
 
   async loadConversations() {
@@ -579,11 +847,12 @@ const App = {
           }
         });
 
+        const badge = document.getElementById('sidebarBadge');
         if (unreadCount > 0) {
-          document.getElementById('sidebarBadge').textContent = unreadCount;
-          document.getElementById('sidebarBadge').classList.remove('hidden');
+          badge.textContent = unreadCount;
+          badge.classList.remove('hidden');
         } else {
-          document.getElementById('sidebarBadge').classList.add('hidden');
+          badge.classList.add('hidden');
         }
 
         this.renderMessages();
@@ -619,7 +888,7 @@ const App = {
   }
 };
 
-// Actions
+// ========== ACTIONS ==========
 async function addStudent() {
   const name = document.getElementById('newStudentName').value.trim();
   const grade = document.getElementById('newStudentGrade').value.trim();
@@ -636,6 +905,7 @@ async function addStudent() {
       name: name,
       grade: grade,
       teacherId: currentTeacherId,
+      teacherEmail: auth.currentUser.email,
       accessCode: accessCode,
       parentId: null,
       points: 0,
@@ -644,80 +914,82 @@ async function addStudent() {
 
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGrade').value = '';
-    App.loadStudents();
+    App.loadAllStudents();
     alert(`Student added!\n\nAccess Code: ${accessCode}\n\nShare this code with parents.`);
   } catch (error) {
-    alert('Failed to add student');
+    alert('Failed to add student: ' + error.message);
   }
 }
 
 async function logBehavior() {
-  const studentId = document.getElementById('logStudentSelect').value;
+  const studentName = document.getElementById('logStudentName').value.trim();
   const behaviorText = document.getElementById('logBehaviorText').value.trim();
   const behaviorType = document.getElementById('logBehaviorType').value;
 
-  if (!studentId || !behaviorText) {
-    alert('Please select a student and describe the behavior');
+  if (!studentName || !behaviorText) {
+    alert('Please enter a student name and describe the behavior');
     return;
   }
 
-  const student = students.find(s => s.id === studentId);
+  const timestamp = new Date().toISOString();
 
   try {
-    const logRef = await db.collection('behaviors').add({
-      studentId: studentId,
-      studentName: student.name,
+    // Write to global /behaviors — all teachers will see it
+    await db.collection('behaviors').add({
+      studentName: studentName,
       teacherId: currentTeacherId,
-      behavior: behaviorText,
+      teacherEmail: auth.currentUser.email,
+      behavior: behaviorType === 'positive' ? `⭐ GOOD BEHAVIOR ALERT ⭐\n${behaviorText}` : behaviorText,
       type: behaviorType,
-      timestamp: new Date().toISOString(),
+      timestamp: timestamp,
+      date: timestamp,
       source: 'teacher-portal'
     });
 
-    const pointChange = behaviorType === 'positive' ? 10 : -5;
-    const newPoints = Math.max(0, (student.points || 0) + pointChange);
-    await db.collection('students').doc(studentId).update({ points: newPoints });
-
-    if (student.parentId) {
-      await db.collection('notifications').add({
-        parentId: student.parentId,
-        studentId: studentId,
-        studentName: student.name,
-        logId: logRef.id,
-        type: 'behavior_logged',
-        behaviorType: behaviorType,
-        behaviorText: behaviorText,
-        timestamp: new Date().toISOString(),
-        read: false
-      });
-    }
+    // Also write to teacher's personal log
+    await db.collection('users').doc(currentTeacherId).collection('logs').add({
+      studentName: studentName,
+      teacherEmail: auth.currentUser.email,
+      behavior: behaviorType === 'positive' ? `⭐ GOOD BEHAVIOR ALERT ⭐\n${behaviorText}` : behaviorText,
+      type: behaviorType,
+      date: timestamp,
+      antecedent: '',
+      consequence: '',
+      comments: [],
+      teacherId: currentTeacherId
+    });
 
     document.getElementById('logBehaviorText').value = '';
-    document.getElementById('logStudentSelect').selectedIndex = 0;
+    document.getElementById('logStudentName').value = '';
 
-    App.loadBehaviors();
+    App.loadAllBehaviors();
     showSection('overview');
-    alert(`✓ Behavior logged!${student.parentId ? '\n✓ Parent notified' : ''}`);
+    alert(`✓ Behavior logged for ${studentName}!`);
   } catch (error) {
-    alert('Failed to log behavior');
+    alert('Failed to log behavior: ' + error.message);
   }
 }
 
 async function openStudentReport(studentId) {
   currentStudentForReport = studentId;
   const student = students.find(s => s.id === studentId);
-  const studentBehaviors = behaviors.filter(b => b.studentId === studentId);
+  
+  // Pull behaviors matching student name (since behaviors uses name not studentId in index.html flow)
+  const studentBehaviors = behaviors.filter(b => 
+    b.studentId === studentId || b.studentName === student.name
+  );
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const recentBehaviors = studentBehaviors.filter(b => new Date(b.timestamp) > weekAgo);
   const positive = studentBehaviors.filter(b => b.type === 'positive').length;
   const negative = studentBehaviors.filter(b => b.type === 'negative').length;
 
-  document.getElementById('reportStudentName').textContent = `📊 ${student.name} - Individual Report`;
+  document.getElementById('reportStudentName').textContent = `📊 ${student.name} — Individual Report`;
   document.getElementById('reportTotal').textContent = studentBehaviors.length;
   document.getElementById('reportPositive').textContent = positive;
   document.getElementById('reportNegative').textContent = negative;
   document.getElementById('reportPoints').textContent = student.points || 0;
+  document.getElementById('reportTeacher').textContent = student.teacherEmail || '—';
   document.getElementById('reportParent').textContent = student.parentId ? 'Yes ✓' : 'No';
 
   const behaviorsList = document.getElementById('reportBehaviorsList');
@@ -736,28 +1008,7 @@ async function openStudentReport(studentId) {
           <strong style="color:#0f172a;">Behavior:</strong>
           <div style="color:#475569;margin-top:4px;line-height:1.6;">${b.behavior}</div>
         </div>
-        ${b.antecedent ? `
-          <div style="margin-bottom:8px;">
-            <strong style="color:#0f172a;">Antecedent:</strong>
-            <div style="color:#475569;margin-top:4px;line-height:1.6;">${b.antecedent}</div>
-          </div>
-        ` : ''}
-        ${b.consequence ? `
-          <div style="margin-bottom:8px;">
-            <strong style="color:#0f172a;">Consequence:</strong>
-            <div style="color:#475569;margin-top:4px;line-height:1.6;">${b.consequence}</div>
-          </div>
-        ` : ''}
-        ${b.comments && b.comments.length > 0 ? `
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;">
-            <strong style="color:#0f172a;">Staff Comments (${b.comments.length}):</strong>
-            ${b.comments.map(c => `
-              <div style="color:#475569;margin-top:6px;padding-left:12px;border-left:2px solid #cbd5e1;">
-                ${c.text} <em style="color:#94a3b8;font-size:0.85rem;">(${new Date(c.timestamp).toLocaleString()})</em>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
+        ${b.teacherEmail ? `<div class="teacher-tag">👩‍🏫 ${b.teacherEmail}</div>` : ''}
       </div>
     `).join('');
   }
@@ -772,66 +1023,41 @@ function closeStudentReport() {
 
 function emailStudentReport() {
   const student = students.find(s => s.id === currentStudentForReport);
-  const studentBehaviors = behaviors.filter(b => b.studentId === currentStudentForReport);
+  const studentBehaviors = behaviors.filter(b => 
+    b.studentId === currentStudentForReport || b.studentName === student.name
+  );
   const positive = studentBehaviors.filter(b => b.type === 'positive').length;
   const negative = studentBehaviors.filter(b => b.type === 'negative').length;
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const recentBehaviors = studentBehaviors.filter(b => new Date(b.timestamp) > weekAgo);
 
-  let emailBody = `STUDENTSCOPE INDIVIDUAL REPORT\n`;
-  emailBody += `${'='.repeat(60)}\n\n`;
-  emailBody += `Student: ${student.name}\n`;
-  emailBody += `Grade: ${student.grade}\n`;
-  emailBody += `Report Generated: ${new Date().toLocaleString()}\n`;
-  emailBody += `Report Period: Last 7 Days\n\n`;
-  emailBody += `BEHAVIOR SUMMARY\n`;
-  emailBody += `${'-'.repeat(60)}\n`;
+  let emailBody = `STUDENTSCOPE INDIVIDUAL REPORT\n${'='.repeat(60)}\n\n`;
+  emailBody += `Student: ${student.name}\nGrade: ${student.grade}\n`;
+  emailBody += `Teacher: ${student.teacherEmail || 'N/A'}\n`;
+  emailBody += `Report Generated: ${new Date().toLocaleString()}\n\n`;
+  emailBody += `BEHAVIOR SUMMARY\n${'-'.repeat(60)}\n`;
   emailBody += `Total Behaviors (All Time): ${studentBehaviors.length}\n`;
-  emailBody += `Positive Behaviors: ${positive}\n`;
-  emailBody += `Negative Behaviors: ${negative}\n`;
-  emailBody += `Arcade Points: ${student.points || 0}\n`;
-  emailBody += `Parent Portal Linked: ${student.parentId ? 'Yes' : 'No'}\n\n`;
-  emailBody += `${'='.repeat(60)}\n\n`;
-  emailBody += `DETAILED BEHAVIOR LOG (Last 7 Days)\n\n`;
+  emailBody += `Positive Behaviors: ${positive}\nNegative Behaviors: ${negative}\n`;
+  emailBody += `Arcade Points: ${student.points || 0}\n\n`;
+  emailBody += `${'='.repeat(60)}\nDETAILED BEHAVIOR LOG (Last 7 Days)\n\n`;
 
   if (recentBehaviors.length === 0) {
     emailBody += `No behaviors logged in the last 7 days.\n`;
   } else {
-    recentBehaviors.forEach((b, index) => {
-      const date = new Date(b.timestamp).toLocaleString();
-      emailBody += `${index + 1}. ${b.type === 'positive' ? '✓ POSITIVE BEHAVIOR' : '⚠ NEGATIVE BEHAVIOR'}\n`;
-      emailBody += `   Date/Time: ${date}\n`;
-      emailBody += `   Behavior: ${b.behavior}\n`;
-      
-      if (b.antecedent) {
-        emailBody += `   Antecedent (What happened before): ${b.antecedent}\n`;
-      }
-      if (b.consequence) {
-        emailBody += `   Consequence (What happened after): ${b.consequence}\n`;
-      }
-      if (b.comments && b.comments.length > 0) {
-        emailBody += `   Staff Comments:\n`;
-        b.comments.forEach(c => {
-          emailBody += `     - ${c.text} (${new Date(c.timestamp).toLocaleString()})\n`;
-        });
-      }
-      emailBody += `\n`;
+    recentBehaviors.forEach((b, i) => {
+      emailBody += `${i + 1}. ${b.type === 'positive' ? '✓ POSITIVE' : '⚠ NEGATIVE'}\n`;
+      emailBody += `   Date/Time: ${new Date(b.timestamp).toLocaleString()}\n`;
+      emailBody += `   Logged by: ${b.teacherEmail || 'N/A'}\n`;
+      emailBody += `   Behavior: ${b.behavior}\n\n`;
     });
   }
 
-  emailBody += `${'='.repeat(60)}\n`;
-  emailBody += `\nGenerated by StudentScope Behavior Tracking System\n`;
-  emailBody += `For IEP documentation and case management\n`;
-
-  const subject = `StudentScope Individual Report: ${student.name} (${new Date().toLocaleDateString()})`;
-  const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-  window.location.href = mailtoLink;
+  emailBody += `${'='.repeat(60)}\nGenerated by StudentScope Behavior Tracking System\n`;
+  window.location.href = `mailto:?subject=${encodeURIComponent('StudentScope Individual Report: ' + student.name)}&body=${encodeURIComponent(emailBody)}`;
 }
 
-function printStudentReport() {
-  window.print();
-}
+function printStudentReport() { window.print(); }
 
 async function openChat(conversationId) {
   currentConversationId = conversationId;
@@ -844,15 +1070,10 @@ async function openChat(conversationId) {
 
   if (conv.messages) {
     const updatedMessages = conv.messages.map(msg => {
-      if (msg.senderId !== currentTeacherId) {
-        return { ...msg, read: true };
-      }
+      if (msg.senderId !== currentTeacherId) return { ...msg, read: true };
       return msg;
     });
-
-    await db.collection('conversations').doc(conversationId).update({
-      messages: updatedMessages
-    });
+    await db.collection('conversations').doc(conversationId).update({ messages: updatedMessages });
   }
 }
 
@@ -871,9 +1092,7 @@ function loadChatMessages() {
     bubble.className = `chat-bubble ${msg.senderId === currentTeacherId ? 'teacher' : 'parent'}`;
     bubble.innerHTML = `
       <div>${msg.text}</div>
-      <div style="font-size:0.8rem;margin-top:5px;opacity:0.7;">
-        ${new Date(msg.timestamp).toLocaleTimeString()}
-      </div>
+      <div style="font-size:0.8rem;margin-top:5px;opacity:0.7;">${new Date(msg.timestamp).toLocaleTimeString()}</div>
     `;
     container.appendChild(bubble);
   });
@@ -884,25 +1103,16 @@ function loadChatMessages() {
 async function sendTeacherMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
-
   if (!text) return;
 
   const conv = conversations.find(c => c.id === currentConversationId);
-  const newMessage = {
-    text: text,
-    senderId: currentTeacherId,
-    timestamp: new Date().toISOString(),
-    read: false
-  };
-
+  const newMessage = { text, senderId: currentTeacherId, timestamp: new Date().toISOString(), read: false };
   const updatedMessages = [...(conv.messages || []), newMessage];
 
   try {
     await db.collection('conversations').doc(currentConversationId).update({
-      messages: updatedMessages,
-      parentCanReply: true
+      messages: updatedMessages, parentCanReply: true
     });
-
     input.value = '';
     App.loadConversations();
     setTimeout(() => loadChatMessages(), 500);
@@ -916,28 +1126,206 @@ function closeChat() {
   currentConversationId = null;
 }
 
-// Section Navigation
 function showSection(section) {
   document.querySelectorAll('.main-content > div').forEach(div => div.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
 
-  if (section === 'overview') {
-    document.getElementById('overviewSection').classList.remove('hidden');
-    document.querySelectorAll('.nav-item')[0].classList.add('active');
-  } else if (section === 'students') {
-    document.getElementById('studentsSection').classList.remove('hidden');
-    document.querySelectorAll('.nav-item')[1].classList.add('active');
-  } else if (section === 'log') {
-    document.getElementById('logSection').classList.remove('hidden');
-    document.querySelectorAll('.nav-item')[2].classList.add('active');
-  } else if (section === 'messages') {
-    document.getElementById('messagesSection').classList.remove('hidden');
-    document.querySelectorAll('.nav-item')[3].classList.add('active');
-  }
+  const sectionMap = {
+    overview: ['overviewSection', 0],
+    students: ['studentsSection', 1],
+    log: ['logSection', 2],
+    messages: ['messagesSection', 3],
+    teachers: ['teachersSection', 4]
+  };
+
+  const [sectionId, navIndex] = sectionMap[section] || ['overviewSection', 0];
+  document.getElementById(sectionId).classList.remove('hidden');
+  document.querySelectorAll('.nav-item')[navIndex]?.classList.add('active');
+
+  // Refresh teachers list when tab opened
+  if (section === 'teachers') App.loadTeachersList();
 }
 
-function logout() {
-  auth.signOut();
+function logout() { auth.signOut(); }
+
+// ========== PORTAL WEEKLY REPORT UTILITIES ==========
+const PortalWeekUtils = {
+  getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  },
+  getFriday(date) {
+    const monday = this.getMonday(date);
+    return new Date(monday.getTime() + 4 * 24 * 60 * 60 * 1000);
+  },
+  getCurrentWeek() {
+    const now = new Date();
+    return { start: this.getMonday(now), end: this.getFriday(now) };
+  },
+  getLastWeek() {
+    const last = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return { start: this.getMonday(last), end: this.getFriday(last) };
+  },
+  formatRange(start, end) {
+    const o = { month: 'short', day: 'numeric' };
+    return `${start.toLocaleDateString('en-US', o)} – ${end.toLocaleDateString('en-US', o)}`;
+  },
+  inWeek(ts, start, end) {
+    const d = new Date(ts);
+    return d >= start && d <= end;
+  }
+};
+
+function updatePortalWeeklyCards() {
+  const cw = PortalWeekUtils.getCurrentWeek();
+  const lw = PortalWeekUtils.getLastWeek();
+
+  document.getElementById('portalThisWeekRange').textContent = PortalWeekUtils.formatRange(cw.start, cw.end);
+  document.getElementById('portalLastWeekRange').textContent = PortalWeekUtils.formatRange(lw.start, lw.end);
+
+  const thisCount = behaviors.filter(b => PortalWeekUtils.inWeek(b.timestamp, cw.start, cw.end)).length;
+  const lastCount = behaviors.filter(b => PortalWeekUtils.inWeek(b.timestamp, lw.start, lw.end)).length;
+
+  document.getElementById('portalThisWeekCount').textContent = `${thisCount} behavior${thisCount !== 1 ? 's' : ''} logged`;
+  document.getElementById('portalLastWeekCount').textContent = `${lastCount} behavior${lastCount !== 1 ? 's' : ''} logged`;
+}
+
+function getWeeklyBehaviors(weekType) {
+  const week = weekType === 'current' ? PortalWeekUtils.getCurrentWeek() : PortalWeekUtils.getLastWeek();
+  return behaviors.filter(b => PortalWeekUtils.inWeek(b.timestamp, week.start, week.end));
+}
+
+function buildPortalWeeklyReportText(weekType) {
+  const week = weekType === 'current' ? PortalWeekUtils.getCurrentWeek() : PortalWeekUtils.getLastWeek();
+  const weekLabel = weekType === 'current' ? 'THIS WEEK' : 'LAST WEEK';
+  const logs = getWeeklyBehaviors(weekType);
+
+  let r = `STUDENTSCOPE ${weekLabel}'S BEHAVIOR REPORT — ALL ESP STAFF\n`;
+  r += `${PortalWeekUtils.formatRange(week.start, week.end)}\n`;
+  r += `Generated: ${new Date().toLocaleString()}\n`;
+  r += `Total Entries: ${logs.length}\n`;
+  r += `${'='.repeat(60)}\n\n`;
+
+  if (logs.length === 0) {
+    r += 'No behaviors logged for this period.\n';
+  } else {
+    // Group by ESP user for a clean report
+    const byUser = {};
+    logs.forEach(b => {
+      const key = b.teacherEmail || 'Unknown';
+      if (!byUser[key]) byUser[key] = [];
+      byUser[key].push(b);
+    });
+
+    Object.entries(byUser).forEach(([email, entries]) => {
+      r += `ESP STAFF: ${email}\n${'-'.repeat(60)}\n`;
+      entries.forEach((b, i) => {
+        const dt = new Date(b.timestamp).toLocaleString();
+        r += `  ${i + 1}. ${b.studentName} — ${dt}\n`;
+        r += `     Type: ${b.type === 'positive' ? '✓ Positive' : '⚠ Negative'}\n`;
+        r += `     What happened: ${b.behavior || '(no description)'}\n\n`;
+      });
+    });
+  }
+
+  r += `${'='.repeat(60)}\nGenerated by StudentScope Teacher Portal`;
+  return r;
+}
+
+function portalEmailWeeklyReport(weekType) {
+  const logs = getWeeklyBehaviors(weekType);
+  if (logs.length === 0) {
+    alert(`No behaviors logged for ${weekType === 'current' ? 'this' : 'last'} week.`);
+    return;
+  }
+  const week = weekType === 'current' ? PortalWeekUtils.getCurrentWeek() : PortalWeekUtils.getLastWeek();
+  const label = weekType === 'current' ? "This Week's" : "Last Week's";
+  const subject = `StudentScope ${label} Report — ${PortalWeekUtils.formatRange(week.start, week.end)}`;
+  const body = buildPortalWeeklyReportText(weekType);
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function portalPrintWeeklyReport(weekType) {
+  const logs = getWeeklyBehaviors(weekType);
+  if (logs.length === 0) {
+    alert(`No behaviors logged for ${weekType === 'current' ? 'this' : 'last'} week.`);
+    return;
+  }
+  const week = weekType === 'current' ? PortalWeekUtils.getCurrentWeek() : PortalWeekUtils.getLastWeek();
+  const weekLabel = weekType === 'current' ? "THIS WEEK'S" : "LAST WEEK'S";
+
+  // Group by user for print layout
+  const byUser = {};
+  logs.forEach(b => {
+    const key = b.teacherEmail || 'Unknown';
+    if (!byUser[key]) byUser[key] = [];
+    byUser[key].push(b);
+  });
+
+  const win = window.open('', '', 'width=900,height=700');
+  win.document.write(`
+    <html><head><title>StudentScope ${weekLabel} Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
+      h1 { font-size: 1.6rem; margin-bottom: 5px; }
+      .meta { color: #64748b; margin-bottom: 30px; font-size: 0.9rem; }
+      .esp-section { margin-bottom: 30px; }
+      .esp-header { background: #1e293b; color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; font-weight: 700; }
+      .entry { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid; }
+      .entry.positive { border-color: #10b981; }
+      .entry.negative { border-color: #ef4444; }
+      .entry-student { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+      .entry-meta { color: #64748b; font-size: 0.85rem; margin-bottom: 8px; }
+      .entry-behavior { background: white; padding: 10px; border-radius: 6px; font-size: 0.95rem; line-height: 1.5; }
+      .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 0.85rem; }
+    </style>
+    </head><body>
+    <h1>📋 StudentScope ${weekLabel} Report</h1>
+    <div class="meta">
+      ${PortalWeekUtils.formatRange(week.start, week.end)} &nbsp;·&nbsp;
+      Generated: ${new Date().toLocaleString()} &nbsp;·&nbsp;
+      Total: ${logs.length} behavior${logs.length !== 1 ? 's' : ''}
+    </div>
+    ${Object.entries(byUser).map(([email, entries]) => `
+      <div class="esp-section">
+        <div class="esp-header">🧑‍💼 ESP Staff: ${email} (${entries.length} entries)</div>
+        ${entries.map(b => `
+          <div class="entry ${b.type}">
+            <div class="entry-student">${b.studentName}</div>
+            <div class="entry-meta">
+              ${b.type === 'positive' ? '✓ Positive' : '⚠ Negative'} &nbsp;·&nbsp;
+              ${new Date(b.timestamp).toLocaleString()}
+            </div>
+            <div class="entry-behavior"><strong>What happened:</strong> ${b.behavior || '(no description recorded)'}</div>
+          </div>`).join('')}
+      </div>`).join('')}
+    <div class="footer">Generated by StudentScope Teacher Portal &nbsp;·&nbsp; Behavior Tracking System</div>
+    </body></html>`);
+  win.document.close();
+  win.print();
+}
+
+// ========== REQUEST ACCESS EMAIL ==========
+function requestAccessEmail(userEmail) {
+  const adminEmail = 'brianjamesomalley@gmail.com';
+  const subject = 'StudentScope Portal Access Request';
+  const body = [
+    'Hi Brian,',
+    '',
+    'I am requesting access to the StudentScope Teacher Portal.',
+    '',
+    `My account email: ${userEmail || '(please fill in your email)'}`,
+    `Requested role: Teacher`,
+    `Date: ${new Date().toLocaleString()}`,
+    '',
+    'Please grant me access at your earliest convenience.',
+    '',
+    'Thank you!'
+  ].join('\n');
+
+  window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 // Initialize

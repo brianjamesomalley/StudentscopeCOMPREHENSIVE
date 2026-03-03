@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentScope — Full System Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   RESET + ROOT
+═══════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1E3A5F; --blue:#2563EB; --blue2:#3B82F6;
+  --light:#DBEAFE; --bg:#F8FAFC; --card:#fff;
+  --border:#E2E8F0; --text:#0F172A; --muted:#64748B;
+  --pos:#059669; --neg:#DC2626; --pos-bg:#D1FAE5; --neg-bg:#FEE2E2;
+  --esp:#7C3AED; --esp-bg:#F5F3FF;
+  --parent:#0891B2; --parent-bg:#ECFEFF;
+  --arcade:#EA580C; --arcade-bg:#FFF7ED;
+  --ff-head:'Nunito',sans-serif; --ff-body:'Nunito',sans-serif; --ff-mono:'DM Mono',monospace;
+}
+body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ═══════════════════════════════════════════════
+   ROLE SWITCHER BAR (always visible once in demo)
+═══════════════════════════════════════════════ */
+#role-bar{
+  display:none; position:sticky; top:0; z-index:500;
+  background:var(--navy); padding:0 24px;
+  display:flex; align-items:center; gap:0;
+  border-bottom:2px solid rgba(255,255,255,0.07);
+}
+.role-tab{
+  padding:13px 20px; font-family:var(--ff-head); font-size:0.8rem;
+  font-weight:700; color:rgba(255,255,255,0.5); cursor:pointer;
+  border-bottom:3px solid transparent; transition:all 0.2s;
+  white-space:nowrap; letter-spacing:0.3px;
+}
+.role-tab:hover{color:rgba(255,255,255,0.8);}
+.role-tab.active{color:#fff; border-bottom-color:#60A5FA;}
+.role-tab .dot{
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  margin-right:7px; vertical-align:middle;
+}
+.bar-logo{font-family:var(--ff-head);font-size:0.9rem;font-weight:800;color:white;margin-right:24px;white-space:nowrap;}
+.bar-sep{width:1px;height:20px;background:rgba(255,255,255,0.12);margin:0 8px;}
+.bar-back{margin-left:auto;padding:7px 14px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:var(--ff-body);transition:all 0.2s;}
+.bar-back:hover{background:rgba(255,255,255,0.18);color:white;}
+
+/* ═══════════════════════════════════════════════
+   VIEWS
+═══════════════════════════════════════════════ */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ═══════════════════════════════════════════════
+   LAUNCH SCREEN
+═══════════════════════════════════════════════ */
+#launch{
+  min-height:100vh;
+  background: radial-gradient(ellipse at 20% 50%, #0f2440 0%, #0a1628 60%, #050d1a 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:40px 24px; position:relative; overflow:hidden;
+}
+#launch::before{
+  content:'';position:absolute;inset:0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+  background-size:32px 32px;
+}
+.launch-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);
+  color:#93C5FD;padding:6px 16px;border-radius:20px;
+  font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:28px;
+}
+.launch-title{
+  font-family:var(--ff-head);font-size:clamp(2.8rem,6vw,5rem);font-weight:800;
+  color:#fff;text-align:center;line-height:1.05;margin-bottom:12px;
+  letter-spacing:-1px;
+}
+.launch-title span{color:#60A5FA;}
+.launch-sub{
+  font-size:1.05rem;color:rgba(255,255,255,0.5);text-align:center;
+  max-width:520px;margin-bottom:16px;line-height:1.65;
+}
+.launch-tagline{
+  font-family:var(--ff-head);font-size:1rem;color:#93C5FD;
+  font-style:italic;margin-bottom:56px;text-align:center;
+}
+.launch-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  max-width:960px;width:100%;
+}
+@media(max-width:800px){.launch-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.launch-grid{grid-template-columns:1fr;}}
+.launch-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:28px 20px;cursor:pointer;
+  transition:all 0.25s;text-align:center;position:relative;overflow:hidden;
+}
+.launch-card::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.25s;
+}
+.launch-card:hover{transform:translateY(-6px);border-color:rgba(255,255,255,0.2);}
+.launch-card:hover::before{opacity:1;}
+.launch-card.esp::before{background:linear-gradient(135deg,rgba(124,58,237,0.15),transparent);}
+.launch-card.teacher::before{background:linear-gradient(135deg,rgba(37,99,235,0.15),transparent);}
+.launch-card.parent::before{background:linear-gradient(135deg,rgba(8,145,178,0.15),transparent);}
+.launch-card.arcade::before{background:linear-gradient(135deg,rgba(234,88,12,0.15),transparent);}
+.launch-card:hover .launch-card-icon{transform:scale(1.15);}
+.launch-card-icon{font-size:2.8rem;margin-bottom:14px;display:block;transition:transform 0.25s;}
+.launch-card-role{
+  font-family:var(--ff-head);font-size:0.65rem;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;
+}
+.launch-card.esp .launch-card-role{color:#A78BFA;}
+.launch-card.teacher .launch-card-role{color:#60A5FA;}
+.launch-card.parent .launch-card-role{color:#22D3EE;}
+.launch-card.arcade .launch-card-role{color:#FB923C;}
+.launch-card-name{
+  font-family:var(--ff-head);font-size:1.15rem;font-weight:800;
+  color:#fff;margin-bottom:8px;
+}
+.launch-card-desc{font-size:0.8rem;color:rgba(255,255,255,0.45);line-height:1.55;}
+.launch-card-sub{
+  margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);
+  font-size:0.72rem;color:rgba(255,255,255,0.3);
+}
+.launch-card.esp .launch-card-sub{color:#A78BFA;}
+.launch-card.teacher .launch-card-sub{color:#60A5FA;}
+.launch-card.parent .launch-card-sub{color:#22D3EE;}
+.launch-card.arcade .launch-card-sub{color:#FB923C;}
+.launch-school{
+  margin-top:48px;font-size:0.78rem;color:rgba(255,255,255,0.25);
+  text-align:center;letter-spacing:0.5px;
+}
+
+/* ═══════════════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════════════ */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 46px);}
+.sidebar{background:var(--navy);display:flex;flex-direction:column;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-brand h1{font-family:var(--ff-head);font-size:1.1rem;font-weight:800;color:#fff;}
+.sb-school{font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4;}
+.nav-lbl{padding:16px 18px 5px;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 18px;cursor:pointer;color:rgba(255,255,255,0.6);font-size:0.85rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left-color:#60A5FA;}
+.nav-badge{margin-left:auto;background:#EF4444;color:#fff;padding:2px 7px;border-radius:10px;font-size:0.68rem;font-weight:700;}
+.sb-foot{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);}
+.sb-user{font-size:0.75rem;color:rgba(255,255,255,0.45);line-height:1.6;}
+.sb-user strong{color:rgba(255,255,255,0.8);display:block;}
+.role-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;margin-top:5px;}
+.main{padding:28px 32px;overflow-y:auto;}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.sec-title h2{font-family:var(--ff-head);font-size:1.5rem;font-weight:800;color:var(--text);}
+.sec-title p{font-size:0.83rem;color:var(--muted);margin-top:3px;}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:18px;}
+.card-title{font-family:var(--ff-head);font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.stat-lbl{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:5px;}
+.stat-val{font-family:var(--ff-head);font-size:2rem;font-weight:800;color:var(--text);}
+.stat-sub{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+.btn{padding:9px 18px;border-radius:8px;font-family:var(--ff-body);font-size:0.85rem;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:#1D4ED8;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--bg);}
+.btn-sm{padding:6px 13px;font-size:0.8rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 13px;border:2px solid var(--border);border-radius:8px;font-family:var(--ff-body);font-size:0.88rem;color:var(--text);background:#fff;transition:border-color 0.15s;}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--blue);}
+.form-group textarea{min-height:80px;resize:vertical;}
+.type-badge{padding:2px 9px;border-radius:20px;font-size:0.7rem;font-weight:700;}
+.type-badge.pos{background:var(--pos-bg);color:var(--pos);}
+.type-badge.neg{background:var(--neg-bg);color:var(--neg);}
+.chip{font-size:0.68rem;padding:2px 8px;border-radius:12px;font-weight:600;}
+.section{display:none;}
+.section.active{display:block;}
+.hidden{display:none!important;}
+
+/* FEED */
+.feed-item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;font-weight:700;}
+.feed-av.pos{background:var(--pos-bg);color:var(--pos);}
+.feed-av.neg{background:var(--neg-bg);color:var(--neg);}
+.feed-name{font-weight:700;font-size:0.88rem;}
+.feed-desc{font-size:0.82rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.feed-meta{display:flex;align-items:center;gap:7px;margin-top:6px;flex-wrap:wrap;}
+.esp-tag{font-size:0.7rem;color:var(--muted);background:var(--bg);padding:2px 7px;border-radius:5px;border:1px solid var(--border);}
+.feed-time{font-size:0.7rem;color:var(--muted);margin-left:auto;}
+.fwd-btn{padding:4px 10px;background:var(--light);color:var(--blue);border:none;border-radius:5px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:var(--ff-body);transition:all 0.2s;}
+.fwd-btn:hover{background:var(--blue);color:#fff;}
+.fwd-btn.sent{background:var(--pos-bg);color:var(--pos);}
+
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:260px 1fr;border:1px solid var(--border);border-radius:12px;overflow:hidden;height:500px;}
+.chat-threads{border-right:1px solid var(--border);overflow-y:auto;}
+.chat-area{display:flex;flex-direction:column;}
+.chat-hdr{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);font-weight:700;font-size:0.87rem;}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px;}
+.bubble{max-width:70%;padding:9px 13px;border-radius:11px;font-size:0.85rem;line-height:1.5;}
+.bubble.me{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px;}
+.bubble.them{background:var(--bg);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px;}
+.bubble-time{font-size:0.65rem;opacity:0.6;margin-top:3px;}
+.chat-in{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--bg);}
+.chat-in input{flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:7px;font-family:var(--ff-body);font-size:0.85rem;}
+.chat-in input:focus{outline:none;border-color:var(--blue);}
+.convo-item{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+.convo-item:hover{background:var(--bg);}
+.convo-item.active{background:var(--light);}
+.convo-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.88rem;flex-shrink:0;color:#fff;}
+.convo-info{flex:1;min-width:0;}
+.convo-name{font-weight:700;font-size:0.85rem;}
+.convo-prev{font-size:0.77rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.unread-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;flex-shrink:0;}
+
+/* STUDENTS */
+.stu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px;}
+.stu-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:16px;cursor:pointer;transition:all 0.2s;}
+.stu-card:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(37,99,235,0.1);transform:translateY(-2px);}
+.stu-name{font-weight:700;font-size:0.9rem;margin-bottom:3px;}
+.stu-grade{font-size:0.75rem;color:var(--muted);margin-bottom:9px;}
+.pts-pill{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;margin-top:8px;}
+
+/* ROSTER */
+.roster{width:100%;border-collapse:collapse;}
+.roster th{text-align:left;padding:9px 13px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);border-bottom:2px solid var(--border);}
+.roster td{padding:11px 13px;font-size:0.84rem;border-bottom:1px solid var(--border);}
+.roster tr:last-child td{border-bottom:none;}
+
+/* WEEKLY */
+.wk-card{background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:12px;padding:18px;color:#fff;margin-bottom:12px;}
+.wk-card h3{font-family:var(--ff-head);font-size:0.95rem;margin-bottom:3px;}
+.wk-range{font-size:0.78rem;opacity:0.7;margin-bottom:6px;}
+.wk-count{font-family:var(--ff-head);font-size:1.35rem;font-weight:800;margin-bottom:12px;}
+.wk-btns{display:flex;gap:7px;}
+.wk-btn{flex:1;padding:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;font-family:var(--ff-body);font-size:0.78rem;font-weight:600;cursor:pointer;}
+.wk-btn:hover{background:rgba(255,255,255,0.22);}
+
+/* AI */
+.ai-out{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:9px;padding:14px;min-height:100px;font-size:0.84rem;line-height:1.6;white-space:pre-wrap;}
+.ai-out.empty{color:var(--muted);font-style:italic;display:flex;align-items:center;justify-content:center;text-align:center;min-height:120px;}
+
+/* NOTIF */
+.notif{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.notif:last-child{border-bottom:none;}
+.notif-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.notif-icon.pos{background:var(--pos-bg);}
+.notif-icon.neg{background:var(--neg-bg);}
+.notif-body{flex:1;}
+.notif-title{font-weight:700;font-size:0.87rem;}
+.notif-desc{font-size:0.8rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.notif-time{font-size:0.7rem;color:var(--muted);margin-top:5px;}
+.notif-new{width:8px;height:8px;background:var(--blue);border-radius:50%;margin-top:4px;flex-shrink:0;}
+
+/* ═══════════════════════════════════════════════
+   ESP VIEW
+═══════════════════════════════════════════════ */
+#view-esp .sidebar{background:#2D1B69;}
+#view-esp .nav-item.active{border-left-color:#A78BFA;}
+#view-esp .role-chip{background:rgba(167,139,250,0.2);color:#A78BFA;}
+.esp-col-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:1100px){.esp-col-grid{grid-template-columns:1fr 1fr;}}
+
+/* ═══════════════════════════════════════════════
+   PARENT VIEW  (mobile-first feel)
+═══════════════════════════════════════════════ */
+#view-parent{background:#F0FDFF;}
+.parent-shell{max-width:480px;margin:0 auto;padding:20px 16px;min-height:calc(100vh - 46px);}
+.parent-header{background:linear-gradient(135deg,#0E7490,#0891B2);border-radius:14px;padding:20px;color:#fff;margin-bottom:18px;}
+.parent-header h2{font-family:var(--ff-head);font-size:1.3rem;font-weight:800;}
+.parent-header p{font-size:0.82rem;opacity:0.75;margin-top:3px;}
+.parent-pts{background:rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;margin-top:12px;display:flex;align-items:center;gap:10px;}
+.parent-pts-num{font-family:var(--ff-head);font-size:1.6rem;font-weight:800;}
+.parent-pts-lbl{font-size:0.78rem;opacity:0.8;}
+.parent-tab-bar{display:flex;background:#fff;border-radius:10px;padding:4px;gap:3px;margin-bottom:16px;border:1px solid var(--border);}
+.parent-tab{flex:1;padding:9px;text-align:center;font-size:0.8rem;font-weight:600;cursor:pointer;border-radius:7px;transition:all 0.15s;color:var(--muted);font-family:var(--ff-body);}
+.parent-tab.active{background:#0891B2;color:#fff;}
+
+/* ═══════════════════════════════════════════════
+   ARCADE VIEW
+═══════════════════════════════════════════════ */
+#view-arcade{
+  background:linear-gradient(160deg,#1a0533 0%,#0d1a3a 50%,#1a2a0a 100%);
+  min-height:calc(100vh - 46px);
+}
+.arcade-shell{max-width:520px;margin:0 auto;padding:24px 16px;}
+.arcade-hdr{text-align:center;padding:20px 0 28px;}
+.arcade-hdr h1{font-family:var(--ff-head);font-size:2.2rem;font-weight:800;color:#fff;margin-bottom:4px;}
+.arcade-hdr p{font-size:0.85rem;color:rgba(255,255,255,0.45);}
+.arcade-student{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;padding:22px;margin-bottom:16px;text-align:center;
+}
+.arcade-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,#7C3AED,#EA580C);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-head);font-size:1.8rem;font-weight:800;color:#fff;
+  margin:0 auto 12px;
+}
+.arcade-name{font-family:var(--ff-head);font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:3px;}
+.arcade-grade{font-size:0.8rem;color:rgba(255,255,255,0.45);margin-bottom:18px;}
+.pts-big{font-family:var(--ff-head);font-size:3.5rem;font-weight:800;color:#FB923C;line-height:1;margin-bottom:4px;}
+.pts-lbl{font-size:0.8rem;color:rgba(255,255,255,0.45);margin-bottom:18px;letter-spacing:1px;text-transform:uppercase;}
+.progress-wrap{background:rgba(255,255,255,0.08);border-radius:20px;height:12px;overflow:hidden;margin-bottom:6px;}
+.progress-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,#EA580C,#FB923C);transition:width 0.6s ease;}
+.progress-lbl{font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:right;}
+.streak-row{display:flex;justify-content:center;gap:8px;margin-top:18px;}
+.streak-day{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;font-weight:700;font-family:var(--ff-head);
+}
+.streak-day.on{background:linear-gradient(135deg,#EA580C,#FB923C);color:#fff;}
+.streak-day.off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);}
+.arcade-section-title{font-family:var(--ff-head);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.3);margin:20px 0 10px;padding-left:2px;}
+.reward-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:16px;margin-bottom:10px;
+  display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;
+}
+.reward-card:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);}
+.reward-card.locked{opacity:0.45;cursor:not-allowed;}
+.reward-card.locked:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);}
+.reward-icon{font-size:1.8rem;flex-shrink:0;}
+.reward-info{flex:1;}
+.reward-name{font-weight:700;color:#fff;font-size:0.9rem;margin-bottom:2px;}
+.reward-desc{font-size:0.75rem;color:rgba(255,255,255,0.4);}
+.reward-cost{font-family:var(--ff-head);font-size:0.85rem;font-weight:700;color:#FB923C;white-space:nowrap;}
+.reward-cost.unlocked{color:#34D399;}
+.behavior-log{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;}
+.beh-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.beh-item:last-child{border-bottom:none;}
+.beh-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.beh-dot.pos{background:#34D399;}
+.beh-dot.neg{background:#F87171;}
+.beh-text{font-size:0.82rem;color:rgba(255,255,255,0.65);flex:1;}
+.beh-pts{font-family:var(--ff-mono);font-size:0.8rem;font-weight:500;}
+.beh-pts.pos{color:#34D399;}
+.beh-pts.neg{color:#F87171;}
+.beh-time{font-size:0.7rem;color:rgba(255,255,255,0.25);}
+
+/* BRANDING PANEL */
+.preset-btn{padding:7px 12px;border-radius:6px;color:#fff;border:none;font-size:0.72rem;cursor:pointer;font-family:var(--ff-body);font-weight:600;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:600;background:var(--text);color:#fff;padding:11px 18px;border-radius:9px;font-size:0.85rem;font-weight:600;transform:translateY(60px);opacity:0;transition:all 0.28s;box-shadow:0 8px 24px rgba(0,0,0,0.2);font-family:var(--ff-body);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+
+/* ═══════════════════════════════════════════════
+   TAMMY OVERRIDES — ESP view gets friendlier,
+   bigger, rounder, and easier on 58-year-old eyes
+═══════════════════════════════════════════════ */
+#view-esp .main { padding: 24px 28px; }
+#view-esp .sec-title h2 { font-size: 1.65rem; font-weight: 900; letter-spacing: -0.3px; }
+#view-esp .sec-title p { font-size: 0.95rem; }
+#view-esp .card { border-radius: 16px; padding: 24px; }
+#view-esp .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 18px; }
+
+/* Bigger form fields — finger-tap friendly */
+#view-esp .form-group label { font-size: 0.85rem; font-weight: 800; letter-spacing: 0; text-transform: none; margin-bottom: 7px; color: var(--muted); }
+#view-esp .form-group input,
+#view-esp .form-group textarea,
+#view-esp .form-group select {
+  padding: 14px 16px;
+  font-size: 1rem;
+  border-radius: 12px;
+  border-width: 2px;
+  font-weight: 600;
+}
+#view-esp .form-group textarea { min-height: 100px; font-size: 1rem; }
+
+/* Big friendly save button */
+#view-esp .btn-primary {
+  font-size: 1.05rem;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 15px 20px;
+  letter-spacing: 0.2px;
+}
+
+/* Feed items — easier to scan */
+#view-esp .feed-item { padding: 16px 0; gap: 14px; }
+#view-esp .feed-av { width: 44px; height: 44px; font-size: 0.9rem; }
+#view-esp .feed-name { font-size: 1rem; font-weight: 800; }
+#view-esp .feed-desc { font-size: 0.9rem; line-height: 1.5; margin-top: 4px; }
+#view-esp .type-badge { font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; }
+#view-esp .feed-time { font-size: 0.78rem; }
+
+/* Nav items bigger */
+#view-esp .nav-item { padding: 13px 18px; font-size: 0.95rem; font-weight: 700; }
+#view-esp .nav-badge { font-size: 0.75rem; padding: 3px 9px; }
+
+/* Success status */
+#esp-log-status { font-size: 0.92rem; padding: 13px 16px; border-radius: 10px; }
+
+/* Chat input bigger */
+#view-esp .chat-in input { padding: 13px 15px; font-size: 0.95rem; border-radius: 10px; }
+#view-esp .chat-hdr { font-size: 1rem; padding: 15px 18px; font-weight: 800; }
+#view-esp .bubble { font-size: 0.92rem; padding: 12px 15px; border-radius: 14px; }
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:26px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.modal-ttl{font-family:var(--ff-head);font-size:1.05rem;font-weight:800;}
+.modal-x{background:none;border:none;font-size:1.3rem;color:var(--muted);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     ROLE BAR (always on top once inside demo)
+═══════════════════════════════════════════════ -->
+<div id="role-bar" style="display:none;">
+  <span class="bar-logo">🤖 StudentScope</span>
+  <div class="bar-sep"></div>
+  <div class="role-tab" onclick="goRole('esp',this)" id="tab-esp"><span class="dot" style="background:#A78BFA;"></span>🔧 Engine Room</div>
+  <div class="role-tab" onclick="goRole('teacher',this)" id="tab-teacher"><span class="dot" style="background:#60A5FA;"></span>🎛 Helm</div>
+  <div class="role-tab" onclick="goRole('parent',this)" id="tab-parent"><span class="dot" style="background:#22D3EE;"></span>👨‍👩‍👧 Crew</div>
+  <div class="role-tab" onclick="goRole('arcade',this)" id="tab-arcade"><span class="dot" style="background:#FB923C;"></span>🎮 Passengers</div>
+  <button class="bar-back" onclick="goLaunch()">← Back to Launch</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     LAUNCH SCREEN
+═══════════════════════════════════════════════ -->
+<div id="launch" class="view active">
+  <div class="launch-badge">🎯 Interactive System Demo</div>
+  <div class="launch-title">Student<span>Scope</span></div>
+  <div class="launch-sub">The complete behavior tracking ecosystem for special education. Four roles. One ship.</div>
+  <div class="launch-tagline">"As easy as a Facebook post. As bulletproof as a sticker chart."</div>
+  <div class="launch-grid">
+    <div class="launch-card esp" onclick="goRole('esp')">
+      <span class="launch-card-icon">🔧</span>
+      <div class="launch-card-role">ESP / Paraprofessional</div>
+      <div class="launch-card-name">Engine Room</div>
+      <div class="launch-card-desc">Tammy's world. Log behaviors in seconds. AI documentation. Weekly reports. As fast as Dee Dee throws a pencil.</div>
+      <div class="launch-card-sub">index.html · tvega@joeyramone.edu</div>
+    </div>
+    <div class="launch-card teacher" onclick="goRole('teacher')">
+      <span class="launch-card-icon">🎛</span>
+      <div class="launch-card-role">Teacher / Case Manager</div>
+      <div class="launch-card-name">The Helm</div>
+      <div class="launch-card-desc">Ms. Chen's dashboard. Full behavior feed, student roster, parent & staff messaging, weekly reports, branding.</div>
+      <div class="launch-card-sub">teacher-dashboard.html · ms.chen@joeyramone.edu</div>
+    </div>
+    <div class="launch-card parent" onclick="goRole('parent')">
+      <span class="launch-card-icon">👨‍👩‍👧</span>
+      <div class="launch-card-role">Parent / Guardian</div>
+      <div class="launch-card-name">The Crew</div>
+      <div class="launch-card-desc">Linda Ramone's view. Real-time notifications, behavior history for Dee Dee, direct messaging with Ms. Chen.</div>
+      <div class="launch-card-sub">parent-portal.html · lramone@gmail.com</div>
+    </div>
+    <div class="launch-card arcade" onclick="goRole('arcade')">
+      <span class="launch-card-icon">🎮</span>
+      <div class="launch-card-role">Student</div>
+      <div class="launch-card-name">The Passengers</div>
+      <div class="launch-card-desc">Dee Dee's arcade. Points balance, streak tracker, reward redemption board. Transparent, purposeful, no slot machine.</div>
+      <div class="launch-card-sub">student-arcade.html · deedee@joeyramone.edu</div>
+    </div>
+  </div>
+  <div class="launch-school">🏫 Joey Ramone Middle School, Queens NY — Demo data only. No real students.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW: ESP (ENGINE ROOM)
+═══════════════════════════════════════════════ -->
+<div id="view-esp" class="view">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sb-brand"><h1>🔧 Engine Room</h1><div class="sb-school">Joey Ramone Middle School<br>ESP Staff Portal</div></div>
+      <div class="nav-lbl">Logging</div>
+      <div class="nav-item active" onclick="espNav('log',this)">📝 Log Behavior</div>
+      <div class="nav-item" onclick="espNav('ai',this)">🤖 AI Assistant</div>
+      <div class="nav-item" onclick="espNav('reports',this)">📋 Weekly Reports</div>
+      <div class="nav-lbl">Communication</div>
+      <div class="nav-item" onclick="espNav('messages',this)">📨 Staff Messages <span class="nav-badge">1</span></div>
+      <div class="sb-foot">
+        <div class="sb-user"><strong>tvega@joeyramone.edu</strong>Tammy Vega<span class="role-chip">🧑‍💼 ESP Staff</span></div>
+      </div>
+    </aside>
+    <main class="main">
+
+      <!-- LOG -->
+      <div id="esp-log" class="section active">
+        <div class="sec-head">
+          <div class="sec-title"><h2>Log Behavior</h2><p>Two taps. Done. As fast as a sticker chart.</p></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">📝 Quick Log</div>
+            <div class="form-group"><label>Student</label>
+              <select id="esp-student">
+                <option>Dee Dee Ramone</option><option>Joey Ramone</option><option>Johnny Ramone</option>
+                <option>Marky Ramone</option><option>Tommy Ramone</option><option>CJ Ramone</option>
+                <option>Richie Ramone</option><option>Elvis Ramone</option>
+              </select>
+            </div>
+            <div class="form-group"><label>What happened?</label><textarea id="esp-behavior" placeholder="Brief description — your words, not formal language. AI handles that."></textarea></div>
+            <div class="form-group"><label>Type</label>
+              <select id="esp-type"><option value="neg">⚠️ Negative Behavior</option><option value="pos">⭐ Positive / Good Behavior</option></select>
+            </div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem;" onclick="espLog()">💾 Save Behavior</button>
+            <div id="esp-log-status" style="display:none;margin-top:10px;background:var(--pos-bg);color:var(--pos);padding:10px 14px;border-radius:7px;font-size:0.83rem;font-weight:700;text-align:center;">
+              ✓ Logged · Case manager notified · Parent alerted
+            </div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:10px;background:linear-gradient(135deg,#059669,#047857);" onclick="espGoodBehavior()">⭐ Good Behavior Alert</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 Today's Log</div>
+            <div id="esp-feed"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI -->
+      <div id="esp-ai" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>AI Assistant</h2><p>Turn your notes into IEP-ready documentation</p></div></div>
+        <div class="card">
+          <div class="two-col">
+            <div>
+              <div class="form-group"><label>Describe the situation</label><textarea id="esp-ai-prompt" style="min-height:120px;" placeholder="e.g. Dee Dee threw his pencil during independent math work after I asked him to stop tapping on the desk..."></textarea></div>
+              <div class="form-group"><label>What do you need?</label>
+                <select id="esp-ai-focus">
+                  <option>Professional Documentation Language</option>
+                  <option>Parent Email Draft</option>
+                  <option>Behavior Strategy Suggestions</option>
+                  <option>Intervention Plan Ideas</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" style="width:100%;padding:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);" onclick="espAI()">✨ Generate with Claude AI</button>
+            </div>
+            <div>
+              <div class="form-group"><label>AI Output</label></div>
+              <div class="ai-out empty" id="esp-ai-out">Describe a situation and hit Generate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="esp-reports" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Weekly Reports</h2><p>Your logging history, exportable</p></div></div>
+        <div class="two-col">
+          <div>
+            <div class="wk-card"><h3>📊 This Week</h3><div class="wk-range">Feb 24 – Feb 28</div><div class="wk-count">12 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Email report opened')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print dialog opened')">🖨️ Print</button></div></div>
+            <div class="wk-card" style="background:linear-gradient(135deg,#4C1D95,#7C3AED);"><h3>📅 Last Week</h3><div class="wk-range">Feb 17 – Feb 21</div><div class="wk-count">18 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Email report opened')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print dialog opened')">🖨️ Print</button></div></div>
+          </div>
+          <div class="card"><div class="card-title">📈 This Week by Student</div>
+            <div id="esp-weekly"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div id="esp-messages" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Staff Messages</h2><p>Direct messages with Ms. Chen</p></div></div>
+        <div class="chat-layout">
+          <div class="chat-threads" id="esp-thread-list"></div>
+          <div class="chat-area" id="esp-chat-area"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.88rem;">Select a conversation</div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW: TEACHER (HELM)
+═══════════════════════════════════════════════ -->
+<div id="view-teacher" class="view">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sb-brand"><h1>🎛 The Helm</h1><div class="sb-school">Joey Ramone Middle School<br>Teacher / Case Manager</div></div>
+      <div class="nav-lbl">Dashboard</div>
+      <div class="nav-item active" onclick="tchNav('overview',this)">📊 Overview</div>
+      <div class="nav-item" onclick="tchNav('students',this)">👥 Students</div>
+      <div class="nav-item" onclick="tchNav('log',this)">📝 Quick Log</div>
+      <div class="nav-lbl">Communication</div>
+      <div class="nav-item" onclick="tchNav('messages',this)">💬 Parent Messages <span class="nav-badge">3</span></div>
+      <div class="nav-item" onclick="tchNav('staffmsg',this)">📨 Staff Messages <span class="nav-badge">1</span></div>
+      <div class="nav-lbl">Management</div>
+      <div class="nav-item" onclick="tchNav('esp',this)">🧑‍💼 ESP Staff</div>
+      <div class="nav-item" onclick="tchNav('reports',this)">📋 Weekly Reports</div>
+      <div class="nav-item" onclick="tchNav('branding',this)">🎨 School Branding</div>
+      <div class="sb-foot"><div class="sb-user"><strong>ms.chen@joeyramone.edu</strong>Ms. Chen — Case Manager<span class="role-chip" style="background:rgba(96,165,250,0.15);color:#60A5FA;">👩‍🏫 Teacher</span></div></div>
+    </aside>
+    <main class="main">
+
+      <!-- OVERVIEW -->
+      <div id="tch-overview" class="section active">
+        <div class="sec-head"><div class="sec-title"><h2>Command Center</h2><p>Joey Ramone Middle School — your classroom, live</p></div><button class="btn btn-primary btn-sm" onclick="tchNav('log',document.querySelectorAll('#view-teacher .nav-item')[2])">⚡ Quick Log</button></div>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-lbl">Today</div><div class="stat-val" id="tch-today">4</div><div class="stat-sub">Behaviors</div></div>
+          <div class="stat"><div class="stat-lbl">This Week</div><div class="stat-val">17</div><div class="stat-sub">Behaviors</div></div>
+          <div class="stat"><div class="stat-lbl">Positive</div><div class="stat-val" style="color:var(--pos)">6</div><div class="stat-sub">This week</div></div>
+          <div class="stat"><div class="stat-lbl">Negative</div><div class="stat-val" style="color:var(--neg)">11</div><div class="stat-sub">This week</div></div>
+        </div>
+        <div class="card"><div class="card-title">📡 Live Behavior Feed</div><div id="tch-feed"></div></div>
+      </div>
+
+      <!-- STUDENTS -->
+      <div id="tch-students" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Students</h2><p>8 students on caseload</p></div><button class="btn btn-primary btn-sm" onclick="openModal('addStuModal')">+ Add Student</button></div>
+        <div class="stu-grid" id="tch-students-grid"></div>
+      </div>
+
+      <!-- QUICK LOG -->
+      <div id="tch-log" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Quick Log</h2><p>Log directly from the dashboard</p></div></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">📝 Log Behavior</div>
+            <div class="form-group"><label>Student</label><select id="tch-log-student"><option>Dee Dee Ramone</option><option>Joey Ramone</option><option>Johnny Ramone</option><option>Marky Ramone</option><option>Tommy Ramone</option><option>Richie Ramone</option></select></div>
+            <div class="form-group"><label>Description</label><textarea id="tch-log-behavior" placeholder="Describe the behavior..."></textarea></div>
+            <div class="form-group"><label>Type</label><select id="tch-log-type"><option value="neg">⚠️ Negative</option><option value="pos">⭐ Positive</option></select></div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="tchLog()">💾 Save Behavior</button>
+            <div id="tch-log-status" style="display:none;margin-top:10px;background:var(--pos-bg);color:var(--pos);padding:10px 14px;border-radius:7px;font-size:0.83rem;font-weight:700;text-align:center;">✓ Logged · Feed updated · Parent notified</div>
+          </div>
+          <div class="card"><div class="card-title">🤖 AI Assistant</div>
+            <div class="form-group"><label>Situation</label><textarea id="tch-ai-prompt" placeholder="Describe what happened..."></textarea></div>
+            <div class="form-group"><label>Output Type</label><select id="tch-ai-focus"><option>Professional Documentation Language</option><option>Parent Email Draft</option><option>Behavior Strategy Suggestions</option><option>Intervention Plan Ideas</option></select></div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);" onclick="tchAI()">✨ Generate with Claude AI</button>
+            <div class="ai-out empty" id="tch-ai-out" style="margin-top:12px;">AI output appears here</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARENT MESSAGES -->
+      <div id="tch-messages" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Parent Messages</h2><p>3 unread conversations</p></div></div>
+        <div class="chat-layout"><div class="chat-threads" id="tch-parent-threads"></div><div class="chat-area" id="tch-parent-chat"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);">Select a conversation</div></div></div>
+      </div>
+
+      <!-- STAFF MESSAGES -->
+      <div id="tch-staffmsg" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Staff Messages</h2><p>Direct messages with ESP staff</p></div></div>
+        <div class="chat-layout"><div class="chat-threads" id="tch-staff-threads"></div><div class="chat-area" id="tch-staff-chat"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);">Select a conversation</div></div></div>
+      </div>
+
+      <!-- ESP STAFF -->
+      <div id="tch-esp" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>ESP Staff</h2><p>4 active staff</p></div><button class="btn btn-primary btn-sm" onclick="toast('Demo: account creation disabled')">+ Create Account</button></div>
+        <div class="card"><table class="roster"><thead><tr><th>Name / Email</th><th>Behaviors</th><th>Students</th><th>Joined</th></tr></thead><tbody id="tch-roster"></tbody></table></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="tch-reports" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>Weekly Reports</h2></div></div>
+        <div class="two-col">
+          <div>
+            <div class="wk-card"><h3>📊 This Week</h3><div class="wk-range">Feb 24 – Feb 28</div><div class="wk-count">17 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Report emailed')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print opened')">🖨️ Print</button></div></div>
+            <div class="wk-card" style="background:linear-gradient(135deg,#4C1D95,#7C3AED);"><h3>📅 Last Week</h3><div class="wk-range">Feb 17 – Feb 21</div><div class="wk-count">23 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Report emailed')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print opened')">🖨️ Print</button></div></div>
+          </div>
+          <div class="card"><div class="card-title">📈 This Week by Student</div><div id="tch-weekly-bd"></div></div>
+        </div>
+      </div>
+
+      <!-- BRANDING -->
+      <div id="tch-branding" class="section">
+        <div class="sec-head"><div class="sec-title"><h2>School Branding</h2><p>White-label configuration — admin only</p></div></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">🎨 Color Scheme</div>
+            <div class="form-group"><label>School Name</label><input type="text" id="brand-name" value="Joey Ramone Middle School"></div>
+            <div class="form-group"><label>Primary Color</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="brand-primary" value="#1E3A5F" style="width:44px;height:36px;border-radius:7px;border:2px solid var(--border);cursor:pointer;"><input type="text" id="brand-primary-hex" value="#1E3A5F" style="flex:1;"></div></div>
+            <div class="form-group"><label>Accent Color</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="brand-accent" value="#2563EB" style="width:44px;height:36px;border-radius:7px;border:2px solid var(--border);cursor:pointer;"><input type="text" id="brand-accent-hex" value="#2563EB" style="flex:1;"></div></div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;" onclick="applyBranding()">✓ Apply Branding</button>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:8px;text-align:center;">Production: saves to Firestore, propagates to all users instantly</p>
+            <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:9px;border:1px solid var(--border);">
+              <p style="font-size:0.72rem;color:var(--muted);font-weight:700;margin-bottom:9px;">PRESET SCHEMES</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="preset-btn" style="background:#1E3A5F;" onclick="setPreset('#1E3A5F','#2563EB','Default Navy')">Default</button>
+                <button class="preset-btn" style="background:#064E3B;" onclick="setPreset('#064E3B','#059669','Forest Green')">Green</button>
+                <button class="preset-btn" style="background:#7C2D12;" onclick="setPreset('#7C2D12','#EA580C','Burnt Orange')">Orange</button>
+                <button class="preset-btn" style="background:#4A1D96;" onclick="setPreset('#4A1D96','#7C3AED','Royal Purple')">Purple</button>
+                <button class="preset-btn" style="background:#881337;" onclick="setPreset('#881337','#E11D48','School Red')">Red</button>
+                <button class="preset-btn" style="background:#1E1B4B;" onclick="setPreset('#1E1B4B','#4F46E5','Deep Indigo')">Indigo</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">👁 Live Preview</div>
+            <div id="brand-preview" style="background:#1E3A5F;border-radius:10px;padding:16px 18px;margin-bottom:14px;">
+              <div style="font-family:var(--ff-head);font-weight:800;color:#fff;font-size:0.95rem;">🤖 StudentScope</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.55);margin-top:2px;" id="brand-preview-name">Joey Ramone Middle School</div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="brand-preview-btn" style="margin-bottom:10px;">Sample Button</button>
+            <div style="padding:10px 14px;border-radius:7px;font-size:0.8rem;font-weight:700;color:#fff;display:inline-block;" id="brand-preview-badge">🧑‍💼 ESP Role Badge</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW: PARENT (CREW)
+═══════════════════════════════════════════════ -->
+<div id="view-parent" class="view">
+  <div class="parent-shell">
+    <div class="parent-header">
+      <h2>👋 Hi, Linda!</h2>
+      <p>Dee Dee Ramone · 7th Grade · Joey Ramone Middle School</p>
+      <div class="parent-pts">
+        <div>
+          <div class="parent-pts-num">85</div>
+          <div class="parent-pts-lbl">Arcade Points</div>
+        </div>
+        <div style="flex:1;margin-left:4px;">
+          <div style="background:rgba(255,255,255,0.15);border-radius:20px;height:8px;overflow:hidden;margin-bottom:4px;"><div style="width:57%;height:100%;background:linear-gradient(90deg,#FB923C,#FCD34D);border-radius:20px;"></div></div>
+          <div style="font-size:0.72rem;opacity:0.65;">57 pts toward next reward (150 pts)</div>
+        </div>
+      </div>
+    </div>
+    <div class="parent-tab-bar">
+      <button class="parent-tab active" onclick="parentTab('notifs',this)">🔔 Notifications</button>
+      <button class="parent-tab" onclick="parentTab('history',this)">📋 History</button>
+      <button class="parent-tab" onclick="parentTab('msgs',this)">💬 Messages</button>
+    </div>
+
+    <!-- NOTIFS -->
+    <div id="parent-notifs" class="section active">
+      <div class="card" style="padding:16px;">
+        <div class="card-title">Recent Notifications</div>
+        <div id="parent-notif-list"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="parent-history" class="section">
+      <div class="card" style="padding:16px;">
+        <div class="card-title">Dee Dee's Behavior History</div>
+        <div id="parent-history-list"></div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="parent-msgs" class="section">
+      <div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;height:460px;">
+        <div class="chat-hdr">💬 Ms. Chen — Case Manager</div>
+        <div class="chat-msgs" id="parent-chat-msgs"></div>
+        <div class="chat-in">
+          <input type="text" id="parent-msg-input" placeholder="Message Ms. Chen..." onkeypress="if(event.key==='Enter')parentSend()">
+          <button class="btn btn-primary btn-sm" onclick="parentSend()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VIEW: STUDENT ARCADE (PASSENGERS)
+═══════════════════════════════════════════════ -->
+<div id="view-arcade" class="view">
+  <div class="arcade-shell">
+    <div class="arcade-hdr">
+      <h1>🎮 Arcade</h1>
+      <p>Joey Ramone Middle School</p>
+    </div>
+
+    <div class="arcade-student">
+      <div class="arcade-avatar">DR</div>
+      <div class="arcade-name">Dee Dee Ramone</div>
+      <div class="arcade-grade">7th Grade · Ms. Chen's Class</div>
+      <div class="pts-big" id="arc-pts">85</div>
+      <div class="pts-lbl">Arcade Points</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:57%;"></div></div>
+      <div class="progress-lbl">57 pts to next reward (150)</div>
+      <div style="margin-top:14px;">
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Good Behavior Streak</div>
+        <div class="streak-row">
+          <div class="streak-day on">M</div>
+          <div class="streak-day on">T</div>
+          <div class="streak-day off">W</div>
+          <div class="streak-day off">Th</div>
+          <div class="streak-day off">F</div>
+        </div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:7px;">2-day streak this week</div>
+      </div>
+    </div>
+
+    <div class="arcade-section-title">Rewards Board</div>
+    <div id="arcade-rewards"></div>
+
+    <div class="arcade-section-title">Recent Behavior Log</div>
+    <div class="behavior-log" id="arcade-log"></div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="addStuModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-ttl">Add New Student</div><button class="modal-x" onclick="closeModal('addStuModal')">×</button></div>
+    <div class="form-group"><label>Student Name</label><input type="text" placeholder="Full name"></div>
+    <div class="form-group"><label>Grade</label><select><option>6th Grade</option><option>7th Grade</option><option>8th Grade</option></select></div>
+    <div class="form-group"><label>Assigned ESP Staff</label><select><option>Tammy Vega</option><option>Marco Cruz</option><option>Dana Park</option></select></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="closeModal('addStuModal');toast('✓ Student added · Access code generated · Parent link ready')">Create Student</button>
+  </div>
+</div>
+
+<div id="toast-el" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════
+// DATA
+// ═══════════════════════════════════
+const STUDENTS=[
+  {name:"Dee Dee Ramone",grade:"7th",esp:"T. Vega",parent:true,pts:85},
+  {name:"Joey Ramone",grade:"8th",esp:"M. Cruz",parent:true,pts:120},
+  {name:"Johnny Ramone",grade:"6th",esp:"T. Vega",parent:false,pts:40},
+  {name:"Marky Ramone",grade:"7th",esp:"D. Park",parent:true,pts:95},
+  {name:"Tommy Ramone",grade:"8th",esp:"M. Cruz",parent:true,pts:60},
+  {name:"CJ Ramone",grade:"6th",esp:"D. Park",parent:false,pts:30},
+  {name:"Richie Ramone",grade:"7th",esp:"T. Vega",parent:true,pts:110},
+  {name:"Elvis Ramone",grade:"8th",esp:"K. Torres",parent:true,pts:75},
+];
+const BEHAVIORS=[
+  {student:"Dee Dee Ramone",type:"neg",desc:"Threw pencil during independent work; refused to retrieve it.",esp:"T. Vega",time:"9:14 AM"},
+  {student:"Marky Ramone",type:"pos",desc:"Helped a peer with reading without being asked. Excellent self-regulation.",esp:"D. Park",time:"9:47 AM"},
+  {student:"Joey Ramone",type:"neg",desc:"Used inappropriate language directed at substitute teacher.",esp:"M. Cruz",time:"10:22 AM"},
+  {student:"Tommy Ramone",type:"neg",desc:"Left classroom without permission twice. Returned with verbal prompt.",esp:"M. Cruz",time:"11:05 AM"},
+  {student:"Richie Ramone",type:"pos",desc:"Completed all morning work independently. Requested break appropriately.",esp:"T. Vega",time:"11:30 AM"},
+  {student:"CJ Ramone",type:"neg",desc:"Disruptive during group activity. Made noises to get peers' attention.",esp:"D. Park",time:"1:15 PM"},
+  {student:"Elvis Ramone",type:"pos",desc:"Volunteered to present to class. Strong eye contact. Major progress.",esp:"K. Torres",time:"1:48 PM"},
+  {student:"Johnny Ramone",type:"neg",desc:"Refused to participate in ELA. Head down for approximately 20 minutes.",esp:"T. Vega",time:"2:10 PM"},
+];
+const ESP_STAFF=[
+  {name:"Tammy Vega",email:"tvega@joeyramone.edu",behaviors:47,students:3,joined:"Sep 2021"},
+  {name:"Marco Cruz",email:"mcruz@joeyramone.edu",behaviors:38,students:2,joined:"Jan 2022"},
+  {name:"Dana Park",email:"dpark@joeyramone.edu",behaviors:52,students:2,joined:"Aug 2020"},
+  {name:"Kim Torres",email:"ktorres@joeyramone.edu",behaviors:29,students:1,joined:"Oct 2023"},
+];
+const PARENT_CONVOS=[
+  {name:"Linda Ramone",student:"Dee Dee Ramone",initials:"LR",unread:true,bg:"#0E7490",
+    msgs:[
+      {from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning. We're working on it.",time:"9:20 AM"},
+      {from:"parent",text:"Thank you for letting me know. He had a tough morning at home too. Should I call the school?",time:"9:45 AM"},
+      {from:"teacher",text:"Not necessary today — let's see how the afternoon goes. I'll update you before dismissal.",time:"10:02 AM"},
+    ]},
+  {name:"Vera Ramone",student:"Joey Ramone",initials:"VR",unread:true,bg:"#7C3AED",
+    msgs:[
+      {from:"teacher",text:"Ms. Ramone, Joey used some inappropriate language with the sub today. He apologized and we talked through it.",time:"10:30 AM"},
+      {from:"parent",text:"I appreciate you telling me. We'll talk to him tonight.",time:"12:15 PM"},
+    ]},
+  {name:"Rose Ramone",student:"Richie Ramone",initials:"RR",unread:true,bg:"#059669",
+    msgs:[
+      {from:"teacher",text:"Great news — Richie had an excellent morning. Completed all his work independently and even helped a classmate.",time:"11:35 AM"},
+      {from:"parent",text:"That is SO wonderful to hear!! Thank you for telling me 😊",time:"12:00 PM"},
+    ]},
+  {name:"Barbara Ramone",student:"Tommy Ramone",initials:"BR",unread:false,bg:"#4338CA",
+    msgs:[{from:"teacher",text:"Tommy left the room twice today but came back with a verbal prompt. Progress from last week.",time:"11:10 AM"}]},
+];
+const STAFF_CONVOS=[
+  {name:"Tammy Vega",email:"tvega@joeyramone.edu",initials:"TV",unread:true,bg:"#7C3AED",
+    msgs:[
+      {from:"esp",text:"Ms. Chen — heads up that Dee Dee is having a really hard day. He seems exhausted.",time:"8:55 AM"},
+      {from:"teacher",text:"Thanks Tammy. I'll pull him for a 5 min check-in after 2nd period. Keep logging.",time:"9:05 AM"},
+      {from:"esp",text:"Also — Johnny refused to take off his headphones again. Third time this week.",time:"9:18 AM"},
+    ]},
+  {name:"Marco Cruz",email:"mcruz@joeyramone.edu",initials:"MC",unread:false,bg:"#0E7490",
+    msgs:[
+      {from:"teacher",text:"Marco, Tommy's behavior plan was updated last week. Prompting hierarchy starts non-verbal now.",time:"Yesterday"},
+      {from:"esp",text:"Got it, thanks. I missed that email. I'll update my notes.",time:"Yesterday"},
+    ]},
+];
+const REWARDS=[
+  {icon:"🎵",name:"Free Music Friday",desc:"15 mins of free listening at end of day",cost:50,unlocked:true},
+  {icon:"🎮",name:"Lunch Game Pass",desc:"Play a classroom game during lunch",cost:100,unlocked:false},
+  {icon:"📱",name:"Phone Break (10 min)",desc:"Supervised 10-minute phone break",cost:150,unlocked:false},
+  {icon:"🍕",name:"Pizza Lunch Voucher",desc:"School pizza lunch on Ms. Chen",cost:200,unlocked:false},
+  {icon:"🏆",name:"Student of the Month",desc:"Certificate + announcement + call home",cost:300,unlocked:false},
+];
+const ARCADE_LOG=[
+  {type:"neg",text:"Threw pencil during independent work",pts:-5,time:"9:14 AM"},
+  {type:"pos",text:"Returned to seat after single verbal prompt",pts:+10,time:"Yesterday"},
+  {type:"pos",text:"Completed homework two days in a row",pts:+20,time:"Mon"},
+  {type:"neg",text:"Used inappropriate language",pts:-5,time:"Last Fri"},
+  {type:"pos",text:"Helped classmate without being asked",pts:+10,time:"Last Thu"},
+];
+const PARENT_NOTIFS=[
+  {type:"neg",icon:"⚠️",title:"Behavior logged — Dee Dee Ramone",desc:"Threw pencil during independent work; refused to retrieve it. Logged by T. Vega.",time:"9:14 AM today",new:true},
+  {type:"pos",icon:"⭐",title:"Good behavior! — Dee Dee Ramone",desc:"Returned to seat after single verbal prompt. Great response to redirection.",time:"Yesterday, 2:30 PM",new:false},
+  {type:"pos",icon:"📋",title:"Weekly report available",desc:"Dee Dee's behavior summary for Feb 17–21 is ready to view.",time:"Last Friday",new:false},
+];
+const PARENT_HISTORY=[
+  {type:"neg",text:"Threw pencil during independent work",esp:"T. Vega",date:"Today 9:14 AM"},
+  {type:"pos",text:"Returned to seat after single verbal prompt",esp:"T. Vega",date:"Yesterday"},
+  {type:"pos",text:"Helped classmate — unprompted",esp:"T. Vega",date:"Mon Feb 24"},
+  {type:"neg",text:"Used inappropriate language in hallway",esp:"D. Park",date:"Fri Feb 21"},
+  {type:"pos",text:"Completed all classwork without reminders",esp:"M. Cruz",date:"Thu Feb 20"},
+  {type:"neg",text:"Refused to transition between classes",esp:"T. Vega",date:"Wed Feb 19"},
+];
+const PARENT_MSGS=[
+  {from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning. We're working on it.",time:"9:20 AM"},
+  {from:"parent",text:"Thank you for letting me know. He had a tough morning at home too.",time:"9:45 AM"},
+  {from:"teacher",text:"Not necessary today — let's see how the afternoon goes. I'll update you before dismissal.",time:"10:02 AM"},
+];
+const AI_RESPONSES={
+  "Professional Documentation Language":`During the observed instructional period, the student demonstrated [behavior] in the classroom environment. The behavior occurred following [antecedent] and resulted in [consequence]. Instructional staff provided [level of prompting] with [effectiveness]. This incident is documented in accordance with the student's current behavior intervention plan for IEP review and data tracking purposes.`,
+  "Parent Email Draft":`Dear [Parent/Guardian],\n\nI wanted to reach out regarding [student]'s day. During [period/time], [professional description of behavior]. Our staff responded by [intervention], and [student] was able to [outcome].\n\nWe remain committed to supporting [student] and wanted to keep you informed. Please don't hesitate to reach out.\n\nWarm regards,\nMs. Chen`,
+  "Behavior Strategy Suggestions":`1. Antecedent modification — Identify triggers and restructure environment proactively before the behavior occurs.\n\n2. Replacement behavior training — Teach a functionally equivalent behavior that serves the same communicative purpose.\n\n3. Differential reinforcement — Increase reinforcement density during high-risk periods and transitions.\n\n4. Scheduled check-ins — Brief (2-3 min) proactive check-ins before known trigger points.\n\n5. Visual supports — Provide schedule reminders and first/then boards to reduce transition anxiety.`,
+  "Intervention Plan Ideas":`Hypothesized function: Escape / avoidance of academic demand\n\nPrevention strategies:\n• Pre-teach content to reduce task frustration\n• Offer structured choice within the activity\n• Build in planned movement breaks\n\nReplacement behaviors:\n• Teach break card request protocol\n• Practice self-advocacy scripting\n\nResponse strategies:\n• Planned ignoring of low-level avoidance behavior\n• Prompt hierarchy: visual → gestural → vocal\n• Reinforce at first sign of on-task engagement`
+};
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function goRole(role,fromTab){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(`view-${role}`).classList.add('active');
+  document.getElementById('role-bar').style.display='flex';
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  const tab=fromTab||document.getElementById(`tab-${role}`);
+  if(tab) tab.classList.add('active');
+  if(role==='esp'){renderESPFeed();renderESPWeekly();renderESPMessages();}
+  if(role==='teacher'){renderTchFeed();renderTchStudents();renderTchRoster();renderTchWeekly();renderParentThreads();renderStaffThreads();}
+  if(role==='parent'){renderParentNotifs();renderParentHistory();renderParentMsgs();}
+  if(role==='arcade'){renderArcade();}
+}
+function goLaunch(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('launch').classList.add('active');
+  document.getElementById('role-bar').style.display='none';
+}
+function espNav(s,el){sectionSwitch('esp',s,el);}
+function tchNav(s,el){sectionSwitch('tch',s,el);}
+function parentTab(s,el){
+  document.querySelectorAll('#view-parent .parent-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('#view-parent .section').forEach(sec=>sec.classList.remove('active'));
+  document.getElementById(`parent-${s}`).classList.add('active');
+}
+function sectionSwitch(prefix,name,el){
+  const v=document.getElementById(`view-${prefix==='tch'?'teacher':'esp'}`);
+  v.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  v.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`${prefix}-${name}`).classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ═══════════════════════════════════
+// RENDER: ESP
+// ═══════════════════════════════════
+function renderESPFeed(){
+  const c=document.getElementById('esp-feed');
+  if(!c)return;
+  c.innerHTML=BEHAVIORS.filter(b=>b.esp==='T. Vega').map(b=>`
+    <div class="feed-item">
+      <div class="feed-av ${b.type}">${b.student.split(' ').map(n=>n[0]).join('')}</div>
+      <div style="flex:1;">
+        <div class="feed-name">${b.student}</div>
+        <div class="feed-desc">${b.desc}</div>
+        <div class="feed-meta">
+          <span class="type-badge ${b.type}">${b.type==='pos'?'⭐ Positive':'⚠️ Negative'}</span>
+          <span class="feed-time">${b.time}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function renderESPWeekly(){
+  const el=document.getElementById('esp-weekly');
+  if(!el)return;
+  const data=[{n:"Dee Dee Ramone",neg:3,pos:1},{n:"Johnny Ramone",neg:2,pos:0},{n:"Richie Ramone",neg:0,pos:3}];
+  el.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);">
+    <div style="flex:1;font-size:0.84rem;font-weight:600;">${d.n}</div>
+    <span class="type-badge pos">+${d.pos}</span><span class="type-badge neg">-${d.neg}</span>
+  </div>`).join('');
+}
+function renderESPMessages(){
+  const list=document.getElementById('esp-thread-list');
+  if(!list)return;
+  list.innerHTML=`<div class="convo-item active" onclick="openESPChat(0,this)">
+    <div class="convo-av" style="background:linear-gradient(135deg,#2563EB,#1E3A5F);">MC</div>
+    <div class="convo-info"><div class="convo-name">Ms. Chen</div><div class="convo-prev">Tommy's behavior plan was updated...</div></div>
+    <div class="unread-dot"></div>
+  </div>`;
+  openESPChat(0,null);
+}
+function openESPChat(idx,el){
+  const msgs=[
+    {from:"teacher",text:"Tammy — reminder that Dee Dee's morning check-in protocol starts this week. Please log his affect when you pick him up.",time:"8:30 AM"},
+    {from:"esp",text:"Got it. He was pretty agitated today. Logged it as a negative behavior but it was mostly anxiety I think.",time:"9:20 AM"},
+    {from:"teacher",text:"That's really useful context. Note that in the behavior description when you log — it helps me when I review.",time:"9:35 AM"},
+  ];
+  document.getElementById('esp-chat-area').innerHTML=`
+    <div class="chat-hdr">📨 Ms. Chen — Case Manager</div>
+    <div class="chat-msgs" id="esp-chat-msgs">${msgs.map(m=>`<div><div class="bubble ${m.from==='esp'?'me':'them'}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('')}</div>
+    <div class="chat-in"><input type="text" id="esp-chat-input" placeholder="Message Ms. Chen..." onkeypress="if(event.key==='Enter')espSend()"><button class="btn btn-primary btn-sm" onclick="espSend()">Send</button></div>`;
+  scroll('esp-chat-msgs');
+}
+function espSend(){
+  const i=document.getElementById('esp-chat-input');
+  if(!i||!i.value.trim())return;
+  const msgs=document.getElementById('esp-chat-msgs');
+  msgs.innerHTML+=`<div><div class="bubble me">${i.value}<div class="bubble-time">Just now</div></div></div>`;
+  i.value=''; scroll('esp-chat-msgs'); toast('✓ Message sent to Ms. Chen');
+}
+
+// ═══════════════════════════════════
+// RENDER: TEACHER
+// ═══════════════════════════════════
+function renderTchFeed(){
+  const c=document.getElementById('tch-feed');
+  if(!c)return;
+  c.innerHTML=BEHAVIORS.map(b=>`
+    <div class="feed-item">
+      <div class="feed-av ${b.type}">${b.student.split(' ').map(n=>n[0]).join('')}</div>
+      <div style="flex:1;">
+        <div class="feed-name">${b.student}</div>
+        <div class="feed-desc">${b.desc}</div>
+        <div class="feed-meta">
+          <span class="type-badge ${b.type}">${b.type==='pos'?'⭐ Positive':'⚠️ Negative'}</span>
+          <span class="esp-tag">🧑‍💼 ${b.esp}</span>
+          <span class="feed-time">${b.time}</span>
+          <button class="fwd-btn" onclick="fwdParent(this)">📨 Forward</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function renderTchStudents(){
+  const c=document.getElementById('tch-students-grid');
+  if(!c)return;
+  c.innerHTML=STUDENTS.map(s=>`
+    <div class="stu-card" onclick="toast('📋 Opening ${s.name}\'s report...')">
+      <div class="stu-name">${s.name}</div>
+      <div class="stu-grade">${s.grade} · ${s.esp}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <span class="chip" style="background:var(--light);color:var(--blue);">🧑‍💼 ${s.esp}</span>
+        <span class="chip" style="background:${s.parent?'var(--pos-bg)':'#FEF3C7'};color:${s.parent?'var(--pos)':'#92400E'};">${s.parent?'✓ Parent':'⚠ No Parent'}</span>
+      </div>
+      <div class="pts-pill">⭐ ${s.pts} pts</div>
+    </div>`).join('');
+}
+function renderTchRoster(){
+  const c=document.getElementById('tch-roster');
+  if(!c)return;
+  c.innerHTML=ESP_STAFF.map(e=>`<tr><td><strong>${e.name}</strong><br><span style="font-size:0.75rem;color:var(--muted);">${e.email}</span></td><td>${e.behaviors}</td><td>${e.students}</td><td>${e.joined}</td></tr>`).join('');
+}
+function renderTchWeekly(){
+  const c=document.getElementById('tch-weekly-bd');
+  if(!c)return;
+  const data=[{n:"Dee Dee Ramone",neg:3,pos:1},{n:"Joey Ramone",neg:2,pos:2},{n:"Johnny Ramone",neg:4,pos:0},{n:"Marky Ramone",neg:1,pos:2},{n:"Tommy Ramone",neg:2,pos:1},{n:"Richie Ramone",neg:0,pos:3}];
+  c.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);">
+    <div style="flex:1;font-size:0.84rem;font-weight:600;">${d.n}</div>
+    <span class="type-badge pos">+${d.pos}</span><span class="type-badge neg">-${d.neg}</span>
+  </div>`).join('');
+}
+function renderParentThreads(){
+  const c=document.getElementById('tch-parent-threads');
+  if(!c)return;
+  c.innerHTML=PARENT_CONVOS.map((cv,i)=>`
+    <div class="convo-item ${i===0?'active':''}" onclick="openParentConvo(${i},this,'tch')">
+      <div class="convo-av" style="background:${cv.bg};">${cv.initials}</div>
+      <div class="convo-info"><div class="convo-name">${cv.name}</div><div class="convo-prev">${cv.msgs[cv.msgs.length-1].text}</div></div>
+      ${cv.unread?'<div class="unread-dot"></div>':''}
+    </div>`).join('');
+  openParentConvo(0,null,'tch');
+}
+function openParentConvo(idx,el,prefix){
+  if(el){document.querySelectorAll(`#${prefix}-parent-threads .convo-item`).forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+  const cv=PARENT_CONVOS[idx];
+  const area=document.getElementById(`${prefix}-parent-chat`);
+  if(!area)return;
+  area.innerHTML=`
+    <div class="chat-hdr">💬 ${cv.name} — re: ${cv.student}</div>
+    <div class="chat-msgs" id="${prefix}-pchat-${idx}">${cv.msgs.map(m=>`<div><div class="bubble ${m.from==='teacher'?'me':'them'}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('')}</div>
+    <div class="chat-in"><input type="text" placeholder="Message ${cv.name}..." onkeypress="if(event.key==='Enter')sendParentMsg(${idx},'${prefix}')"><button class="btn btn-primary btn-sm" onclick="sendParentMsg(${idx},'${prefix}')">Send</button></div>`;
+  scroll(`${prefix}-pchat-${idx}`);
+}
+function sendParentMsg(idx,prefix){
+  const area=document.getElementById(`${prefix}-parent-chat`);
+  const inp=area.querySelector('input');
+  if(!inp||!inp.value.trim())return;
+  const msgs=area.querySelector('.chat-msgs');
+  msgs.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
+  inp.value=''; msgs.scrollTop=msgs.scrollHeight; toast('✓ Message sent · Parent notified');
+}
+function renderStaffThreads(){
+  const c=document.getElementById('tch-staff-threads');
+  if(!c)return;
+  c.innerHTML=STAFF_CONVOS.map((cv,i)=>`
+    <div class="convo-item ${i===0?'active':''}" onclick="openStaffConvo(${i},this)">
+      <div class="convo-av" style="background:${cv.bg};">${cv.initials}</div>
+      <div class="convo-info"><div class="convo-name">${cv.name}</div><div class="convo-prev">${cv.msgs[cv.msgs.length-1].text}</div></div>
+      ${cv.unread?'<div class="unread-dot"></div>':''}
+    </div>`).join('');
+  openStaffConvo(0,null);
+}
+function openStaffConvo(idx,el){
+  if(el){document.querySelectorAll('#tch-staff-threads .convo-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+  const cv=STAFF_CONVOS[idx];
+  const area=document.getElementById('tch-staff-chat');
+  area.innerHTML=`
+    <div class="chat-hdr">📨 ${cv.name} — ${cv.email}</div>
+    <div class="chat-msgs" id="tch-schat-${idx}">${cv.msgs.map(m=>`<div><div class="bubble ${m.from==='teacher'?'me':'them'}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('')}</div>
+    <div class="chat-in"><input type="text" placeholder="Message ${cv.name}..." onkeypress="if(event.key==='Enter')sendStaffMsg(${idx})"><button class="btn btn-primary btn-sm" onclick="sendStaffMsg(${idx})">Send</button></div>`;
+  scroll(`tch-schat-${idx}`);
+}
+function sendStaffMsg(idx){
+  const area=document.getElementById('tch-staff-chat');
+  const inp=area.querySelector('input');
+  if(!inp||!inp.value.trim())return;
+  const msgs=area.querySelector('.chat-msgs');
+  msgs.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
+  inp.value=''; msgs.scrollTop=msgs.scrollHeight; toast('✓ Message sent to ESP staff');
+}
+
+// ═══════════════════════════════════
+// RENDER: PARENT
+// ═══════════════════════════════════
+function renderParentNotifs(){
+  const c=document.getElementById('parent-notif-list');
+  if(!c)return;
+  c.innerHTML=PARENT_NOTIFS.map(n=>`
+    <div class="notif">
+      <div class="notif-icon ${n.type}">${n.icon}</div>
+      <div class="notif-body">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-desc">${n.desc}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+      ${n.new?'<div class="notif-new"></div>':''}
+    </div>`).join('');
+}
+function renderParentHistory(){
+  const c=document.getElementById('parent-history-list');
+  if(!c)return;
+  c.innerHTML=PARENT_HISTORY.map(h=>`
+    <div class="feed-item">
+      <div class="feed-av ${h.type}">${h.type==='pos'?'⭐':'⚠️'}</div>
+      <div style="flex:1;">
+        <div class="feed-desc" style="color:var(--text);font-size:0.85rem;">${h.text}</div>
+        <div class="feed-meta"><span class="esp-tag">🧑‍💼 ${h.esp}</span><span class="feed-time">${h.date}</span></div>
+      </div>
+    </div>`).join('');
+}
+function renderParentMsgs(){
+  const c=document.getElementById('parent-chat-msgs');
+  if(!c)return;
+  c.innerHTML=PARENT_MSGS.map(m=>`<div><div class="bubble ${m.from==='parent'?'me':'them'}" style="${m.from==='me'?'--blue:#0891B2;':''}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('');
+  c.scrollTop=c.scrollHeight;
+}
+function parentSend(){
+  const inp=document.getElementById('parent-msg-input');
+  if(!inp||!inp.value.trim())return;
+  const c=document.getElementById('parent-chat-msgs');
+  c.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
+  inp.value=''; c.scrollTop=c.scrollHeight; toast('✓ Message sent to Ms. Chen');
+}
+
+// ═══════════════════════════════════
+// RENDER: ARCADE
+// ═══════════════════════════════════
+function renderArcade(){
+  const rw=document.getElementById('arcade-rewards');
+  if(rw) rw.innerHTML=REWARDS.map(r=>`
+    <div class="reward-card ${r.unlocked?'':'locked'}" onclick="${r.unlocked?`redeemReward('${r.name}')`:''}" >
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-info"><div class="reward-name">${r.name}</div><div class="reward-desc">${r.desc}</div></div>
+      <div class="reward-cost ${r.unlocked?'unlocked':''}">${r.unlocked?'✓ Redeem':'🔒 '+r.cost+' pts'}</div>
+    </div>`).join('');
+  const lg=document.getElementById('arcade-log');
+  if(lg) lg.innerHTML=ARCADE_LOG.map(b=>`
+    <div class="beh-item">
+      <div class="beh-dot ${b.type}"></div>
+      <div class="beh-text">${b.text}</div>
+      <div class="beh-pts ${b.type}">${b.pts>0?'+':''}${b.pts}</div>
+      <div class="beh-time">${b.time}</div>
+    </div>`).join('');
+}
+function redeemReward(name){
+  const pts=parseInt(document.getElementById('arc-pts').textContent);
+  document.getElementById('arc-pts').textContent=pts-50;
+  toast(`🎉 Redeemed: ${name}! Ms. Chen has been notified.`);
+}
+
+// ═══════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════
+function fwdParent(btn){
+  btn.textContent='⏳';btn.disabled=true;
+  setTimeout(()=>{btn.textContent='✓ Sent';btn.classList.add('sent');toast('✓ Forwarded to parent · Conversation unlocked');},900);
+}
+function espLog(){
+  const b=document.getElementById('esp-behavior').value.trim();
+  if(!b){toast('⚠ Please describe the behavior');return;}
+  const type=document.getElementById('esp-type').value;
+  const student=document.getElementById('esp-student').value;
+  BEHAVIORS.unshift({student,type,desc:b,esp:'T. Vega',time:'Just now'});
+  document.getElementById('esp-behavior').value='';
+  renderESPFeed();
+  const s=document.getElementById('esp-log-status');
+  s.style.display='block';setTimeout(()=>s.style.display='none',3500);
+  toast(`✓ Logged · Case manager notified · Parent alerted`);
+}
+function espGoodBehavior(){
+  toast('⭐ Good Behavior Alert sent to Ms. Chen and parent!');
+}
+function espAI(){
+  const p=document.getElementById('esp-ai-prompt').value.trim();
+  const f=document.getElementById('esp-ai-focus').value;
+  const out=document.getElementById('esp-ai-out');
+  if(!p){toast('⚠ Describe a situation first');return;}
+  out.className='ai-out';out.textContent='🤖 Generating...';
+  setTimeout(()=>{out.textContent=AI_RESPONSES[f]||AI_RESPONSES["Professional Documentation Language"];toast('✓ Generated by Claude AI');},1200);
+}
+function tchLog(){
+  const b=document.getElementById('tch-log-behavior').value.trim();
+  if(!b){toast('⚠ Please describe the behavior');return;}
+  const student=document.getElementById('tch-log-student').value;
+  const type=document.getElementById('tch-log-type').value;
+  BEHAVIORS.unshift({student,type,desc:b,esp:'Ms. Chen',time:'Just now'});
+  document.getElementById('tch-log-behavior').value='';
+  document.getElementById('tch-today').textContent=parseInt(document.getElementById('tch-today').textContent)+1;
+  renderTchFeed();
+  const s=document.getElementById('tch-log-status');
+  s.style.display='block';setTimeout(()=>s.style.display='none',3500);
+  toast('✓ Logged · Feed updated · Parent notified');
+}
+function tchAI(){
+  const p=document.getElementById('tch-ai-prompt').value.trim();
+  const f=document.getElementById('tch-ai-focus').value;
+  const out=document.getElementById('tch-ai-out');
+  if(!p){toast('⚠ Describe a situation first');return;}
+  out.className='ai-out';out.textContent='🤖 Generating...';
+  setTimeout(()=>{out.textContent=AI_RESPONSES[f]||AI_RESPONSES["Professional Documentation Language"];toast('✓ Generated by Claude AI');},1200);
+}
+
+// BRANDING
+document.getElementById('brand-primary').addEventListener('input',function(){
+  document.getElementById('brand-primary-hex').value=this.value;updatePreview();
+});
+document.getElementById('brand-accent').addEventListener('input',function(){
+  document.getElementById('brand-accent-hex').value=this.value;updatePreview();
+});
+function updatePreview(){
+  const p=document.getElementById('brand-primary').value;
+  const a=document.getElementById('brand-accent').value;
+  const n=document.getElementById('brand-name').value;
+  document.getElementById('brand-preview').style.background=p;
+  document.getElementById('brand-preview-name').textContent=n;
+  document.getElementById('brand-preview-btn').style.background=a;
+  document.getElementById('brand-preview-badge').style.background=a;
+}
+function setPreset(p,a,label){
+  document.getElementById('brand-primary').value=p;document.getElementById('brand-primary-hex').value=p;
+  document.getElementById('brand-accent').value=a;document.getElementById('brand-accent-hex').value=a;
+  updatePreview();toast(`🎨 ${label} — click Apply to save`);
+}
+function applyBranding(){
+  const p=document.getElementById('brand-primary').value;
+  const a=document.getElementById('brand-accent').value;
+  const n=document.getElementById('brand-name').value;
+  document.documentElement.style.setProperty('--navy',p);
+  document.documentElement.style.setProperty('--blue',a);
+  document.documentElement.style.setProperty('--blue2',a);
+  document.querySelectorAll('.sb-brand h1').forEach(el=>{const t=el.textContent.split(' ');el.textContent=`${t[0]} ${n.split(' ')[0]}`;});
+  document.querySelectorAll('.sb-school').forEach(el=>el.firstChild&&(el.firstChild.textContent=n));
+  toast(`✓ Branding applied — ${n} color scheme is live across all views`);
+}
+
+// UTILS
+function scroll(id){const el=document.getElementById(id);if(el)el.scrollTop=el.scrollHeight;}
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast-el');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-ov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+</script>
+</body>
+</html>

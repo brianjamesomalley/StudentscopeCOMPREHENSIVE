@@ -221,20 +221,30 @@ textarea { min-height: 100px; resize: vertical; }
           <h3 style="font-size:1.1rem;margin-bottom:6px;">📊 This Week's Report</h3>
           <div style="font-size:0.9rem;opacity:0.85;margin-bottom:4px;" id="portalThisWeekRange">Loading...</div>
           <div style="font-size:1.1rem;font-weight:700;margin-bottom:14px;" id="portalThisWeekCount">0 behaviors</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button onclick="portalEmailWeeklyReport('current')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">📧 Email</button>
-            <button onclick="portalPrintWeeklyReport('current')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">🖨️ Print</button>
-            <button onclick="downloadWeeklyReportDocx('current')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">⬇️ .docx</button>
+          <div style="position:relative;display:inline-block;width:100%;">
+            <button onclick="toggleReportMenu('menu-current')" style="width:100%;padding:11px 16px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.3px;">
+              📄 Report &nbsp;▾
+            </button>
+            <div id="menu-current" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:white;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:200;overflow:hidden;">
+              <div onclick="portalEmailWeeklyReport('current');toggleReportMenu('menu-current')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">📧 Email Report</div>
+              <div onclick="portalPrintWeeklyReport('current');toggleReportMenu('menu-current')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">🖨️ Print Report</div>
+              <div onclick="downloadWeeklyReportDocx('current');toggleReportMenu('menu-current')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">⬇️ Download .docx</div>
+            </div>
           </div>
         </div>
         <div style="background:linear-gradient(135deg,#9b59b6 0%,#8e44ad 100%);padding:22px;border-radius:16px;color:white;box-shadow:0 4px 15px rgba(155,89,182,0.3);">
           <h3 style="font-size:1.1rem;margin-bottom:6px;">📅 Last Week's Report</h3>
           <div style="font-size:0.9rem;opacity:0.85;margin-bottom:4px;" id="portalLastWeekRange">Loading...</div>
           <div style="font-size:1.1rem;font-weight:700;margin-bottom:14px;" id="portalLastWeekCount">0 behaviors</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button onclick="portalEmailWeeklyReport('last')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">📧 Email</button>
-            <button onclick="portalPrintWeeklyReport('last')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">🖨️ Print</button>
-            <button onclick="downloadWeeklyReportDocx('last')" style="flex:1;padding:10px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:8px;font-weight:600;cursor:pointer;">⬇️ .docx</button>
+          <div style="position:relative;display:inline-block;width:100%;">
+            <button onclick="toggleReportMenu('menu-last')" style="width:100%;padding:11px 16px;background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.3px;">
+              📄 Report &nbsp;▾
+            </button>
+            <div id="menu-last" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:white;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:200;overflow:hidden;">
+              <div onclick="portalEmailWeeklyReport('last');toggleReportMenu('menu-last')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">📧 Email Report</div>
+              <div onclick="portalPrintWeeklyReport('last');toggleReportMenu('menu-last')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">🖨️ Print Report</div>
+              <div onclick="downloadWeeklyReportDocx('last');toggleReportMenu('menu-last')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">⬇️ Download .docx</div>
+            </div>
           </div>
         </div>
       </div>
@@ -259,7 +269,37 @@ textarea { min-height: 100px; resize: vertical; }
           <button class="btn btn-success btn-full" onclick="addStudent()">Add Student</button>
         </div>
         <div class="action-card" style="grid-column: span 2;">
-          <h3>👥 All Students</h3>
+          <!-- Batch report toolbar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <h3 style="margin:0;">👥 All Students</h3>
+              <label style="display:flex;align-items:center;gap:6px;font-size:0.88rem;color:#64748b;cursor:pointer;margin:0;font-weight:600;">
+                <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAllStudents(this.checked)"
+                  style="width:16px;height:16px;cursor:pointer;accent-color:#3b82f6;">
+                Select All
+              </label>
+              <span id="selectedCount" style="font-size:0.85rem;color:#3b82f6;font-weight:700;display:none;"></span>
+            </div>
+            <div id="batchReportBar" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;">
+              <select id="batchDateRange"
+                style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.88rem;font-weight:600;color:#0f172a;cursor:pointer;width:auto;">
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+                <option value="all">All Time</option>
+              </select>
+              <div style="position:relative;">
+                <button onclick="toggleReportMenu('menu-batch')"
+                  style="padding:10px 18px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:7px;">
+                  📄 Report &nbsp;▾
+                </button>
+                <div id="menu-batch" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:210px;background:white;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:200;overflow:hidden;border:1px solid #e2e8f0;">
+                  <div onclick="batchEmailReport();toggleReportMenu('menu-batch')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">📧 Email Batch Report</div>
+                  <div onclick="batchPrintReport();toggleReportMenu('menu-batch')" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">🖨️ Print Batch Report</div>
+                  <div onclick="batchDownloadDocx();toggleReportMenu('menu-batch')" id="batchDocxBtn" style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#0f172a;font-weight:600;font-size:0.9rem;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">⬇️ Download .docx</div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="student-grid" id="studentGrid"><p class="loading">Loading students...</p></div>
         </div>
       </div>
@@ -554,8 +594,14 @@ const App = {
     grid.innerHTML = students.map(s => {
       const hasParent = !!s.parentId;
       return `
-        <div class="student-card" onclick="openStudentReport('${s.id}')">
-          <div class="student-name">${s.name}</div>
+        <div class="student-card" id="scard-${s.id}" onclick="openStudentReport('${s.id}')"
+          style="position:relative;">
+          <div style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();">
+            <input type="checkbox" class="student-select-cb" data-id="${s.id}"
+              onchange="updateStudentSelection()"
+              style="width:17px;height:17px;cursor:pointer;accent-color:#3b82f6;">
+          </div>
+          <div class="student-name" style="padding-right:24px;">${s.name}</div>
           <div class="student-meta">Grade ${s.grade || '—'}</div>
           ${hasParent ? '<div class="student-meta" style="color:#10b981;">✓ Parent Linked</div>' : '<div class="student-meta" style="color:#94a3b8;">No parent linked</div>'}
           ${s.teacherEmail ? `<div class="teacher-tag">🧑‍💼 ${s.teacherEmail}</div>` : ''}
@@ -570,8 +616,8 @@ const App = {
 
   async loadAllBehaviors() {
     const isAdmin = currentTeacherRole === 'admin';
-    let query = db.collection('behaviors').orderBy('timestamp', 'desc').limit(200);
-    if (!isAdmin) query = db.collection('behaviors').where('teacherId', '==', currentTeacherId).orderBy('timestamp', 'desc').limit(200);
+    let query = db.collection('behaviors').orderBy('timestamp', 'desc').limit(2000);
+    if (!isAdmin) query = db.collection('behaviors').where('teacherId', '==', currentTeacherId).orderBy('timestamp', 'desc').limit(2000);
     const snapshot = await query.get();
     behaviors = [];
     const teacherEmails = new Set();
@@ -1139,7 +1185,7 @@ async function _saveDocx(lib, doc, filename) {
 // ── INDIVIDUAL STUDENT REPORT .DOCX ─────────────────────────────────────────
 async function downloadStudentReportDocx() {
   const btn = document.getElementById('studentDocxBtn');
-  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Building...';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span> Building...'; }
   try {
     const lib = _docxLib();
     const { Document, Paragraph, TextRun, BorderStyle } = lib;
@@ -1193,7 +1239,8 @@ async function downloadStudentReportDocx() {
     console.error('DOCX generation failed:', err);
     alert('Failed to generate .docx: ' + err.message);
   } finally {
-    btn.disabled = false; btn.innerHTML = '<span>⬇️</span> Download .docx';
+    const btn = document.getElementById('studentDocxBtn');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span>⬇️</span> Download .docx'; }
   }
 }
 
@@ -1242,6 +1289,282 @@ async function downloadWeeklyReportDocx(weekType) {
   const fileLabel     = weekType === 'current' ? 'ThisWeek' : 'LastWeek';
   const safeDateRange = dateRange.replace(/[^a-z0-9]/gi, '_');
   await _saveDocx(lib, doc, `StudentScope_${fileLabel}_${safeDateRange}.docx`);
+}
+
+// ========== REPORT DROPDOWN MENU ==========
+function toggleReportMenu(menuId) {
+  const allMenus = ['menu-current', 'menu-last', 'menu-batch'];
+  allMenus.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (id === menuId && el.style.display === 'none') ? 'block' : 'none';
+  });
+}
+// Close any open report menu when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="menu-"]') && !e.target.closest('button[onclick*="toggleReportMenu"]')) {
+    ['menu-current','menu-last','menu-batch'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+});
+
+// ========== BATCH STUDENT SELECTION ==========
+function updateStudentSelection() {
+  const cbs = document.querySelectorAll('.student-select-cb');
+  const checked = [...cbs].filter(cb => cb.checked);
+  const countEl = document.getElementById('selectedCount');
+  const bar = document.getElementById('batchReportBar');
+  const selectAll = document.getElementById('selectAllStudents');
+
+  if (checked.length === 0) {
+    countEl.style.display = 'none';
+    bar.style.display = 'none';
+    selectAll.indeterminate = false;
+    selectAll.checked = false;
+  } else {
+    countEl.style.display = 'inline';
+    countEl.textContent = `${checked.length} student${checked.length !== 1 ? 's' : ''} selected`;
+    bar.style.display = 'flex';
+    selectAll.indeterminate = checked.length > 0 && checked.length < cbs.length;
+    selectAll.checked = checked.length === cbs.length;
+  }
+}
+
+function toggleSelectAllStudents(checked) {
+  document.querySelectorAll('.student-select-cb').forEach(cb => cb.checked = checked);
+  updateStudentSelection();
+}
+
+function getSelectedStudents() {
+  return [...document.querySelectorAll('.student-select-cb:checked')]
+    .map(cb => students.find(s => s.id === cb.dataset.id))
+    .filter(Boolean);
+}
+
+function _getBatchCutoff() {
+  const val = document.getElementById('batchDateRange')?.value || '7';
+  if (val === 'all') return null;
+  return new Date(Date.now() - parseInt(val, 10) * 24 * 60 * 60 * 1000);
+}
+
+function _getBatchRangeLabel() {
+  const val = document.getElementById('batchDateRange')?.value || '7';
+  if (val === 'all') return 'All Time';
+  return `Last ${val} Days`;
+}
+
+// ── BATCH EMAIL ──────────────────────────────────────────────────────────────
+function batchEmailReport() {
+  const selected = getSelectedStudents();
+  if (!selected.length) { alert('No students selected.'); return; }
+  const cutoff = _getBatchCutoff();
+  const rangeLabel = _getBatchRangeLabel();
+  let body = `STUDENTSCOPE BATCH REPORT — ${rangeLabel.toUpperCase()}
+`;
+  body += `Generated: ${new Date().toLocaleString()}
+`;
+  body += `Students included: ${selected.length}
+${'='.repeat(60)}
+
+`;
+
+  selected.forEach(student => {
+    const all = behaviors.filter(b => b.studentId === student.id || b.studentName === student.name);
+    const filtered = (cutoff ? all.filter(b => new Date(b.timestamp) >= cutoff) : all)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const pos = all.filter(b => b.type === 'positive').length;
+    const neg = all.filter(b => b.type === 'negative').length;
+
+    body += `STUDENT: ${student.name} | Grade ${student.grade || '—'} | Teacher: ${student.teacherEmail || '—'}
+`;
+    body += `All-Time: ${all.length} total (${pos} positive, ${neg} negative)
+`;
+    body += `${rangeLabel}: ${filtered.length} entries
+${'-'.repeat(60)}
+`;
+    filtered.forEach((b, i) => {
+      body += `  ${i+1}. ${b.type === 'positive' ? '✓ POSITIVE' : '⚠ NEGATIVE'} — ${new Date(b.timestamp).toLocaleString()}
+`;
+      body += `     ${b.behavior || '(no description)'}
+
+`;
+    });
+    if (filtered.length === 0) body += `  No behaviors for this period.
+`;
+    body += '
+';
+  });
+  body += `${'='.repeat(60)}
+Generated by StudentScope Behavior Tracking System
+`;
+  const subject = `StudentScope Batch Report — ${selected.map(s => s.name).join(', ')} — ${rangeLabel}`;
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// ── BATCH PRINT ──────────────────────────────────────────────────────────────
+function batchPrintReport() {
+  const selected = getSelectedStudents();
+  if (!selected.length) { alert('No students selected.'); return; }
+  const cutoff = _getBatchCutoff();
+  const rangeLabel = _getBatchRangeLabel();
+
+  const sections = selected.map(student => {
+    const all = behaviors.filter(b => b.studentId === student.id || b.studentName === student.name);
+    const filtered = (cutoff ? all.filter(b => new Date(b.timestamp) >= cutoff) : all)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const pos = all.filter(b => b.type === 'positive').length;
+    const neg = all.filter(b => b.type === 'negative').length;
+
+    const entries = filtered.length === 0
+      ? '<p style="color:#94a3b8;font-style:italic;">No behaviors for this period.</p>'
+      : filtered.map(b => `
+          <div class="entry ${b.type}">
+            <div class="entry-meta">${b.type === 'positive' ? '✓ Positive' : '⚠ Negative'} &nbsp;·&nbsp; ${new Date(b.timestamp).toLocaleString()} ${b.teacherEmail ? `&nbsp;·&nbsp; ${b.teacherEmail}` : ''}</div>
+            <div class="entry-behavior">${b.behavior || '(no description)'}</div>
+          </div>`).join('');
+
+    return `
+      <div class="student-section">
+        <div class="student-header">
+          <span>${student.name}</span>
+          <span style="font-size:0.85rem;font-weight:400;opacity:0.8;">Grade ${student.grade || '—'} &nbsp;·&nbsp; ${student.teacherEmail || ''}</span>
+        </div>
+        <div class="summary-row">
+          All-Time: <strong>${all.length}</strong> total &nbsp;|&nbsp;
+          <span style="color:#10b981;font-weight:700;">✓ ${pos}</span> positive &nbsp;|&nbsp;
+          <span style="color:#ef4444;font-weight:700;">⚠ ${neg}</span> negative &nbsp;|&nbsp;
+          <strong>${filtered.length}</strong> entries in ${rangeLabel}
+        </div>
+        ${entries}
+      </div>`;
+  }).join('');
+
+  const win = window.open('', '', 'width=960,height=750');
+  win.document.write(`<html><head><title>StudentScope Batch Report</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:40px;color:#1e293b;max-width:900px;margin:0 auto;}
+      h1{font-size:1.5rem;margin-bottom:4px;color:#1e293b;}
+      .meta{color:#64748b;margin-bottom:32px;font-size:0.9rem;}
+      .student-section{margin-bottom:36px;page-break-inside:avoid;}
+      .student-header{background:#1e293b;color:white;padding:12px 18px;border-radius:10px 10px 0 0;font-weight:700;font-size:1.05rem;display:flex;justify-content:space-between;align-items:baseline;}
+      .summary-row{background:#f1f5f9;padding:10px 18px;font-size:0.88rem;color:#475569;border-left:4px solid #3b82f6;margin-bottom:10px;}
+      .entry{background:#f8fafc;padding:12px 15px;border-radius:8px;margin-bottom:8px;border-left:4px solid;}
+      .entry.positive{border-color:#10b981;}.entry.negative{border-color:#ef4444;}
+      .entry-meta{color:#64748b;font-size:0.82rem;margin-bottom:5px;}
+      .entry-behavior{font-size:0.93rem;line-height:1.5;color:#1e293b;}
+      .footer{margin-top:40px;padding-top:16px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:0.82rem;}
+    </style></head><body>
+    <h1>📋 StudentScope Batch Report</h1>
+    <div class="meta">
+      Range: <strong>${rangeLabel}</strong> &nbsp;·&nbsp;
+      Generated: ${new Date().toLocaleString()} &nbsp;·&nbsp;
+      ${selected.length} student${selected.length !== 1 ? 's' : ''}
+    </div>
+    ${sections}
+    <div class="footer">Generated by StudentScope Behavior Tracking System</div>
+    </body></html>`);
+  win.document.close();
+  win.print();
+}
+
+// ── BATCH DOWNLOAD .DOCX ─────────────────────────────────────────────────────
+async function batchDownloadDocx() {
+  const selected = getSelectedStudents();
+  if (!selected.length) { alert('No students selected.'); return; }
+
+  const btn = document.getElementById('batchDocxBtn');
+  if (btn) { btn.innerHTML = '⏳ Building...'; btn.style.pointerEvents = 'none'; }
+
+  try {
+    const lib = _docxLib();
+    const { Document, Paragraph, TextRun, BorderStyle, PageBreak } = lib;
+    const cutoff = _getBatchCutoff();
+    const rangeLabel = _getBatchRangeLabel();
+    const colWidths = [1600, 900, 2200, 4660];
+    const headerFooter = _makeHeaderFooter(lib, `Batch Report — ${rangeLabel} — ${selected.length} Students`);
+
+    const children = [
+      // Cover summary
+      new Paragraph({ spacing: { before: 0, after: 200 },
+        children: [new TextRun({ text: `Batch Behavior Report — ${rangeLabel}`, bold: true, size: 32, font: 'Arial', color: '1F4E79' })] }),
+      new Paragraph({ spacing: { before: 0, after: 60 },
+        children: [
+          new TextRun({ text: 'Students: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+          new TextRun({ text: `${selected.length}     `, size: 20, font: 'Arial' }),
+          new TextRun({ text: 'Generated: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+          new TextRun({ text: new Date().toLocaleString(), size: 20, font: 'Arial' }),
+        ]
+      }),
+      new Paragraph({ spacing: { before: 0, after: 320 },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: 'CCCCCC', space: 1 } }, children: [] }),
+    ];
+
+    selected.forEach((student, idx) => {
+      const all = behaviors.filter(b => b.studentId === student.id || b.studentName === student.name);
+      const filtered = (cutoff ? all.filter(b => new Date(b.timestamp) >= cutoff) : all)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const pos = all.filter(b => b.type === 'positive').length;
+      const neg = all.filter(b => b.type === 'negative').length;
+
+      // Page break between students (not before first)
+      if (idx > 0) children.push(new Paragraph({ children: [new PageBreak()] }));
+
+      children.push(
+        new Paragraph({ spacing: { before: 0, after: 160 },
+          children: [new TextRun({ text: student.name, bold: true, size: 28, font: 'Arial', color: '1F4E79' })] }),
+        new Paragraph({ spacing: { before: 0, after: 60 },
+          children: [
+            new TextRun({ text: 'Grade: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+            new TextRun({ text: `${student.grade || '—'}     `, size: 20, font: 'Arial' }),
+            new TextRun({ text: 'Teacher: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+            new TextRun({ text: `${student.teacherEmail || '—'}     `, size: 20, font: 'Arial' }),
+            new TextRun({ text: 'Parent: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+            new TextRun({ text: student.parentId ? 'Linked ✓' : 'Not linked', size: 20, font: 'Arial' }),
+          ]
+        }),
+        new Paragraph({ spacing: { before: 0, after: 60 },
+          children: [
+            new TextRun({ text: 'All-Time Total: ', bold: true, size: 20, font: 'Arial', color: '444444' }),
+            new TextRun({ text: `${all.length}     `, size: 20, font: 'Arial' }),
+            new TextRun({ text: 'Positive: ', bold: true, size: 20, font: 'Arial', color: '059669' }),
+            new TextRun({ text: `${pos}     `, size: 20, font: 'Arial' }),
+            new TextRun({ text: 'Negative: ', bold: true, size: 20, font: 'Arial', color: 'DC2626' }),
+            new TextRun({ text: `${neg}`, size: 20, font: 'Arial' }),
+          ]
+        }),
+        new Paragraph({ spacing: { before: 0, after: 280 },
+          border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: 'CCCCCC', space: 1 } }, children: [] }),
+        new Paragraph({ spacing: { before: 0, after: 160 },
+          children: [new TextRun({ text: `Behavior Log — ${rangeLabel} (${filtered.length} entries)`, bold: true, size: 22, font: 'Arial', color: '1F4E79' })] }),
+      );
+
+      if (filtered.length === 0) {
+        children.push(new Paragraph({ children: [new TextRun({ text: `No behaviors found for this period (${rangeLabel}).`, size: 20, font: 'Arial', color: '94A3B8', italics: true })] }));
+      } else {
+        const tableRows = filtered.map(b => [
+          { text: new Date(b.timestamp).toLocaleDateString(), bold: true, color: '1F4E79' },
+          { text: new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), color: '444444' },
+          { text: b.type === 'positive' ? 'Positive' : 'Negative', italics: true, color: b.type === 'positive' ? '059669' : 'DC2626' },
+          { text: b.behavior || '(no description)', color: '222222' }
+        ]);
+        children.push(_buildTable(lib, colWidths, ['Date', 'Time', 'Type', 'Description'], tableRows));
+      }
+    });
+
+    const doc = new Document({ sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, ...headerFooter, children }] });
+
+    const safeRange = rangeLabel.replace(/\s+/g, '_');
+    const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).replace(/,?\s+/g,'_');
+    await _saveDocx(lib, doc, `StudentScope_Batch_${safeRange}_${date}.docx`);
+
+  } catch (err) {
+    console.error('Batch DOCX failed:', err);
+    alert('Failed to generate batch .docx: ' + err.message);
+  } finally {
+    const btn = document.getElementById('batchDocxBtn');
+    if (btn) { btn.innerHTML = '⬇️ Download .docx'; btn.style.pointerEvents = 'auto'; }
+  }
 }
 
 // Initialize

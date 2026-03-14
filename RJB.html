@@ -409,7 +409,7 @@
 
 
   <!-- SHOWER -->
-  <div class="section-label">Did Student need to shower?</div>
+  <div class="section-label">Did R.J. need to shower?</div>
   <div class="yn-row">
     <button class="yn-btn" id="showerY" onclick="pick('shower','Yes')">🚿 Yes</button>
     <button class="yn-btn" id="showerN" onclick="pick('shower','No')">✓ No</button>
@@ -716,8 +716,11 @@ async function submitIncident() {
       timestamp
     });
 
-    showToast('✓ Saved!');
+    showToast('✓ Saved! Opening school form…');
     resetForm();
+    setTimeout(() => {
+      window.open('https://docs.google.com/forms/d/e/1FAIpQLScnrNcYKR4TcprvDyQLrM5lfhxE06yreYkDCPZMOZPZYOmKhw/viewform', '_blank');
+    }, 1200);
   } catch (err) {
     console.error(err);
     showToast('✗ Save failed — check connection');
@@ -895,4 +898,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-

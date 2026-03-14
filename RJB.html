@@ -671,7 +671,7 @@ function pickSev(n) {
 
 // ── SUBMIT ─────────────────────────────────────────────────────────────────
 async function submitIncident() {
-  const staffName = document.getElementById('staffName').value.trim();
+  const staffName = window.activeStaff || '';
   const recovery  = document.getElementById('recoveryTime')?.value || '';
   const adultText   = getFieldText('adult');
   const studentText = getFieldText('student');
@@ -681,8 +681,7 @@ async function submitIncident() {
   if (!state.escalated)     { showToast('⚠ Did behavior escalate?'); return; }
   if (state.escalated === 'Yes' && !recovery) { showToast('⚠ Select recovery time'); return; }
   if (!state.severity)      { showToast('⚠ Select severity 1–4'); return; }
-  if (!adultText)           { showToast('⚠ Record adult response'); return; }
-  if (!studentText)         { showToast('⚠ Record student response'); return; }
+  // voice fields optional — saves even if blank
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;

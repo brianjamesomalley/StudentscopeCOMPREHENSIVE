@@ -399,11 +399,20 @@
 
 <div class="wrap">
 
-  <!-- STAFF NAME -->
-  <div class="section-label">Who's logging?</div>
-  <div class="staff-row">
+  <!-- STAFF PICKER SCREEN -->
+  <div class="staff-screen" id="staffScreen">
+    <h2>👋 Who are you?</h2>
+    <p>Tap your name — no password needed</p>
+    <div class="staff-btn-grid" id="staffGrid"></div>
+  </div>
+
+  <!-- ACTIVE STAFF BAR -->
+  <div class="section-label">Logging as</div>
+  <div class="staff-bar-active" onclick="switchStaff()">
     <div class="staff-dot"></div>
-    <input type="text" id="staffName" placeholder="Your name…" autocomplete="name" autocorrect="off">
+    <span class="staff-name-display" id="staffNameDisplay">—</span>
+    <span id="liveClock" style="color:var(--muted);font-size:0.82rem;font-weight:700;margin-left:auto;"></span>
+    <span class="staff-switch">Switch ▸</span>
   </div>
 
 
@@ -426,7 +435,7 @@
   <div id="recoveryWrap" style="display:none;">
     <div class="section-label">How long to recover?</div>
     <div class="big-select-wrap">
-      <select class="big-select" id="recoveryTime" onchange="markFilled(this)">
+      <select class="big-select" id="recoveryTime">
         <option value="">— Tap to select —</option>
         <option>0–10 minutes</option>
         <option>10–20 minutes</option>
@@ -684,7 +693,7 @@ async function submitIncident() {
   try {
     const timestamp = new Date().toISOString();
     const behaviorText =
-      `🏥 HYGIENE INCIDENT — Period: ${period} | ` +
+      `🏥 HYGIENE INCIDENT | ` +
       `Shower: ${state.shower} | ` +
       `Escalated: ${state.escalated}${state.escalated === 'Yes' ? ' (Recovery: ' + recovery + ')' : ''} | ` +
       `Severity: ${sevLabels[state.severity]} | ` +
@@ -783,7 +792,7 @@ function renderLogs() {
         <div class="log-top">
           <div>
             <div class="log-when">${dateStr} · ${timeStr}</div>
-            <div class="log-who">📍 ${log.period} · ${log.loggedBy}</div>
+            <div class="log-who">🕐 ${new Date(log.timestamp).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})} · ${log.loggedBy}</div>
           </div>
           <div class="chip-row">
             <span class="chip ${log.showerNeeded==='Yes'?'c-shower':'c-noshower'}">${log.showerNeeded==='Yes'?'🚿 Shower':'✓ No shower'}</span>
@@ -810,7 +819,7 @@ async function deleteLog(id) {
 function buildText() {
   let t = `R.J. HYGIENE INCIDENT REPORT\nGenerated: ${new Date().toLocaleString()}\nTotal: ${allLogs.length}\n${'='.repeat(50)}\n\n`;
   allLogs.forEach((log, i) => {
-    t += `${i+1}. ${new Date(log.timestamp).toLocaleString()}\n   Period: ${log.period}\n   Shower: ${log.showerNeeded}\n   Escalated: ${log.behaviorEscalated}`;
+    t += `${i+1}. ${new Date(log.timestamp).toLocaleString()}\n   Shower: ${log.showerNeeded}\n   Escalated: ${log.behaviorEscalated}`;
     if (log.behaviorEscalated === 'Yes') t += ` (${log.recoveryTime})`;
     t += `\n   Severity: ${log.severity}\n   Adult: ${log.adultResponse}\n   Student: ${log.studentResponse}\n   By: ${log.loggedBy}\n\n`;
   });
@@ -824,9 +833,9 @@ function emailReport() {
 
 function printReport() {
   if (!allLogs.length) { showToast('No incidents yet'); return; }
-  const rows = allLogs.map((log,i)=>`<tr style="background:${i%2===0?'#f8fafc':'white'}"><td>${new Date(log.timestamp).toLocaleDateString()}</td><td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${log.period}</td><td>${log.showerNeeded}</td><td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td><td>${log.severity}</td><td>${log.adultResponse}</td><td>${log.studentResponse}</td><td>${log.loggedBy}</td></tr>`).join('');
+  const rows = allLogs.map((log,i)=>`<tr style="background:${i%2===0?'#f8fafc':'white'}"><td>${new Date(log.timestamp).toLocaleDateString()}</td><td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${log.showerNeeded}</td><td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td><td>${log.severity}</td><td>${log.adultResponse}</td><td>${log.studentResponse}</td><td>${log.loggedBy}</td></tr>`).join('');
   const w = window.open('','','width=960,height=700');
-  w.document.write(`<html><head><title>R.J. Hygiene Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style></head><body><h1>R.J. — Hygiene Incident Report</h1><div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div><table><thead><tr><th>Date</th><th>Time</th><th>Period</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead><tbody>${rows}</tbody></table><div class="foot">🤖 StudentScope · Confidential Staff Document</div></body></html>`);
+  w.document.write(`<html><head><title>R.J. Hygiene Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style></head><body><h1>R.J. — Hygiene Incident Report</h1><div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div><table><thead><tr><th>Date</th><th>Time</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead><tbody>${rows}</tbody></table><div class="foot">🤖 StudentScope · Confidential Staff Document</div></body></html>`);
   w.document.close(); w.print();
 }
 

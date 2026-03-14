@@ -97,6 +97,14 @@
       font-size:0.9rem; font-family:inherit; resize:none; min-height:72px; background:var(--bg);
     }
     .fallback-area:focus { outline:none; border-color:var(--blue); background:var(--white); }
+    .combo-area {
+      width:100%; margin-top:10px; padding:11px 13px;
+      border:1.5px solid var(--border); border-radius:9px;
+      font-size:0.9rem; font-family:inherit; resize:none; min-height:68px;
+      background:var(--bg); color:var(--text);
+    }
+    .combo-area:focus { outline:none; border-color:var(--blue); background:var(--white); }
+
 
     /* SUBMIT */
     .submit-btn {
@@ -151,6 +159,32 @@
     footer { text-align:center; padding:20px; }
     .wm { display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:30px; padding:7px 16px; color:var(--muted); font-size:0.75rem; font-weight:600; }
     .wm b { color:var(--blue); }
+
+    /* POST-SAVE MODAL */
+    #saveModal {
+      position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300;
+      display:none; align-items:center; justify-content:center; padding:20px;
+    }
+    #saveModal.show { display:flex; }
+    .modal-box {
+      background:white; border-radius:20px; padding:28px 24px;
+      max-width:440px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-box h2 { font-size:1.2rem; font-weight:800; color:var(--navy); margin-bottom:4px; }
+    .modal-box p  { font-size:0.82rem; color:var(--muted); margin-bottom:20px; }
+    .modal-fields { background:var(--bg); border-radius:12px; padding:16px; margin-bottom:20px; }
+    .mf-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .mf-row:last-child { border-bottom:none; }
+    .mf-label { color:var(--muted); font-weight:600; flex-shrink:0; margin-right:12px; }
+    .mf-val   { color:var(--text); font-weight:700; text-align:right; }
+    .modal-notes { margin-bottom:20px; }
+    .mn-block { background:var(--bg); border-radius:10px; padding:12px; margin-bottom:8px; }
+    .mn-label { font-size:0.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+    .mn-text  { font-size:0.85rem; color:var(--text); line-height:1.5; }
+    .modal-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .modal-email { padding:16px; background:var(--blue); color:white; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; font-family:inherit; cursor:pointer; }
+    .modal-print { padding:16px; background:var(--teal); color:white; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; font-family:inherit; cursor:pointer; }
+    .modal-close { width:100%; margin-top:10px; padding:12px; background:none; border:1.5px solid var(--border); border-radius:12px; font-size:0.88rem; font-weight:600; color:var(--muted); font-family:inherit; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -213,30 +247,28 @@
   <div class="slabel">Adult Response</div>
   <div class="voice-card">
     <div class="voice-top">
-      <span class="voice-lbl">🎙 Voice Memo</span>
+      <span class="voice-lbl">Adult Response</span>
       <span class="voice-status" id="adultStatus">Tap to record</span>
     </div>
     <button class="mic-btn" id="adultMic" onclick="toggleRec('adult')">
       🎙 <span class="mic-txt">Tap to Record</span>
     </button>
     <div class="transcript" id="adultTranscript"></div>
-    <span class="edit-link" id="adultEditLink" onclick="toggleEdit('adult')">✏️ Edit</span>
-    <textarea class="edit-area" id="adultEdit" placeholder="Edit adult response…" rows="3"></textarea>
+    <textarea class="combo-area" id="adultText" placeholder="Or type here…" rows="3" oninput="syncFromType('adult')"></textarea>
   </div>
 
   <!-- STUDENT RESPONSE -->
   <div class="slabel">Student Response</div>
   <div class="voice-card">
     <div class="voice-top">
-      <span class="voice-lbl">🎙 Voice Memo</span>
+      <span class="voice-lbl">Student Response</span>
       <span class="voice-status" id="studentStatus">Tap to record</span>
     </div>
     <button class="mic-btn" id="studentMic" onclick="toggleRec('student')">
       🎙 <span class="mic-txt">Tap to Record</span>
     </button>
     <div class="transcript" id="studentTranscript"></div>
-    <span class="edit-link" id="studentEditLink" onclick="toggleEdit('student')">✏️ Edit</span>
-    <textarea class="edit-area" id="studentEdit" placeholder="Edit student response…" rows="3"></textarea>
+    <textarea class="combo-area" id="studentText" placeholder="Or type here…" rows="3" oninput="syncFromType('student')"></textarea>
   </div>
 
   <!-- SAVE -->
@@ -257,6 +289,21 @@
 <footer><div class="wm">🤖 <b>StudentScope</b> · Made for Educators</div></footer>
 <div id="toast"></div>
 
+<!-- POST-SAVE MODAL -->
+<div id="saveModal">
+  <div class="modal-box">
+    <h2>✓ Incident Saved</h2>
+    <p>Send a copy for your records — mirrors the school's Google Form.</p>
+    <div class="modal-fields" id="modalFields"></div>
+    <div class="modal-notes" id="modalNotes"></div>
+    <div class="modal-btns">
+      <button class="modal-email" onclick="modalEmail()">📧 Email</button>
+      <button class="modal-print" onclick="modalPrint()">🖨️ Print / PDF</button>
+    </div>
+    <button class="modal-close" onclick="closeModal()">Done</button>
+  </div>
+</div>
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -276,6 +323,7 @@ const db = firebase.firestore();
 // ── STATE ─────────────────────────────────────────────────────────
 const sel = { shower: null, escalated: null, severity: null };
 let allLogs = [];
+let lastSaved = null;
 
 // ── BUTTON PICKERS ────────────────────────────────────────────────
 function pick(group, val, btn, activeClass) {
@@ -325,7 +373,8 @@ if (SR) {
     box.dataset.final = combined;
     box.textContent = combined + (interim ? ' ' + interim : '');
     box.classList.add('show');
-    document.getElementById(recField + 'Edit').value = combined;
+    const ta = document.getElementById(recField + 'Text');
+    if (ta) ta.value = combined;
   };
 
   recog.onerror = e => {
@@ -395,12 +444,23 @@ function toggleEdit(field) {
 }
 
 function getFieldText(field) {
-  const fallback = document.getElementById(field + 'Fallback');
-  if (fallback) return fallback.value.trim();
-  const edit = document.getElementById(field + 'Edit');
-  if (edit && edit.classList.contains('show') && edit.value.trim()) return edit.value.trim();
+  // typed text wins if present, otherwise use voice transcript
+  const typed = document.getElementById(field + 'Text');
+  if (typed && typed.value.trim()) return typed.value.trim();
   const box = document.getElementById(field + 'Transcript');
   return box ? (box.dataset.final || '').trim() : '';
+}
+
+function syncFromType(field) {
+  // when user types, clear the voice transcript so there's no conflict
+  const box = document.getElementById(field + 'Transcript');
+  if (box) { box.textContent = ''; box.dataset.final = ''; box.classList.remove('show'); }
+  const btn = document.getElementById(field + 'Mic');
+  if (btn && btn.classList.contains('done')) {
+    btn.className = 'mic-btn';
+    btn.innerHTML = '🎙 <span class="mic-txt">Tap to Record</span>';
+    document.getElementById(field + 'Status').textContent = 'Tap to record';
+  }
 }
 
 // ── SAVE ──────────────────────────────────────────────────────────
@@ -459,15 +519,9 @@ async function saveIncident() {
       timestamp:    ts
     });
 
-    showToast('✓ Saved! Opening school form…');
+    lastSaved = record;
     resetForm();
-
-    setTimeout(() => {
-      window.open(
-        'https://docs.google.com/forms/d/e/1FAIpQLScnrNcYKR4TcprvDyQLrM5lfhxE06yreYkDCPZMOZPZYOmKhw/viewform',
-        '_blank'
-      );
-    }, 1200);
+    showModal(record);
 
   } catch (err) {
     console.error('Save failed:', err);
@@ -495,16 +549,12 @@ function resetForm() {
   ['adult','student'].forEach(f => {
     const mic  = document.getElementById(f + 'Mic');
     const box  = document.getElementById(f + 'Transcript');
-    const edit = document.getElementById(f + 'Edit');
-    const link = document.getElementById(f + 'EditLink');
     const stat = document.getElementById(f + 'Status');
-    const fb   = document.getElementById(f + 'Fallback');
     if (mic)  { mic.className = 'mic-btn'; mic.innerHTML = '🎙 <span class="mic-txt">Tap to Record</span>'; }
     if (box)  { box.textContent = ''; box.dataset.final = ''; box.classList.remove('show'); }
-    if (edit) { edit.value = ''; edit.classList.remove('show'); }
-    if (link) { link.classList.remove('show'); link.textContent = '✏️ Edit'; }
     if (stat) stat.textContent = 'Tap to record';
-    if (fb)   fb.value = '';
+    const ta = document.getElementById(f + 'Text');
+    if (ta) ta.value = '';
   });
 }
 
@@ -601,6 +651,116 @@ function printReport() {
     <div class="foot">🤖 StudentScope · Confidential Staff Document</div>
     </body></html>`);
   w.document.close(); w.print();
+}
+
+
+// ── POST-SAVE MODAL ───────────────────────────────────────────────
+function showModal(r) {
+  const sevLabels = {
+    '1 — Cooperative': '1 — Cooperative',
+    '2': '2', '3': '3',
+    '4 — Uncooperative': '4 — Uncooperative'
+  };
+  const fields = [
+    ['Date',       new Date(r.timestamp).toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'})],
+    ['Time',       new Date(r.timestamp).toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})],
+    ['Shower needed?',    r.showerNeeded],
+    ['Behavior escalated?', r.behaviorEscalated],
+    ['Recovery time',    r.behaviorEscalated === 'Yes' ? r.recoveryTime : 'N/A'],
+    ['Severity',         r.severity],
+  ];
+  document.getElementById('modalFields').innerHTML = fields.map(([label, val]) =>
+    `<div class="mf-row"><span class="mf-label">${label}</span><span class="mf-val">${val}</span></div>`
+  ).join('');
+  document.getElementById('modalNotes').innerHTML = `
+    <div class="mn-block"><div class="mn-label">Adult Response</div><div class="mn-text">${r.adultResponse}</div></div>
+    <div class="mn-block"><div class="mn-label">Student Response</div><div class="mn-text">${r.studentResponse}</div></div>
+  `;
+  document.getElementById('saveModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('saveModal').classList.remove('show');
+}
+
+function buildIncidentEmail(r) {
+  const d = new Date(r.timestamp);
+  const dateStr = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+  return [
+    'R.J. HYGIENE INCIDENT REPORT',
+    '================================',
+    '',
+    `Date:                ${dateStr}`,
+    `Time:                ${timeStr}`,
+    `Shower needed:       ${r.showerNeeded}`,
+    `Behavior escalated:  ${r.behaviorEscalated}`,
+    `Recovery time:       ${r.behaviorEscalated === 'Yes' ? r.recoveryTime : 'N/A'}`,
+    `Severity:            ${r.severity}`,
+    '',
+    'Adult Response:',
+    r.adultResponse,
+    '',
+    'Student Response:',
+    r.studentResponse,
+    '',
+    '================================',
+    'Generated by StudentScope',
+  ].join('\n');
+}
+
+function modalEmail() {
+  if (!lastSaved) return;
+  const d = new Date(lastSaved.timestamp);
+  const subject = `R.J. Hygiene Incident — ${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildIncidentEmail(lastSaved))}`;
+}
+
+function modalPrint() {
+  if (!lastSaved) return;
+  const r = lastSaved;
+  const d = new Date(r.timestamp);
+  const dateStr = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+  const w = window.open('','','width=700,height=900');
+  w.document.write(`
+    <html><head><title>R.J. Hygiene Incident</title>
+    <style>
+      body { font-family:Arial,sans-serif; padding:40px; color:#0f172a; max-width:600px; margin:0 auto; }
+      h1 { font-size:1.3rem; margin-bottom:4px; color:#1a2744; }
+      .meta { color:#64748b; font-size:0.85rem; margin-bottom:28px; }
+      .section { margin-bottom:24px; }
+      .section-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748b; margin-bottom:10px; border-bottom:2px solid #e2e8f0; padding-bottom:5px; }
+      .field-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.9rem; }
+      .field-label { color:#64748b; font-weight:600; }
+      .field-val   { font-weight:700; color:#0f172a; }
+      .note-block  { background:#f8fafc; padding:14px; border-radius:8px; margin-bottom:10px; }
+      .note-label  { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:6px; }
+      .note-text   { font-size:0.9rem; line-height:1.6; color:#0f172a; }
+      .footer { margin-top:40px; padding-top:14px; border-top:1px solid #e2e8f0; color:#94a3b8; font-size:0.75rem; }
+      .sev-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#dbeafe; color:#2563eb; }
+      @media print { body { padding:20px; } }
+    </style></head><body>
+    <h1>🤖 R.J. — Hygiene Incident Report</h1>
+    <div class="meta">StudentScope · Confidential Staff Document</div>
+    <div class="section">
+      <div class="section-title">Incident Details</div>
+      <div class="field-row"><span class="field-label">Date</span><span class="field-val">${dateStr}</span></div>
+      <div class="field-row"><span class="field-label">Time</span><span class="field-val">${timeStr}</span></div>
+      <div class="field-row"><span class="field-label">Shower needed?</span><span class="field-val">${r.showerNeeded}</span></div>
+      <div class="field-row"><span class="field-label">Behavior escalated?</span><span class="field-val">${r.behaviorEscalated}</span></div>
+      <div class="field-row"><span class="field-label">Recovery time</span><span class="field-val">${r.behaviorEscalated === 'Yes' ? r.recoveryTime : 'N/A'}</span></div>
+      <div class="field-row"><span class="field-label">Severity</span><span class="field-val"><span class="sev-badge">${r.severity}</span></span></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Narrative</div>
+      <div class="note-block"><div class="note-label">Adult Response</div><div class="note-text">${r.adultResponse}</div></div>
+      <div class="note-block"><div class="note-label">Student Response</div><div class="note-text">${r.studentResponse}</div></div>
+    </div>
+    <div class="footer">Generated by StudentScope · ${new Date().toLocaleString()}</div>
+    </body></html>`);
+  w.document.close();
+  w.print();
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────

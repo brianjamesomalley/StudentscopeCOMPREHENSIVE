@@ -1,1 +1,877 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>R.J. Hygiene Log</title>
+  <style>
+    :root {
+      --navy: #1a2744;
+      --blue: #2563eb;
+      --teal: #0d9488;
+      --gold: #d97706;
+      --red: #dc2626;
+      --green: #16a34a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      padding: 18px 20px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .brand-text { color: white; font-size: 1.1rem; font-weight: 700; }
+    .brand-sub  { color: rgba(255,255,255,0.55); font-size: 0.72rem; margin-top: 1px; }
+    .student-pill {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    /* ── MAIN ── */
+    .wrap { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 22px 0 10px 4px;
+    }
+
+    /* ── STAFF NAME ── */
+    .staff-row {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .staff-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+    .staff-row input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: transparent;
+    }
+    .staff-row input::placeholder { color: #94a3b8; }
+
+    /* ── BIG SELECT ── */
+    .big-select-wrap { position: relative; margin-bottom: 10px; }
+    .big-select {
+      width: 100%;
+      padding: 18px 48px 18px 18px;
+      font-size: 1.05rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: var(--text);
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .big-select:focus { outline: none; border-color: var(--blue); }
+    .big-select.filled { border-color: var(--blue); background: #eff6ff; color: var(--blue); }
+    .select-arrow {
+      position: absolute;
+      right: 16px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      pointer-events: none;
+      color: var(--muted);
+    }
+
+    /* ── DATE ROW ── */
+    .date-select {
+      width: 100%;
+      padding: 18px 48px 18px 18px;
+      font-size: 1.05rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: var(--text);
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .date-select:focus { outline: none; border-color: var(--blue); }
+
+    /* ── YES/NO BIG BUTTONS ── */
+    .yn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .yn-btn {
+      padding: 20px 10px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--muted);
+      text-align: center;
+    }
+    .yn-btn.yes-active { border-color: var(--green); background: #f0fdf4; color: var(--green); }
+    .yn-btn.no-active  { border-color: var(--red);   background: #fef2f2; color: var(--red); }
+
+    /* ── SEVERITY ROW ── */
+    .sev-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    .sev-btn {
+      padding: 20px 6px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      font-size: 1.3rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--muted);
+      text-align: center;
+    }
+    .sev-btn.active-1 { border-color: var(--green); background: #f0fdf4; color: var(--green); }
+    .sev-btn.active-2 { border-color: #0891b2;      background: #ecfeff; color: #0891b2; }
+    .sev-btn.active-3 { border-color: var(--gold);  background: #fffbeb; color: var(--gold); }
+    .sev-btn.active-4 { border-color: var(--red);   background: #fef2f2; color: var(--red); }
+    .sev-label { font-size: 0.6rem; font-weight: 600; display: block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── VOICE MEMO ── */
+    .voice-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .voice-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .voice-field-label { font-size: 0.78rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
+    .voice-status { font-size: 0.75rem; color: var(--muted); }
+
+    .mic-btn {
+      width: 100%;
+      padding: 22px;
+      border: none;
+      border-radius: 12px;
+      background: var(--navy);
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: inherit;
+      font-weight: 700;
+    }
+    .mic-btn .mic-text { font-size: 1rem; }
+    .mic-btn:active { transform: scale(0.97); }
+    .mic-btn.recording {
+      background: var(--red);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .mic-btn.done { background: var(--green); }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      50%       { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    }
+
+    .transcript-box {
+      margin-top: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text);
+      min-height: 56px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .transcript-box.has-text { display: block; }
+    .transcript-edit {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text);
+      background: white;
+      resize: none;
+      min-height: 70px;
+      display: none;
+    }
+    .transcript-edit.visible { display: block; }
+    .edit-link { font-size: 0.78rem; color: var(--blue); cursor: pointer; margin-top: 6px; display: inline-block; }
+
+    /* ── NO SPEECH SUPPORT ── */
+    .no-speech-textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--text);
+      resize: none;
+      min-height: 80px;
+      background: #f8fafc;
+    }
+    .no-speech-textarea:focus { outline: none; border-color: var(--blue); background: white; }
+
+    /* ── SUBMIT ── */
+    .submit-btn {
+      width: 100%;
+      padding: 22px;
+      background: var(--teal);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── HISTORY ── */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 28px 0 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .history-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .count-pill {
+      background: var(--navy);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .report-row { display: flex; gap: 8px; }
+    .report-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .btn-email { background: #dbeafe; color: var(--blue); }
+    .btn-print { background: #ccfbf1; color: var(--teal); }
+
+    .log-card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--blue);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .log-card.escalated { border-left-color: var(--gold); }
+    .log-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+    .log-when { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
+    .log-who  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip {
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .c-shower  { background: #fee2e2; color: var(--red); }
+    .c-noshower{ background: #ccfbf1; color: var(--teal); }
+    .c-esc     { background: #fef3c7; color: var(--gold); }
+    .c-calm    { background: #ccfbf1; color: var(--teal); }
+    .c-sev     { background: #dbeafe; color: var(--blue); }
+    .c-rec     { background: #fef3c7; color: var(--gold); }
+    .log-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .note-block { background: var(--bg); padding: 10px 12px; border-radius: 8px; }
+    .note-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .note-text  { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
+    .del-btn { background: none; border: none; color: #94a3b8; font-size: 0.78rem; cursor: pointer; margin-top: 8px; font-family: inherit; padding: 0; }
+    .del-btn:active { color: var(--red); }
+
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.95rem; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--navy); color: white;
+      padding: 14px 24px; border-radius: 30px;
+      font-size: 0.95rem; font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 999; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 20px; }
+    .watermark {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: white; border: 1px solid var(--border);
+      border-radius: 30px; padding: 7px 16px;
+      color: var(--muted); font-size: 0.75rem; font-weight: 600;
+    }
+    .watermark b { color: var(--blue); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🤖</div>
+    <div>
+      <div class="brand-text">StudentScope</div>
+      <div class="brand-sub">Hygiene Incident Log</div>
+    </div>
+  </div>
+  <div class="student-pill">👤 R.J.</div>
+</header>
+
+<div class="wrap">
+
+  <!-- STAFF NAME -->
+  <div class="section-label">Who's logging?</div>
+  <div class="staff-row">
+    <div class="staff-dot"></div>
+    <input type="text" id="staffName" placeholder="Your name…" autocomplete="name" autocorrect="off">
+  </div>
+
+  <!-- DATE -->
+  <div class="section-label">Date</div>
+  <div class="big-select-wrap">
+    <select class="big-select" id="incidentDate"></select>
+    <span class="select-arrow">📅</span>
+  </div>
+
+  <!-- PERIOD -->
+  <div class="section-label">Period / Time</div>
+  <div class="big-select-wrap">
+    <select class="big-select" id="incidentPeriod" onchange="markFilled(this)">
+      <option value="">— Tap to select —</option>
+      <option>Before School</option>
+      <option>1st Hour</option>
+      <option>2nd Hour</option>
+      <option>3rd Hour</option>
+      <option>4th Hour</option>
+      <option>Lunch</option>
+      <option>5th Hour</option>
+      <option>6th Hour</option>
+      <option>7th Hour</option>
+      <option>8th Hour</option>
+      <option>After School</option>
+    </select>
+    <span class="select-arrow">🕐</span>
+  </div>
+
+  <!-- SHOWER -->
+  <div class="section-label">Did R.J. need to shower?</div>
+  <div class="yn-row">
+    <button class="yn-btn" id="showerY" onclick="pick('shower','Yes')">🚿 Yes</button>
+    <button class="yn-btn" id="showerN" onclick="pick('shower','No')">✓ No</button>
+  </div>
+
+  <!-- ESCALATED -->
+  <div class="section-label">Did behavior escalate?</div>
+  <div class="yn-row">
+    <button class="yn-btn" id="escalY" onclick="pick('escalated','Yes')">⚠️ Yes</button>
+    <button class="yn-btn" id="escalN" onclick="pick('escalated','No')">✓ No</button>
+  </div>
+
+  <!-- RECOVERY (hidden until escalated=Yes) -->
+  <div id="recoveryWrap" style="display:none;">
+    <div class="section-label">How long to recover?</div>
+    <div class="big-select-wrap">
+      <select class="big-select" id="recoveryTime" onchange="markFilled(this)">
+        <option value="">— Tap to select —</option>
+        <option>0–10 minutes</option>
+        <option>10–20 minutes</option>
+        <option>20–30 minutes</option>
+        <option>30–40 minutes</option>
+        <option>40–50 minutes</option>
+        <option>50–60 minutes</option>
+      </select>
+      <span class="select-arrow">⏱</span>
+    </div>
+  </div>
+
+  <!-- SEVERITY -->
+  <div class="section-label">Severity (1 = calm · 4 = very uncooperative)</div>
+  <div class="sev-row">
+    <button class="sev-btn" id="sev1" onclick="pickSev(1)">1<span class="sev-label">Calm</span></button>
+    <button class="sev-btn" id="sev2" onclick="pickSev(2)">2<span class="sev-label">Mild</span></button>
+    <button class="sev-btn" id="sev3" onclick="pickSev(3)">3<span class="sev-label">Hard</span></button>
+    <button class="sev-btn" id="sev4" onclick="pickSev(4)">4<span class="sev-label">Crisis</span></button>
+  </div>
+
+  <!-- ADULT RESPONSE VOICE -->
+  <div class="section-label">Adult Response</div>
+  <div class="voice-card">
+    <div class="voice-label-row">
+      <span class="voice-field-label">🎙 Voice Memo</span>
+      <span class="voice-status" id="adultStatus">Tap to record</span>
+    </div>
+    <button class="mic-btn" id="adultMicBtn" onclick="toggleRecording('adult')">
+      🎙 <span class="mic-text">Hold to Record</span>
+    </button>
+    <div class="transcript-box" id="adultTranscript"></div>
+    <span class="edit-link" id="adultEditLink" style="display:none;" onclick="toggleEdit('adult')">✏️ Edit transcript</span>
+    <textarea class="transcript-edit" id="adultEdit" placeholder="Edit adult response…" rows="3"></textarea>
+  </div>
+
+  <!-- STUDENT RESPONSE VOICE -->
+  <div class="section-label">Student Response</div>
+  <div class="voice-card">
+    <div class="voice-label-row">
+      <span class="voice-field-label">🎙 Voice Memo</span>
+      <span class="voice-status" id="studentStatus">Tap to record</span>
+    </div>
+    <button class="mic-btn" id="studentMicBtn" onclick="toggleRecording('student')">
+      🎙 <span class="mic-text">Hold to Record</span>
+    </button>
+    <div class="transcript-box" id="studentTranscript"></div>
+    <span class="edit-link" id="studentEditLink" style="display:none;" onclick="toggleEdit('student')">✏️ Edit transcript</span>
+    <textarea class="transcript-edit" id="studentEdit" placeholder="Edit student response…" rows="3"></textarea>
+  </div>
+
+  <!-- SUBMIT -->
+  <button class="submit-btn" id="submitBtn" onclick="submitIncident()">
+    💾 Save Incident
+  </button>
+
+  <!-- HISTORY -->
+  <div class="history-header">
+    <div class="history-title">📋 History <span class="count-pill" id="logCount">0</span></div>
+    <div class="report-row">
+      <button class="report-btn btn-email" onclick="emailReport()">📧 Email</button>
+      <button class="report-btn btn-print" onclick="printReport()">🖨️ Print</button>
+    </div>
+  </div>
+  <div id="logsList"><div class="empty">No incidents logged yet.</div></div>
+
+</div>
+
+<footer>
+  <div class="watermark">🤖 <b>StudentScope</b> · Made for Educators</div>
+</footer>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain: "studentscopebehaviorcenter.firebaseapp.com",
+  projectId: "studentscopebehaviorcenter",
+  storageBucket: "studentscopebehaviorcenter.firebasestorage.app",
+  messagingSenderId: "311398911099",
+  appId: "1:311398911099:web:6703268a2b65cdd969a6de"
+});
+const db = firebase.firestore();
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const state = { shower: null, escalated: null, severity: null };
+let allLogs = [];
+
+// ── SPEECH RECOGNITION SETUP ───────────────────────────────────────────────
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let activeField = null;
+let isRecording = false;
+
+if (SpeechRec) {
+  recognition = new SpeechRec();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (e) => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    const box = document.getElementById(activeField + 'Transcript');
+    const existing = box.dataset.final || '';
+    box.textContent = (existing + final).trim() + (interim ? ' ' + interim : '');
+    box.dataset.final = (existing + final).trim();
+    box.classList.add('has-text');
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      showToast('⚠ Microphone access denied');
+    } else if (e.error !== 'aborted') {
+      showToast('⚠ Speech error: ' + e.error);
+    }
+    stopRecording();
+  };
+
+  recognition.onend = () => {
+    if (isRecording) recognition.start(); // keep going until user taps Stop
+  };
+} else {
+  // No speech support — swap mic buttons for textareas
+  document.addEventListener('DOMContentLoaded', () => {
+    ['adult','student'].forEach(field => {
+      const card = document.getElementById(field + 'MicBtn').closest('.voice-card');
+      card.innerHTML = `
+        <div class="voice-label-row">
+          <span class="voice-field-label">${field === 'adult' ? 'Adult' : 'Student'} Response</span>
+        </div>
+        <textarea id="${field}FallbackText" class="no-speech-textarea" placeholder="Type response here…"></textarea>`;
+    });
+  });
+}
+
+function toggleRecording(field) {
+  if (!recognition) return;
+  if (isRecording && activeField === field) {
+    stopRecording();
+  } else {
+    if (isRecording) stopRecording();
+    startRecording(field);
+  }
+}
+
+function startRecording(field) {
+  activeField = field;
+  isRecording = true;
+  recognition.start();
+  const btn = document.getElementById(field + 'MicBtn');
+  btn.classList.add('recording');
+  btn.innerHTML = '⏹ <span class="mic-text">Tap to Stop</span>';
+  document.getElementById(field + 'Status').textContent = '🔴 Recording…';
+}
+
+function stopRecording() {
+  if (!recognition || !isRecording) return;
+  isRecording = false;
+  recognition.stop();
+  if (!activeField) return;
+  const btn = document.getElementById(activeField + 'MicBtn');
+  btn.classList.remove('recording');
+  btn.classList.add('done');
+  btn.innerHTML = '✓ <span class="mic-text">Tap to Re-record</span>';
+  const box = document.getElementById(activeField + 'Transcript');
+  const editLink = document.getElementById(activeField + 'EditLink');
+  if (box.textContent.trim()) {
+    document.getElementById(activeField + 'Status').textContent = '✓ Transcribed';
+    editLink.style.display = 'inline-block';
+    // sync to edit textarea too
+    document.getElementById(activeField + 'Edit').value = box.dataset.final || box.textContent;
+  } else {
+    document.getElementById(activeField + 'Status').textContent = 'Nothing recorded';
+    btn.classList.remove('done');
+    btn.innerHTML = '🎙 <span class="mic-text">Tap to Record</span>';
+  }
+  activeField = null;
+}
+
+function toggleEdit(field) {
+  const edit = document.getElementById(field + 'Edit');
+  const link = document.getElementById(field + 'EditLink');
+  if (edit.classList.contains('visible')) {
+    edit.classList.remove('visible');
+    link.textContent = '✏️ Edit transcript';
+  } else {
+    edit.classList.add('visible');
+    edit.focus();
+    link.textContent = '✓ Done editing';
+  }
+}
+
+function getFieldText(field) {
+  // Check if fallback textarea exists (no speech support)
+  const fallback = document.getElementById(field + 'FallbackText');
+  if (fallback) return fallback.value.trim();
+  // Otherwise use edit textarea if visible, else transcript box
+  const edit = document.getElementById(field + 'Edit');
+  if (edit && edit.classList.contains('visible') && edit.value.trim()) return edit.value.trim();
+  const box = document.getElementById(field + 'Transcript');
+  return (box && box.dataset.final) ? box.dataset.final.trim() : (box ? box.textContent.trim() : '');
+}
+
+// ── DATE DROPDOWN ──────────────────────────────────────────────────────────
+function buildDateDropdown() {
+  const sel = document.getElementById('incidentDate');
+  const today = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const val = d.toISOString().split('T')[0];
+    const label = i === 0 ? `Today — ${months[d.getMonth()]} ${d.getDate()}` :
+                  i === 1 ? `Yesterday — ${months[d.getMonth()]} ${d.getDate()}` :
+                  `${days[d.getDay()]} — ${months[d.getMonth()]} ${d.getDate()}`;
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = label;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+// ── BUTTON PICKERS ─────────────────────────────────────────────────────────
+function pick(group, val) {
+  state[group] = val;
+  if (group === 'shower') {
+    document.getElementById('showerY').className = 'yn-btn' + (val === 'Yes' ? ' yes-active' : '');
+    document.getElementById('showerN').className = 'yn-btn' + (val === 'No'  ? ' no-active'  : '');
+  }
+  if (group === 'escalated') {
+    document.getElementById('escalY').className = 'yn-btn' + (val === 'Yes' ? ' yes-active' : '');
+    document.getElementById('escalN').className = 'yn-btn' + (val === 'No'  ? ' no-active'  : '');
+    document.getElementById('recoveryWrap').style.display = val === 'Yes' ? 'block' : 'none';
+  }
+}
+
+function pickSev(n) {
+  state.severity = n;
+  [1,2,3,4].forEach(i => {
+    document.getElementById('sev' + i).className = 'sev-btn' + (i === n ? ' active-' + n : '');
+  });
+}
+
+function markFilled(el) {
+  el.classList.toggle('filled', el.value !== '');
+}
+
+// ── SUBMIT ─────────────────────────────────────────────────────────────────
+async function submitIncident() {
+  const staffName = document.getElementById('staffName').value.trim();
+  const date      = document.getElementById('incidentDate').value;
+  const period    = document.getElementById('incidentPeriod').value;
+  const recovery  = document.getElementById('recoveryTime')?.value || '';
+  const adultText   = getFieldText('adult');
+  const studentText = getFieldText('student');
+
+  if (!staffName)           { showToast('⚠ Enter your name first'); document.getElementById('staffName').focus(); return; }
+  if (!period)              { showToast('⚠ Select a period'); return; }
+  if (!state.shower)        { showToast('⚠ Did R.J. need to shower?'); return; }
+  if (!state.escalated)     { showToast('⚠ Did behavior escalate?'); return; }
+  if (state.escalated === 'Yes' && !recovery) { showToast('⚠ Select recovery time'); return; }
+  if (!state.severity)      { showToast('⚠ Select severity 1–4'); return; }
+  if (!adultText)           { showToast('⚠ Record adult response'); return; }
+  if (!studentText)         { showToast('⚠ Record student response'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+
+  const sevLabels = { 1: '1 — Cooperative', 2: '2', 3: '3', 4: '4 — Uncooperative' };
+
+  try {
+    await db.collection('hygiene_incidents').add({
+      studentName: 'R.J.',
+      date, period,
+      showerNeeded:      state.shower,
+      behaviorEscalated: state.escalated,
+      recoveryTime:      state.escalated === 'Yes' ? recovery : 'N/A',
+      severity:          sevLabels[state.severity],
+      adultResponse:     adultText,
+      studentResponse:   studentText,
+      loggedBy:          staffName,
+      timestamp:         new Date().toISOString()
+    });
+    showToast('✓ Saved!');
+    resetForm();
+  } catch (err) {
+    console.error(err);
+    showToast('✗ Save failed — check connection');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save Incident';
+  }
+}
+
+function resetForm() {
+  document.getElementById('staffName').value = '';
+  document.getElementById('incidentPeriod').value = '';
+  document.getElementById('incidentPeriod').classList.remove('filled');
+  document.getElementById('recoveryTime').value = '';
+  document.getElementById('recoveryWrap').style.display = 'none';
+
+  state.shower = null; state.escalated = null; state.severity = null;
+  ['showerY','showerN','escalY','escalN'].forEach(id => document.getElementById(id).className = 'yn-btn');
+  [1,2,3,4].forEach(i => document.getElementById('sev'+i).className = 'sev-btn');
+
+  ['adult','student'].forEach(field => {
+    const btn = document.getElementById(field + 'MicBtn');
+    if (btn) { btn.className = 'mic-btn'; btn.innerHTML = '🎙 <span class="mic-text">Tap to Record</span>'; }
+    const box = document.getElementById(field + 'Transcript');
+    if (box) { box.textContent = ''; box.dataset.final = ''; box.classList.remove('has-text'); }
+    const edit = document.getElementById(field + 'Edit');
+    if (edit) { edit.value = ''; edit.classList.remove('visible'); }
+    const link = document.getElementById(field + 'EditLink');
+    if (link) { link.style.display = 'none'; link.textContent = '✏️ Edit transcript'; }
+    const status = document.getElementById(field + 'Status');
+    if (status) status.textContent = 'Tap to record';
+    const fallback = document.getElementById(field + 'FallbackText');
+    if (fallback) fallback.value = '';
+  });
+}
+
+// ── FIRESTORE ──────────────────────────────────────────────────────────────
+function loadLogs() {
+  db.collection('hygiene_incidents')
+    .where('studentName', '==', 'R.J.')
+    .orderBy('timestamp', 'desc')
+    .onSnapshot(snap => {
+      allLogs = [];
+      snap.forEach(doc => allLogs.push({ id: doc.id, ...doc.data() }));
+      renderLogs();
+    }, err => {
+      console.error(err);
+      showToast('⚠ Could not load logs');
+    });
+}
+
+function renderLogs() {
+  document.getElementById('logCount').textContent = allLogs.length;
+  const el = document.getElementById('logsList');
+  if (!allLogs.length) { el.innerHTML = '<div class="empty">No incidents logged yet.</div>'; return; }
+
+  el.innerHTML = allLogs.map(log => {
+    const d = new Date(log.timestamp);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return `
+      <div class="log-card ${log.behaviorEscalated === 'Yes' ? 'escalated' : ''}">
+        <div class="log-top">
+          <div>
+            <div class="log-when">${dateStr} · ${timeStr}</div>
+            <div class="log-who">📍 ${log.period} · ${log.loggedBy}</div>
+          </div>
+          <div class="chip-row">
+            <span class="chip ${log.showerNeeded==='Yes'?'c-shower':'c-noshower'}">${log.showerNeeded==='Yes'?'🚿 Shower':'✓ No shower'}</span>
+            <span class="chip ${log.behaviorEscalated==='Yes'?'c-esc':'c-calm'}">${log.behaviorEscalated==='Yes'?'⚠ Escalated':'✓ Calm'}</span>
+            <span class="chip c-sev">Sev ${log.severity}</span>
+            ${log.behaviorEscalated==='Yes'?`<span class="chip c-rec">⏱ ${log.recoveryTime}</span>`:''}
+          </div>
+        </div>
+        <div class="log-notes">
+          <div class="note-block"><div class="note-label">Adult Response</div><div class="note-text">${log.adultResponse||'—'}</div></div>
+          <div class="note-block"><div class="note-label">Student Response</div><div class="note-text">${log.studentResponse||'—'}</div></div>
+        </div>
+        <button class="del-btn" onclick="deleteLog('${log.id}')">🗑 Delete</button>
+      </div>`;
+  }).join('');
+}
+
+async function deleteLog(id) {
+  if (!confirm('Delete this entry?')) return;
+  await db.collection('hygiene_incidents').doc(id).delete();
+}
+
+// ── REPORTS ────────────────────────────────────────────────────────────────
+function buildText() {
+  let t = `R.J. HYGIENE INCIDENT REPORT\nGenerated: ${new Date().toLocaleString()}\nTotal: ${allLogs.length}\n${'='.repeat(50)}\n\n`;
+  allLogs.forEach((log, i) => {
+    t += `${i+1}. ${new Date(log.timestamp).toLocaleString()}\n   Period: ${log.period}\n   Shower: ${log.showerNeeded}\n   Escalated: ${log.behaviorEscalated}`;
+    if (log.behaviorEscalated === 'Yes') t += ` (${log.recoveryTime})`;
+    t += `\n   Severity: ${log.severity}\n   Adult: ${log.adultResponse}\n   Student: ${log.studentResponse}\n   By: ${log.loggedBy}\n\n`;
+  });
+  return t + `${'='.repeat(50)}\nStudentScope`;
+}
+
+function emailReport() {
+  if (!allLogs.length) { showToast('No incidents yet'); return; }
+  window.location.href = `mailto:?subject=${encodeURIComponent('R.J. Hygiene Report — StudentScope')}&body=${encodeURIComponent(buildText())}`;
+}
+
+function printReport() {
+  if (!allLogs.length) { showToast('No incidents yet'); return; }
+  const rows = allLogs.map((log,i)=>`<tr style="background:${i%2===0?'#f8fafc':'white'}"><td>${new Date(log.timestamp).toLocaleDateString()}</td><td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${log.period}</td><td>${log.showerNeeded}</td><td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td><td>${log.severity}</td><td>${log.adultResponse}</td><td>${log.studentResponse}</td><td>${log.loggedBy}</td></tr>`).join('');
+  const w = window.open('','','width=960,height=700');
+  w.document.write(`<html><head><title>R.J. Hygiene Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style></head><body><h1>R.J. — Hygiene Incident Report</h1><div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div><table><thead><tr><th>Date</th><th>Time</th><th>Period</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead><tbody>${rows}</tbody></table><div class="foot">🤖 StudentScope · Confidential Staff Document</div></body></html>`);
+  w.document.close(); w.print();
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildDateDropdown();
+  loadLogs();
+});
+</script>
+</body>
+</html>

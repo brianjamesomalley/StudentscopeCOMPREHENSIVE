@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,27 +73,43 @@
     }
 
     /* ── STAFF NAME ── */
-    .staff-row {
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 6px;
+    /* staff picker */
+    .staff-screen {
+      position: fixed; inset: 0; background: var(--navy);
+      z-index: 500; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 32px 20px;
     }
-    .staff-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
-    .staff-row input {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 1rem;
+    .staff-screen h2 { color: white; font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; text-align:center; }
+    .staff-screen p  { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-bottom: 32px; text-align:center; }
+    .staff-btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; }
+    .staff-btn {
+      padding: 22px 12px;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      color: white;
+      font-size: 0.92rem;
+      font-weight: 700;
       font-family: inherit;
-      color: var(--text);
-      background: transparent;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      line-height: 1.3;
     }
-    .staff-row input::placeholder { color: #94a3b8; }
+    .staff-btn:active { background: rgba(255,255,255,0.22); transform: scale(0.97); }
+    .staff-btn .staff-initial {
+      display: block; font-size: 1.8rem; margin-bottom: 6px;
+    }
+    /* active staff bar */
+    .staff-bar-active {
+      background: white; border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .staff-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(22,163,74,0.2); }
+    .staff-name-display { font-weight: 700; font-size: 1rem; color: var(--navy); flex: 1; }
+    .staff-switch { font-size: 0.75rem; color: var(--blue); font-weight: 700; }
 
     /* ── BIG SELECT ── */
     .big-select-wrap { position: relative; margin-bottom: 10px; }
@@ -739,7 +754,7 @@ async function submitIncident() {
   const adultText   = getFieldText('adult');
   const studentText = getFieldText('student');
 
-  if (!staffName)           { showToast('⚠ Enter your name first'); document.getElementById('staffName').focus(); return; }
+  if (!staffName)           { showToast('⚠ Tap your name first'); switchStaff(); return; }
   if (!period)              { showToast('⚠ Select a period'); return; }
   if (!state.shower)        { showToast('⚠ Did R.J. need to shower?'); return; }
   if (!state.escalated)     { showToast('⚠ Did behavior escalate?'); return; }
@@ -755,8 +770,16 @@ async function submitIncident() {
   const sevLabels = { 1: '1 — Cooperative', 2: '2', 3: '3', 4: '4 — Uncooperative' };
 
   try {
-    await db.collection('hygiene_incidents').add({
-      studentName: 'R.J.',
+    const timestamp = new Date().toISOString();
+    const behaviorText =
+      `🏥 HYGIENE INCIDENT — Period: ${period} | ` +
+      `Shower: ${state.shower} | ` +
+      `Escalated: ${state.escalated}${state.escalated === 'Yes' ? ' (Recovery: ' + recovery + ')' : ''} | ` +
+      `Severity: ${sevLabels[state.severity]} | ` +
+      `Adult: ${adultText} | Student: ${studentText}`;
+
+    const record = {
+      studentName:       'R.J.',
       period,
       showerNeeded:      state.shower,
       behaviorEscalated: state.escalated,
@@ -765,8 +788,23 @@ async function submitIncident() {
       adultResponse:     adultText,
       studentResponse:   studentText,
       loggedBy:          staffName,
-      timestamp:         new Date().toISOString()
+      timestamp
+    };
+
+    // Write 1: hygiene-specific collection (powers the frequency map)
+    await db.collection('hygiene_incidents').add(record);
+
+    // Write 2: behaviors collection (shows in teacher & admin dashboard)
+    await db.collection('behaviors').add({
+      studentName:  'R.J.',
+      behavior:     behaviorText,
+      type:         'hygiene',
+      teacherEmail: staffName,
+      teacherId:    'hygiene-logger',
+      date:         timestamp,
+      timestamp
     });
+
     showToast('✓ Saved!');
     resetForm();
   } catch (err) {
@@ -779,7 +817,6 @@ async function submitIncident() {
 }
 
 function resetForm() {
-  document.getElementById('staffName').value = '';
   document.getElementById('incidentPeriod').value = '';
   document.getElementById('incidentPeriod').classList.remove('filled');
   document.getElementById('recoveryTime').value = '';
@@ -973,6 +1010,44 @@ function renderDashboard() {
   `;
 }
 
+
+// ── STAFF PICKER ────────────────────────────────────────────────────────────
+const STAFF_LIST = [
+  { name: 'Mackenzie', emoji: '👩‍💼' },
+  { name: 'Lindsay',   emoji: '👩‍💼' },
+  { name: 'Sam',       emoji: '🧑‍💼' },
+  { name: 'Angie',     emoji: '👩‍💼' },
+  { name: 'Morgan',    emoji: '🧑‍💼' },
+  { name: 'Courtney',  emoji: '👩‍💼' },
+  { name: 'Nicole',    emoji: '👩‍💼' },
+  { name: 'Brian',     emoji: '👨‍💼' },
+  { name: 'Joe',       emoji: '👨‍💼' },
+  { name: 'Kris',      emoji: '🧑‍💼' },
+  { name: 'Craig',     emoji: '👨‍💼' },
+  { name: 'Other (Sub)', emoji: '🔁' },
+];
+
+window.activeStaff = localStorage.getItem('rj_staff') || '';
+
+function buildStaffGrid() {
+  const grid = document.getElementById('staffGrid');
+  grid.innerHTML = STAFF_LIST.map(s => `
+    <button class="staff-btn" onclick="selectStaff('${s.name}')">
+      <span class="staff-initial">${s.emoji}</span>${s.name}
+    </button>`).join('');
+}
+
+function selectStaff(name) {
+  window.activeStaff = name;
+  localStorage.setItem('rj_staff', name);
+  document.getElementById('staffNameDisplay').textContent = name;
+  document.getElementById('staffScreen').style.display = 'none';
+}
+
+function switchStaff() {
+  document.getElementById('staffScreen').style.display = 'flex';
+}
+
 // ── TOAST ──────────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -983,6 +1058,12 @@ function showToast(msg) {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  buildStaffGrid();
+  // If staff already picked (remembered), skip the screen
+  if (window.activeStaff) {
+    document.getElementById('staffNameDisplay').textContent = window.activeStaff;
+    document.getElementById('staffScreen').style.display = 'none';
+  }
   loadLogs();
   // Live clock
   function updateClock() {

@@ -124,22 +124,6 @@
       color: var(--muted);
     }
 
-    /* ── DATE ROW ── */
-    .date-select {
-      width: 100%;
-      padding: 18px 48px 18px 18px;
-      font-size: 1.05rem;
-      font-family: inherit;
-      font-weight: 600;
-      color: var(--text);
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-    }
-    .date-select:focus { outline: none; border-color: var(--blue); }
 
     /* ── YES/NO BIG BUTTONS ── */
     .yn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -382,6 +366,50 @@
       color: var(--muted); font-size: 0.75rem; font-weight: 600;
     }
     .watermark b { color: var(--blue); }
+    /* ── DASHBOARD ── */
+    .dash-section { margin-top: 32px; }
+    .dash-title {
+      font-size: 1rem; font-weight: 800; color: var(--navy);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-box {
+      background: white; border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 12px; text-align: center;
+    }
+    .stat-num { font-size: 1.9rem; font-weight: 800; color: var(--navy); line-height: 1; }
+    .stat-lbl { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+    .stat-box.accent-green .stat-num { color: var(--green); }
+    .stat-box.accent-red   .stat-num { color: var(--red); }
+    .stat-box.accent-gold  .stat-num { color: var(--gold); }
+    .chart-card {
+      background: white; border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px 16px; margin-bottom: 12px;
+    }
+    .chart-card-title { font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; }
+    .bar-label { font-size: 0.8rem; font-weight: 600; color: var(--text); width: 90px; flex-shrink: 0; text-align: right; }
+    .bar-track { flex: 1; background: var(--bg); border-radius: 6px; height: 28px; overflow: hidden; }
+    .bar-fill {
+      height: 100%; border-radius: 6px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+      display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+    }
+    .bar-fill.hot { background: linear-gradient(90deg, var(--gold), var(--red)); }
+    .bar-count { font-size: 0.78rem; font-weight: 800; color: white; white-space: nowrap; }
+    .bar-count.outside { color: var(--muted); padding-left: 8px; }
+    .pill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pill-stat {
+      background: var(--bg); border-radius: 10px; padding: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pill-icon { font-size: 1.3rem; }
+    .pill-val  { font-size: 1.1rem; font-weight: 800; color: var(--navy); }
+    .pill-desc { font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+    .dash-empty { text-align: center; padding: 28px; color: var(--muted); font-size: 0.9rem; }
+
   </style>
 </head>
 <body>
@@ -404,13 +432,6 @@
   <div class="staff-row">
     <div class="staff-dot"></div>
     <input type="text" id="staffName" placeholder="Your name…" autocomplete="name" autocorrect="off">
-  </div>
-
-  <!-- DATE -->
-  <div class="section-label">Date</div>
-  <div class="big-select-wrap">
-    <select class="big-select" id="incidentDate"></select>
-    <span class="select-arrow">📅</span>
   </div>
 
   <!-- PERIOD -->
@@ -507,6 +528,29 @@
   <button class="submit-btn" id="submitBtn" onclick="submitIncident()">
     💾 Save Incident
   </button>
+
+
+  <!-- DATA MAP -->
+  <div class="dash-section">
+    <div class="dash-title">📊 Frequency Map</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num" id="dTotal">0</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-box accent-red"><div class="stat-num" id="dEscPct">—</div><div class="stat-lbl">Escalated</div></div>
+      <div class="stat-box accent-gold"><div class="stat-num" id="dAvgSev">—</div><div class="stat-lbl">Avg Severity</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">📍 Incidents by Period</div>
+      <div class="bar-chart" id="periodChart"><div class="dash-empty">No data yet</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">📅 Incidents by Day of Week</div>
+      <div class="bar-chart" id="dowChart"><div class="dash-empty">No data yet</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">🔍 Breakdown</div>
+      <div class="pill-grid" id="breakdownGrid"><div class="dash-empty">No data yet</div></div>
+    </div>
+  </div>
 
   <!-- HISTORY -->
   <div class="history-header">
@@ -662,27 +706,6 @@ function getFieldText(field) {
   return (box && box.dataset.final) ? box.dataset.final.trim() : (box ? box.textContent.trim() : '');
 }
 
-// ── DATE DROPDOWN ──────────────────────────────────────────────────────────
-function buildDateDropdown() {
-  const sel = document.getElementById('incidentDate');
-  const today = new Date();
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const val = d.toISOString().split('T')[0];
-    const label = i === 0 ? `Today — ${months[d.getMonth()]} ${d.getDate()}` :
-                  i === 1 ? `Yesterday — ${months[d.getMonth()]} ${d.getDate()}` :
-                  `${days[d.getDay()]} — ${months[d.getMonth()]} ${d.getDate()}`;
-    const opt = document.createElement('option');
-    opt.value = val;
-    opt.textContent = label;
-    if (i === 0) opt.selected = true;
-    sel.appendChild(opt);
-  }
-}
-
 // ── BUTTON PICKERS ─────────────────────────────────────────────────────────
 function pick(group, val) {
   state[group] = val;
@@ -711,7 +734,6 @@ function markFilled(el) {
 // ── SUBMIT ─────────────────────────────────────────────────────────────────
 async function submitIncident() {
   const staffName = document.getElementById('staffName').value.trim();
-  const date      = document.getElementById('incidentDate').value;
   const period    = document.getElementById('incidentPeriod').value;
   const recovery  = document.getElementById('recoveryTime')?.value || '';
   const adultText   = getFieldText('adult');
@@ -735,7 +757,7 @@ async function submitIncident() {
   try {
     await db.collection('hygiene_incidents').add({
       studentName: 'R.J.',
-      date, period,
+      period,
       showerNeeded:      state.shower,
       behaviorEscalated: state.escalated,
       recoveryTime:      state.escalated === 'Yes' ? recovery : 'N/A',
@@ -800,6 +822,7 @@ function loadLogs() {
 
 function renderLogs() {
   document.getElementById('logCount').textContent = allLogs.length;
+  renderDashboard();
   const el = document.getElementById('logsList');
   if (!allLogs.length) { el.innerHTML = '<div class="empty">No incidents logged yet.</div>'; return; }
 
@@ -859,6 +882,97 @@ function printReport() {
   w.document.close(); w.print();
 }
 
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const PERIODS = ['Before School','1st Hour','2nd Hour','3rd Hour','4th Hour',
+                   'Lunch','5th Hour','6th Hour','7th Hour','8th Hour','After School'];
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  if (!allLogs.length) {
+    document.getElementById('dTotal').textContent = '0';
+    document.getElementById('dEscPct').textContent = '—';
+    document.getElementById('dAvgSev').textContent = '—';
+    document.getElementById('periodChart').innerHTML = '<div class="dash-empty">No data yet</div>';
+    document.getElementById('dowChart').innerHTML    = '<div class="dash-empty">No data yet</div>';
+    document.getElementById('breakdownGrid').innerHTML = '<div class="dash-empty">No data yet</div>';
+    return;
+  }
+
+  // ── Totals ──
+  const total = allLogs.length;
+  const escCount = allLogs.filter(l => l.behaviorEscalated === 'Yes').length;
+  const showerCount = allLogs.filter(l => l.showerNeeded === 'Yes').length;
+  const sevNums = allLogs.map(l => parseInt(l.severity) || 0).filter(n => n > 0);
+  const avgSev = sevNums.length ? (sevNums.reduce((a,b)=>a+b,0)/sevNums.length).toFixed(1) : '—';
+  const escPct = Math.round((escCount/total)*100) + '%';
+
+  document.getElementById('dTotal').textContent   = total;
+  document.getElementById('dEscPct').textContent  = escPct;
+  document.getElementById('dAvgSev').textContent  = avgSev;
+
+  // ── Period bar chart ──
+  const periodCounts = {};
+  PERIODS.forEach(p => periodCounts[p] = 0);
+  allLogs.forEach(l => { if (l.period && periodCounts[l.period] !== undefined) periodCounts[l.period]++; });
+  const maxPeriod = Math.max(...Object.values(periodCounts), 1);
+  // find hotspot
+  const hotPeriod = Object.entries(periodCounts).sort((a,b)=>b[1]-a[1])[0][0];
+
+  document.getElementById('periodChart').innerHTML = PERIODS.map(p => {
+    const n = periodCounts[p];
+    const pct = Math.round((n / maxPeriod) * 100);
+    const isHot = p === hotPeriod && n > 0;
+    const countHTML = pct >= 15
+      ? `<span class="bar-count">${n}</span>`
+      : `</div><span class="bar-count outside">${n || ''}</span>`;
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${p}</div>
+        <div class="bar-track">
+          <div class="bar-fill${isHot?' hot':''}" style="width:${pct}%">
+            ${pct >= 15 ? '<span class="bar-count">' + n + '</span>' : ''}
+          </div>
+        </div>
+        ${pct < 15 && n > 0 ? '<span class="bar-count outside">' + n + '</span>' : ''}
+      </div>`;
+  }).join('');
+
+  // ── Day of week chart ──
+  const dowCounts = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  allLogs.forEach(l => { const d = new Date(l.timestamp).getDay(); dowCounts[d]++; });
+  const maxDow = Math.max(...Object.values(dowCounts), 1);
+
+  document.getElementById('dowChart').innerHTML = DAYS.map((label, i) => {
+    const n = dowCounts[i];
+    const pct = Math.round((n / maxDow) * 100);
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%">
+            ${pct >= 15 ? '<span class="bar-count">' + n + '</span>' : ''}
+          </div>
+        </div>
+        ${pct < 15 && n > 0 ? '<span class="bar-count outside">' + n + '</span>' : ''}
+      </div>`;
+  }).join('');
+
+  // ── Breakdown pills ──
+  const sevCounts = {1:0,2:0,3:0,4:0};
+  allLogs.forEach(l => { const n = parseInt(l.severity); if(n>=1&&n<=4) sevCounts[n]++; });
+  const modeEsc = escCount > (total - escCount) ? 'Mostly escalated' : 'Mostly calm';
+
+  document.getElementById('breakdownGrid').innerHTML = `
+    <div class="pill-stat"><div class="pill-icon">🚿</div><div><div class="pill-val">${showerCount}/${total}</div><div class="pill-desc">Needed shower</div></div></div>
+    <div class="pill-stat"><div class="pill-icon">⚠️</div><div><div class="pill-val">${escCount}/${total}</div><div class="pill-desc">Escalated</div></div></div>
+    <div class="pill-stat"><div class="pill-icon">🟢</div><div><div class="pill-val">${sevCounts[1]}</div><div class="pill-desc">Severity 1 (calm)</div></div></div>
+    <div class="pill-stat"><div class="pill-icon">🔴</div><div><div class="pill-val">${sevCounts[4]}</div><div class="pill-desc">Severity 4 (crisis)</div></div></div>
+    <div class="pill-stat"><div class="pill-icon">📍</div><div><div class="pill-val" style="font-size:0.85rem;">${hotPeriod}</div><div class="pill-desc">Hotspot period</div></div></div>
+    <div class="pill-stat"><div class="pill-icon">📊</div><div><div class="pill-val">${avgSev}</div><div class="pill-desc">Avg severity</div></div></div>
+  `;
+}
+
 // ── TOAST ──────────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -869,8 +983,17 @@ function showToast(msg) {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  buildDateDropdown();
   loadLogs();
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').textContent =
+      now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) +
+      '  ·  ' +
+      now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
 });
 </script>
 </body>

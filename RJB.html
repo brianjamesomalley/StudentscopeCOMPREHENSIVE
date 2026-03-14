@@ -3,394 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>R.J. Hygiene Log</title>
+  <title>R.J. Hygiene Log | StudentScope</title>
   <style>
     :root {
-      --navy: #1a2744;
-      --blue: #2563eb;
-      --teal: #0d9488;
-      --gold: #d97706;
-      --red: #dc2626;
+      --navy:  #1a2744;
+      --blue:  #2563eb;
+      --teal:  #0d9488;
+      --gold:  #d97706;
+      --red:   #dc2626;
       --green: #16a34a;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --border: #cbd5e1;
-      --text: #0f172a;
+      --bg:    #f1f5f9;
+      --white: #ffffff;
+      --border:#cbd5e1;
+      --text:  #0f172a;
       --muted: #64748b;
     }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:80px; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    /* HEADER */
+    header { background:var(--navy); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-icon { width:36px; height:36px; background:linear-gradient(135deg,var(--teal),var(--blue)); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+    .brand-name { color:white; font-size:1rem; font-weight:700; }
+    .brand-sub  { color:rgba(255,255,255,0.5); font-size:0.7rem; }
+    .student-pill { background:rgba(255,255,255,0.12); color:white; padding:5px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 100px;
-    }
+    /* MAIN WRAP */
+    .wrap { max-width:520px; margin:0 auto; padding:16px; }
 
-    /* ── HEADER ── */
-    header {
-      background: var(--navy);
-      padding: 18px 20px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--teal), var(--blue));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem;
-    }
-    .brand-text { color: white; font-size: 1.1rem; font-weight: 700; }
-    .brand-sub  { color: rgba(255,255,255,0.55); font-size: 0.72rem; margin-top: 1px; }
-    .student-pill {
-      background: rgba(255,255,255,0.12);
-      color: white;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
+    /* SECTION LABEL */
+    .slabel { font-size:0.68rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:18px 0 8px 2px; }
 
-    /* ── MAIN ── */
-    .wrap { padding: 16px; max-width: 600px; margin: 0 auto; }
-
-    /* ── SECTION LABEL ── */
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 22px 0 10px 4px;
-    }
-
-    /* ── STAFF NAME ── */
-    /* staff picker */
-    .staff-screen {
-      position: fixed; inset: 0; background: var(--navy);
-      z-index: 500; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 32px 20px;
-    }
-    .staff-screen h2 { color: white; font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; text-align:center; }
-    .staff-screen p  { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-bottom: 32px; text-align:center; }
-    .staff-btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; }
-    .staff-btn {
-      padding: 22px 12px;
-      background: rgba(255,255,255,0.08);
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
-      color: white;
-      font-size: 0.92rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-      line-height: 1.3;
-    }
-    .staff-btn:active { background: rgba(255,255,255,0.22); transform: scale(0.97); }
-    .staff-btn .staff-initial {
-      display: block; font-size: 1.8rem; margin-bottom: 6px;
-    }
-    /* active staff bar */
-    .staff-bar-active {
-      background: white; border: 1px solid var(--border);
-      border-radius: 14px; padding: 12px 16px;
-      display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
-      cursor: pointer;
-    }
-    .staff-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(22,163,74,0.2); }
-    .staff-name-display { font-weight: 700; font-size: 1rem; color: var(--navy); flex: 1; }
-    .staff-switch { font-size: 0.75rem; color: var(--blue); font-weight: 700; }
-
-    /* ── BIG SELECT ── */
-    .big-select-wrap { position: relative; margin-bottom: 10px; }
-    .big-select {
-      width: 100%;
-      padding: 18px 48px 18px 18px;
-      font-size: 1.05rem;
-      font-family: inherit;
-      font-weight: 600;
-      color: var(--text);
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .big-select:focus { outline: none; border-color: var(--blue); }
-    .big-select.filled { border-color: var(--blue); background: #eff6ff; color: var(--blue); }
-    .select-arrow {
-      position: absolute;
-      right: 16px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.1rem;
-      pointer-events: none;
-      color: var(--muted);
-    }
-
-
-    /* ── YES/NO BIG BUTTONS ── */
-    .yn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    /* YES/NO BUTTONS */
+    .yn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
     .yn-btn {
-      padding: 20px 10px;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      background: white;
-      font-size: 1.1rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: var(--muted);
-      text-align: center;
+      padding:20px 10px; border:2px solid var(--border); border-radius:14px; background:var(--white);
+      font-size:1rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s; color:var(--muted);
     }
-    .yn-btn.yes-active { border-color: var(--green); background: #f0fdf4; color: var(--green); }
-    .yn-btn.no-active  { border-color: var(--red);   background: #fef2f2; color: var(--red); }
+    .yn-btn.yes-on { border-color:var(--green); background:#f0fdf4; color:var(--green); }
+    .yn-btn.no-on  { border-color:var(--red);   background:#fef2f2; color:var(--red); }
 
-    /* ── SEVERITY ROW ── */
-    .sev-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    /* RECOVERY DROPDOWN */
+    .big-select-wrap { position:relative; margin-bottom:4px; }
+    .big-select {
+      width:100%; padding:16px 44px 16px 16px; font-size:1rem; font-family:inherit;
+      font-weight:600; color:var(--text); background:var(--white); border:2px solid var(--border);
+      border-radius:14px; appearance:none; -webkit-appearance:none; cursor:pointer;
+    }
+    .big-select:focus { outline:none; border-color:var(--blue); }
+    .sel-arrow { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:1rem; pointer-events:none; }
+
+    /* SEVERITY */
+    .sev-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:4px; }
     .sev-btn {
-      padding: 20px 6px;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      background: white;
-      font-size: 1.3rem;
-      font-weight: 800;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: var(--muted);
-      text-align: center;
+      padding:18px 4px; border:2px solid var(--border); border-radius:14px; background:var(--white);
+      font-size:1.2rem; font-weight:800; font-family:inherit; cursor:pointer; transition:all 0.15s; color:var(--muted); text-align:center;
     }
-    .sev-btn.active-1 { border-color: var(--green); background: #f0fdf4; color: var(--green); }
-    .sev-btn.active-2 { border-color: #0891b2;      background: #ecfeff; color: #0891b2; }
-    .sev-btn.active-3 { border-color: var(--gold);  background: #fffbeb; color: var(--gold); }
-    .sev-btn.active-4 { border-color: var(--red);   background: #fef2f2; color: var(--red); }
-    .sev-label { font-size: 0.6rem; font-weight: 600; display: block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sev-lbl { display:block; font-size:0.58rem; font-weight:700; margin-top:3px; text-transform:uppercase; letter-spacing:0.3px; }
+    .sev-btn.s1 { border-color:var(--green); background:#f0fdf4; color:var(--green); }
+    .sev-btn.s2 { border-color:#0891b2;      background:#ecfeff; color:#0891b2; }
+    .sev-btn.s3 { border-color:var(--gold);  background:#fffbeb; color:var(--gold); }
+    .sev-btn.s4 { border-color:var(--red);   background:#fef2f2; color:var(--red); }
 
-    /* ── VOICE MEMO ── */
-    .voice-card {
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 10px;
-    }
-    .voice-label-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .voice-field-label { font-size: 0.78rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
-    .voice-status { font-size: 0.75rem; color: var(--muted); }
-
+    /* VOICE CARD */
+    .voice-card { background:var(--white); border:2px solid var(--border); border-radius:14px; padding:14px; margin-bottom:4px; }
+    .voice-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .voice-lbl { font-size:0.72rem; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:0.5px; }
+    .voice-status { font-size:0.72rem; color:var(--muted); }
     .mic-btn {
-      width: 100%;
-      padding: 22px;
-      border: none;
-      border-radius: 12px;
-      background: var(--navy);
-      color: white;
-      font-size: 2rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-family: inherit;
-      font-weight: 700;
+      width:100%; padding:20px; border:none; border-radius:12px; background:var(--navy); color:white;
+      font-size:1.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+      font-family:inherit; font-weight:700; transition:all 0.15s;
     }
-    .mic-btn .mic-text { font-size: 1rem; }
-    .mic-btn:active { transform: scale(0.97); }
-    .mic-btn.recording {
-      background: var(--red);
-      animation: pulse 1.2s ease-in-out infinite;
+    .mic-btn .mic-txt { font-size:0.95rem; }
+    .mic-btn.recording { background:var(--red); animation:pulse 1.2s ease-in-out infinite; }
+    .mic-btn.done      { background:var(--green); }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.4)} 50%{box-shadow:0 0 0 10px rgba(220,38,38,0)} }
+    .transcript {
+      margin-top:10px; padding:12px; background:var(--bg); border-radius:9px;
+      font-size:0.9rem; line-height:1.6; color:var(--text); border:1px solid var(--border); display:none;
     }
-    .mic-btn.done { background: var(--green); }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
-      50%       { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    .transcript.show { display:block; }
+    .edit-link { font-size:0.75rem; color:var(--blue); cursor:pointer; margin-top:6px; display:none; }
+    .edit-link.show { display:inline-block; }
+    .edit-area {
+      width:100%; margin-top:8px; padding:10px; border:1px solid var(--border); border-radius:8px;
+      font-size:0.9rem; font-family:inherit; resize:none; min-height:68px; display:none;
     }
+    .edit-area.show { display:block; }
+    .fallback-area {
+      width:100%; padding:12px; border:1px solid var(--border); border-radius:9px;
+      font-size:0.9rem; font-family:inherit; resize:none; min-height:72px; background:var(--bg);
+    }
+    .fallback-area:focus { outline:none; border-color:var(--blue); background:var(--white); }
 
-    .transcript-box {
-      margin-top: 12px;
-      padding: 14px;
-      background: #f8fafc;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      color: var(--text);
-      min-height: 56px;
-      border: 1px solid var(--border);
-      display: none;
-    }
-    .transcript-box.has-text { display: block; }
-    .transcript-edit {
-      width: 100%;
-      margin-top: 8px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.92rem;
-      font-family: inherit;
-      color: var(--text);
-      background: white;
-      resize: none;
-      min-height: 70px;
-      display: none;
-    }
-    .transcript-edit.visible { display: block; }
-    .edit-link { font-size: 0.78rem; color: var(--blue); cursor: pointer; margin-top: 6px; display: inline-block; }
-
-    /* ── NO SPEECH SUPPORT ── */
-    .no-speech-textarea {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      color: var(--text);
-      resize: none;
-      min-height: 80px;
-      background: #f8fafc;
-    }
-    .no-speech-textarea:focus { outline: none; border-color: var(--blue); background: white; }
-
-    /* ── SUBMIT ── */
+    /* SUBMIT */
     .submit-btn {
-      width: 100%;
-      padding: 22px;
-      background: var(--teal);
-      color: white;
-      border: none;
-      border-radius: 16px;
-      font-size: 1.2rem;
-      font-weight: 800;
-      font-family: inherit;
-      cursor: pointer;
-      margin-top: 24px;
-      transition: all 0.15s;
-      letter-spacing: 0.3px;
+      width:100%; padding:20px; background:var(--teal); color:white; border:none;
+      border-radius:14px; font-size:1.1rem; font-weight:800; font-family:inherit;
+      cursor:pointer; margin-top:20px; transition:all 0.15s;
     }
-    .submit-btn:active { transform: scale(0.98); }
-    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-btn:active { transform:scale(0.98); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-    /* ── HISTORY ── */
-    .history-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 28px 0 12px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .history-title {
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--navy);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .count-pill {
-      background: var(--navy);
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 20px;
-    }
-    .report-row { display: flex; gap: 8px; }
-    .report-btn {
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: none;
-      font-size: 0.85rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .btn-email { background: #dbeafe; color: var(--blue); }
-    .btn-print { background: #ccfbf1; color: var(--teal); }
+    /* HISTORY */
+    .hist-hdr { display:flex; align-items:center; justify-content:space-between; margin:28px 0 12px; flex-wrap:wrap; gap:8px; }
+    .hist-title { font-size:1rem; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:8px; }
+    .cnt-pill { background:var(--navy); color:white; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:20px; }
+    .rpt-row { display:flex; gap:8px; }
+    .rpt-btn { padding:9px 14px; border-radius:8px; border:none; font-size:0.82rem; font-weight:700; font-family:inherit; cursor:pointer; }
+    .rpt-email { background:#dbeafe; color:var(--blue); }
+    .rpt-print { background:#ccfbf1; color:var(--teal); }
 
-    .log-card {
-      background: white;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      border-left: 5px solid var(--blue);
-      padding: 16px;
-      margin-bottom: 10px;
-    }
-    .log-card.escalated { border-left-color: var(--gold); }
-    .log-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
-    .log-when { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
-    .log-who  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
-    .chip {
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 0.72rem; font-weight: 700;
-    }
-    .c-shower  { background: #fee2e2; color: var(--red); }
-    .c-noshower{ background: #ccfbf1; color: var(--teal); }
-    .c-esc     { background: #fef3c7; color: var(--gold); }
-    .c-calm    { background: #ccfbf1; color: var(--teal); }
-    .c-sev     { background: #dbeafe; color: var(--blue); }
-    .c-rec     { background: #fef3c7; color: var(--gold); }
-    .log-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .note-block { background: var(--bg); padding: 10px 12px; border-radius: 8px; }
-    .note-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .note-text  { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
-    .del-btn { background: none; border: none; color: #94a3b8; font-size: 0.78rem; cursor: pointer; margin-top: 8px; font-family: inherit; padding: 0; }
-    .del-btn:active { color: var(--red); }
+    .log-card { background:var(--white); border:1px solid var(--border); border-radius:12px; border-left:5px solid var(--blue); padding:14px; margin-bottom:10px; }
+    .log-card.esc { border-left-color:var(--gold); }
+    .log-when { font-weight:700; font-size:0.88rem; color:var(--navy); }
+    .log-who  { font-size:0.75rem; color:var(--muted); margin-top:2px; margin-bottom:8px; }
+    .chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+    .chip { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:700; }
+    .c-shower  { background:#fee2e2; color:var(--red); }
+    .c-noshower{ background:#ccfbf1; color:var(--teal); }
+    .c-esc     { background:#fef3c7; color:var(--gold); }
+    .c-calm    { background:#ccfbf1; color:var(--teal); }
+    .c-sev     { background:#dbeafe; color:var(--blue); }
+    .c-rec     { background:#fef3c7; color:var(--gold); }
+    .log-notes { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .note-blk  { background:var(--bg); padding:9px 11px; border-radius:8px; }
+    .note-lbl  { font-size:0.65rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+    .note-txt  { font-size:0.82rem; color:var(--text); line-height:1.5; }
+    .del-btn   { background:none; border:none; color:#94a3b8; font-size:0.75rem; cursor:pointer; margin-top:8px; font-family:inherit; padding:0; }
 
-    .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.95rem; }
+    .empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:0.9rem; }
 
-    /* ── TOAST ── */
+    /* TOAST */
     #toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--navy); color: white;
-      padding: 14px 24px; border-radius: 30px;
-      font-size: 0.95rem; font-weight: 700;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-      z-index: 999; white-space: nowrap;
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(100px);
+      background:var(--navy); color:white; padding:13px 24px;
+      border-radius:30px; font-size:0.9rem; font-weight:700;
+      box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index:999; white-space:nowrap;
     }
-    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.show { transform:translateX(-50%) translateY(0); }
 
-    /* ── FOOTER ── */
-    footer { text-align: center; padding: 20px; }
-    .watermark {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: white; border: 1px solid var(--border);
-      border-radius: 30px; padding: 7px 16px;
-      color: var(--muted); font-size: 0.75rem; font-weight: 600;
-    }
-    .watermark b { color: var(--blue); }
-
+    /* FOOTER */
+    footer { text-align:center; padding:20px; }
+    .wm { display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:30px; padding:7px 16px; color:var(--muted); font-size:0.75rem; font-weight:600; }
+    .wm b { color:var(--blue); }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="brand">
     <div class="brand-icon">🤖</div>
     <div>
-      <div class="brand-text">StudentScope</div>
+      <div class="brand-name">StudentScope</div>
       <div class="brand-sub">Hygiene Incident Log</div>
     </div>
   </div>
@@ -399,41 +169,23 @@
 
 <div class="wrap">
 
-  <!-- STAFF PICKER SCREEN -->
-  <div class="staff-screen" id="staffScreen">
-    <h2>👋 Who are you?</h2>
-    <p>Tap your name — no password needed</p>
-    <div class="staff-btn-grid" id="staffGrid"></div>
-  </div>
-
-  <!-- ACTIVE STAFF BAR -->
-  <div class="section-label">Logging as</div>
-  <div class="staff-bar-active" onclick="switchStaff()">
-    <div class="staff-dot"></div>
-    <span class="staff-name-display" id="staffNameDisplay">—</span>
-    <span id="liveClock" style="color:var(--muted);font-size:0.82rem;font-weight:700;margin-left:auto;"></span>
-    <span class="staff-switch">Switch ▸</span>
-  </div>
-
-
-
   <!-- SHOWER -->
-  <div class="section-label">Did R.J. need to shower?</div>
+  <div class="slabel">Did R.J. need to shower?</div>
   <div class="yn-row">
-    <button class="yn-btn" id="showerY" onclick="pick('shower','Yes')">🚿 Yes</button>
-    <button class="yn-btn" id="showerN" onclick="pick('shower','No')">✓ No</button>
+    <button class="yn-btn" id="btnShowerY" onclick="pick('shower','Yes',this,'yes-on')">🚿 Yes</button>
+    <button class="yn-btn" id="btnShowerN" onclick="pick('shower','No', this,'no-on')">✓ No</button>
   </div>
 
   <!-- ESCALATED -->
-  <div class="section-label">Did behavior escalate?</div>
+  <div class="slabel">Did behavior escalate?</div>
   <div class="yn-row">
-    <button class="yn-btn" id="escalY" onclick="pick('escalated','Yes')">⚠️ Yes</button>
-    <button class="yn-btn" id="escalN" onclick="pick('escalated','No')">✓ No</button>
+    <button class="yn-btn" id="btnEscY" onclick="pick('escalated','Yes',this,'yes-on'); showRecovery(true)">⚠️ Yes</button>
+    <button class="yn-btn" id="btnEscN" onclick="pick('escalated','No', this,'no-on');  showRecovery(false)">✓ No</button>
   </div>
 
-  <!-- RECOVERY (hidden until escalated=Yes) -->
+  <!-- RECOVERY -->
   <div id="recoveryWrap" style="display:none;">
-    <div class="section-label">How long to recover?</div>
+    <div class="slabel">How long to recover?</div>
     <div class="big-select-wrap">
       <select class="big-select" id="recoveryTime">
         <option value="">— Tap to select —</option>
@@ -444,325 +196,319 @@
         <option>40–50 minutes</option>
         <option>50–60 minutes</option>
       </select>
-      <span class="select-arrow">⏱</span>
+      <span class="sel-arrow">⏱</span>
     </div>
   </div>
 
   <!-- SEVERITY -->
-  <div class="section-label">Severity (1 = calm · 4 = very uncooperative)</div>
+  <div class="slabel">Severity (1 = calm · 4 = crisis)</div>
   <div class="sev-row">
-    <button class="sev-btn" id="sev1" onclick="pickSev(1)">1<span class="sev-label">Calm</span></button>
-    <button class="sev-btn" id="sev2" onclick="pickSev(2)">2<span class="sev-label">Mild</span></button>
-    <button class="sev-btn" id="sev3" onclick="pickSev(3)">3<span class="sev-label">Hard</span></button>
-    <button class="sev-btn" id="sev4" onclick="pickSev(4)">4<span class="sev-label">Crisis</span></button>
+    <button class="sev-btn" id="s1" onclick="pickSev(1)">1<span class="sev-lbl">Calm</span></button>
+    <button class="sev-btn" id="s2" onclick="pickSev(2)">2<span class="sev-lbl">Mild</span></button>
+    <button class="sev-btn" id="s3" onclick="pickSev(3)">3<span class="sev-lbl">Hard</span></button>
+    <button class="sev-btn" id="s4" onclick="pickSev(4)">4<span class="sev-lbl">Crisis</span></button>
   </div>
 
-  <!-- ADULT RESPONSE VOICE -->
-  <div class="section-label">Adult Response</div>
+  <!-- ADULT RESPONSE -->
+  <div class="slabel">Adult Response</div>
   <div class="voice-card">
-    <div class="voice-label-row">
-      <span class="voice-field-label">🎙 Voice Memo</span>
+    <div class="voice-top">
+      <span class="voice-lbl">🎙 Voice Memo</span>
       <span class="voice-status" id="adultStatus">Tap to record</span>
     </div>
-    <button class="mic-btn" id="adultMicBtn" onclick="toggleRecording('adult')">
-      🎙 <span class="mic-text">Hold to Record</span>
+    <button class="mic-btn" id="adultMic" onclick="toggleRec('adult')">
+      🎙 <span class="mic-txt">Tap to Record</span>
     </button>
-    <div class="transcript-box" id="adultTranscript"></div>
-    <span class="edit-link" id="adultEditLink" style="display:none;" onclick="toggleEdit('adult')">✏️ Edit transcript</span>
-    <textarea class="transcript-edit" id="adultEdit" placeholder="Edit adult response…" rows="3"></textarea>
+    <div class="transcript" id="adultTranscript"></div>
+    <span class="edit-link" id="adultEditLink" onclick="toggleEdit('adult')">✏️ Edit</span>
+    <textarea class="edit-area" id="adultEdit" placeholder="Edit adult response…" rows="3"></textarea>
   </div>
 
-  <!-- STUDENT RESPONSE VOICE -->
-  <div class="section-label">Student Response</div>
+  <!-- STUDENT RESPONSE -->
+  <div class="slabel">Student Response</div>
   <div class="voice-card">
-    <div class="voice-label-row">
-      <span class="voice-field-label">🎙 Voice Memo</span>
+    <div class="voice-top">
+      <span class="voice-lbl">🎙 Voice Memo</span>
       <span class="voice-status" id="studentStatus">Tap to record</span>
     </div>
-    <button class="mic-btn" id="studentMicBtn" onclick="toggleRecording('student')">
-      🎙 <span class="mic-text">Hold to Record</span>
+    <button class="mic-btn" id="studentMic" onclick="toggleRec('student')">
+      🎙 <span class="mic-txt">Tap to Record</span>
     </button>
-    <div class="transcript-box" id="studentTranscript"></div>
-    <span class="edit-link" id="studentEditLink" style="display:none;" onclick="toggleEdit('student')">✏️ Edit transcript</span>
-    <textarea class="transcript-edit" id="studentEdit" placeholder="Edit student response…" rows="3"></textarea>
+    <div class="transcript" id="studentTranscript"></div>
+    <span class="edit-link" id="studentEditLink" onclick="toggleEdit('student')">✏️ Edit</span>
+    <textarea class="edit-area" id="studentEdit" placeholder="Edit student response…" rows="3"></textarea>
   </div>
 
-  <!-- SUBMIT -->
-  <button class="submit-btn" id="submitBtn" onclick="submitIncident()">
-    💾 Save Incident
-  </button>
-
+  <!-- SAVE -->
+  <button class="submit-btn" id="saveBtn" onclick="saveIncident()">💾 Save Incident</button>
 
   <!-- HISTORY -->
-  <div class="history-header">
-    <div class="history-title">📋 History <span class="count-pill" id="logCount">0</span></div>
-    <div class="report-row">
-      <button class="report-btn btn-email" onclick="emailReport()">📧 Email</button>
-      <button class="report-btn btn-print" onclick="printReport()">🖨️ Print</button>
+  <div class="hist-hdr">
+    <div class="hist-title">📋 History <span class="cnt-pill" id="logCount">0</span></div>
+    <div class="rpt-row">
+      <button class="rpt-btn rpt-email" onclick="emailReport()">📧 Email</button>
+      <button class="rpt-btn rpt-print" onclick="printReport()">🖨️ Print</button>
     </div>
   </div>
   <div id="logsList"><div class="empty">No incidents logged yet.</div></div>
 
 </div>
 
-<footer>
-  <div class="watermark">🤖 <b>StudentScope</b> · Made for Educators</div>
-</footer>
-
+<footer><div class="wm">🤖 <b>StudentScope</b> · Made for Educators</div></footer>
 <div id="toast"></div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
+
+// ── FIREBASE ──────────────────────────────────────────────────────
 firebase.initializeApp({
-  apiKey: "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
-  authDomain: "studentscopebehaviorcenter.firebaseapp.com",
-  projectId: "studentscopebehaviorcenter",
-  storageBucket: "studentscopebehaviorcenter.firebasestorage.app",
+  apiKey:            "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain:        "studentscopebehaviorcenter.firebaseapp.com",
+  projectId:         "studentscopebehaviorcenter",
+  storageBucket:     "studentscopebehaviorcenter.firebasestorage.app",
   messagingSenderId: "311398911099",
-  appId: "1:311398911099:web:6703268a2b65cdd969a6de"
+  appId:             "1:311398911099:web:6703268a2b65cdd969a6de"
 });
 const db = firebase.firestore();
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-const state = { shower: null, escalated: null, severity: null };
+// ── STATE ─────────────────────────────────────────────────────────
+const sel = { shower: null, escalated: null, severity: null };
 let allLogs = [];
 
-// ── SPEECH RECOGNITION SETUP ───────────────────────────────────────────────
-const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let activeField = null;
-let isRecording = false;
+// ── BUTTON PICKERS ────────────────────────────────────────────────
+function pick(group, val, btn, activeClass) {
+  sel[group] = val;
+  if (group === 'shower') {
+    document.getElementById('btnShowerY').className = 'yn-btn';
+    document.getElementById('btnShowerN').className = 'yn-btn';
+  } else {
+    document.getElementById('btnEscY').className = 'yn-btn';
+    document.getElementById('btnEscN').className = 'yn-btn';
+  }
+  btn.className = 'yn-btn ' + activeClass;
+}
 
-if (SpeechRec) {
-  recognition = new SpeechRec();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = 'en-US';
+function showRecovery(show) {
+  document.getElementById('recoveryWrap').style.display = show ? 'block' : 'none';
+  if (!show) document.getElementById('recoveryTime').value = '';
+}
 
-  recognition.onresult = (e) => {
-    let interim = '', final = '';
+function pickSev(n) {
+  sel.severity = n;
+  [1,2,3,4].forEach(i => {
+    const b = document.getElementById('s' + i);
+    b.className = 'sev-btn' + (i === n ? ' s' + n : '');
+  });
+}
+
+// ── SPEECH RECOGNITION ────────────────────────────────────────────
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recog = null, recField = null, isRec = false;
+
+if (SR) {
+  recog = new SR();
+  recog.continuous = true;
+  recog.interimResults = true;
+  recog.lang = 'en-US';
+
+  recog.onresult = e => {
+    let final = '', interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) final += e.results[i][0].transcript;
       else interim += e.results[i][0].transcript;
     }
-    const box = document.getElementById(activeField + 'Transcript');
-    const existing = box.dataset.final || '';
-    box.textContent = (existing + final).trim() + (interim ? ' ' + interim : '');
-    box.dataset.final = (existing + final).trim();
-    box.classList.add('has-text');
+    const box = document.getElementById(recField + 'Transcript');
+    const prev = box.dataset.final || '';
+    const combined = (prev + final).trim();
+    box.dataset.final = combined;
+    box.textContent = combined + (interim ? ' ' + interim : '');
+    box.classList.add('show');
+    document.getElementById(recField + 'Edit').value = combined;
   };
 
-  recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      showToast('⚠ Microphone access denied');
-    } else if (e.error !== 'aborted') {
-      showToast('⚠ Speech error: ' + e.error);
-    }
-    stopRecording();
+  recog.onerror = e => {
+    if (e.error !== 'aborted') showToast('⚠ Mic error: ' + e.error);
+    stopRec();
   };
 
-  recognition.onend = () => {
-    if (isRecording) recognition.start(); // keep going until user taps Stop
-  };
+  recog.onend = () => { if (isRec) recog.start(); };
+
 } else {
-  // No speech support — swap mic buttons for textareas
+  // No speech support — swap mic buttons for text areas
   document.addEventListener('DOMContentLoaded', () => {
-    ['adult','student'].forEach(field => {
-      const card = document.getElementById(field + 'MicBtn').closest('.voice-card');
+    ['adult','student'].forEach(f => {
+      const card = document.getElementById(f + 'Mic').closest('.voice-card');
+      const lbl  = f === 'adult' ? 'Adult Response' : 'Student Response';
       card.innerHTML = `
-        <div class="voice-label-row">
-          <span class="voice-field-label">${field === 'adult' ? 'Adult' : 'Student'} Response</span>
-        </div>
-        <textarea id="${field}FallbackText" class="no-speech-textarea" placeholder="Type response here…"></textarea>`;
+        <div class="voice-top"><span class="voice-lbl">${lbl}</span></div>
+        <textarea id="${f}Fallback" class="fallback-area" placeholder="Type response here…"></textarea>`;
     });
   });
 }
 
-function toggleRecording(field) {
-  if (!recognition) return;
-  if (isRecording && activeField === field) {
-    stopRecording();
-  } else {
-    if (isRecording) stopRecording();
-    startRecording(field);
-  }
+function toggleRec(field) {
+  if (isRec && recField === field) { stopRec(); return; }
+  if (isRec) stopRec();
+  startRec(field);
 }
 
-function startRecording(field) {
-  activeField = field;
-  isRecording = true;
-  recognition.start();
-  const btn = document.getElementById(field + 'MicBtn');
-  btn.classList.add('recording');
-  btn.innerHTML = '⏹ <span class="mic-text">Tap to Stop</span>';
+function startRec(field) {
+  recField = field; isRec = true;
+  recog.start();
+  const btn = document.getElementById(field + 'Mic');
+  btn.className = 'mic-btn recording';
+  btn.innerHTML = '⏹ <span class="mic-txt">Tap to Stop</span>';
   document.getElementById(field + 'Status').textContent = '🔴 Recording…';
 }
 
-function stopRecording() {
-  if (!recognition || !isRecording) return;
-  isRecording = false;
-  recognition.stop();
-  if (!activeField) return;
-  const btn = document.getElementById(activeField + 'MicBtn');
-  btn.classList.remove('recording');
-  btn.classList.add('done');
-  btn.innerHTML = '✓ <span class="mic-text">Tap to Re-record</span>';
-  const box = document.getElementById(activeField + 'Transcript');
-  const editLink = document.getElementById(activeField + 'EditLink');
-  if (box.textContent.trim()) {
-    document.getElementById(activeField + 'Status').textContent = '✓ Transcribed';
-    editLink.style.display = 'inline-block';
-    // sync to edit textarea too
-    document.getElementById(activeField + 'Edit').value = box.dataset.final || box.textContent;
+function stopRec() {
+  if (!isRec) return;
+  isRec = false;
+  try { recog.stop(); } catch(e) {}
+  if (!recField) return;
+  const field = recField;
+  recField = null;
+  const btn  = document.getElementById(field + 'Mic');
+  const box  = document.getElementById(field + 'Transcript');
+  const link = document.getElementById(field + 'EditLink');
+  const stat = document.getElementById(field + 'Status');
+  if (box.dataset.final && box.dataset.final.trim()) {
+    btn.className = 'mic-btn done';
+    btn.innerHTML = '✓ <span class="mic-txt">Tap to Re-record</span>';
+    stat.textContent = '✓ Done';
+    link.classList.add('show');
   } else {
-    document.getElementById(activeField + 'Status').textContent = 'Nothing recorded';
-    btn.classList.remove('done');
-    btn.innerHTML = '🎙 <span class="mic-text">Tap to Record</span>';
+    btn.className = 'mic-btn';
+    btn.innerHTML = '🎙 <span class="mic-txt">Tap to Record</span>';
+    stat.textContent = 'Nothing recorded — try again';
   }
-  activeField = null;
 }
 
 function toggleEdit(field) {
-  const edit = document.getElementById(field + 'Edit');
+  const area = document.getElementById(field + 'Edit');
   const link = document.getElementById(field + 'EditLink');
-  if (edit.classList.contains('visible')) {
-    edit.classList.remove('visible');
-    link.textContent = '✏️ Edit transcript';
-  } else {
-    edit.classList.add('visible');
-    edit.focus();
-    link.textContent = '✓ Done editing';
-  }
+  const open = area.classList.toggle('show');
+  link.textContent = open ? '✓ Done editing' : '✏️ Edit';
+  if (open) area.focus();
 }
 
 function getFieldText(field) {
-  // Check if fallback textarea exists (no speech support)
-  const fallback = document.getElementById(field + 'FallbackText');
+  const fallback = document.getElementById(field + 'Fallback');
   if (fallback) return fallback.value.trim();
-  // Otherwise use edit textarea if visible, else transcript box
   const edit = document.getElementById(field + 'Edit');
-  if (edit && edit.classList.contains('visible') && edit.value.trim()) return edit.value.trim();
+  if (edit && edit.classList.contains('show') && edit.value.trim()) return edit.value.trim();
   const box = document.getElementById(field + 'Transcript');
-  return (box && box.dataset.final) ? box.dataset.final.trim() : (box ? box.textContent.trim() : '');
+  return box ? (box.dataset.final || '').trim() : '';
 }
 
-// ── BUTTON PICKERS ─────────────────────────────────────────────────────────
-function pick(group, val) {
-  state[group] = val;
-  if (group === 'shower') {
-    document.getElementById('showerY').className = 'yn-btn' + (val === 'Yes' ? ' yes-active' : '');
-    document.getElementById('showerN').className = 'yn-btn' + (val === 'No'  ? ' no-active'  : '');
-  }
-  if (group === 'escalated') {
-    document.getElementById('escalY').className = 'yn-btn' + (val === 'Yes' ? ' yes-active' : '');
-    document.getElementById('escalN').className = 'yn-btn' + (val === 'No'  ? ' no-active'  : '');
-    document.getElementById('recoveryWrap').style.display = val === 'Yes' ? 'block' : 'none';
-  }
-}
+// ── SAVE ──────────────────────────────────────────────────────────
+async function saveIncident() {
+  const shower    = sel.shower;
+  const escalated = sel.escalated;
+  const recovery  = document.getElementById('recoveryTime').value;
+  const severity  = sel.severity;
+  const adultTxt  = getFieldText('adult');
+  const stuTxt    = getFieldText('student');
 
-function pickSev(n) {
-  state.severity = n;
-  [1,2,3,4].forEach(i => {
-    document.getElementById('sev' + i).className = 'sev-btn' + (i === n ? ' active-' + n : '');
-  });
-}
+  // Validation
+  if (!shower)    { showToast('⚠ Did R.J. need to shower?'); return; }
+  if (!escalated) { showToast('⚠ Did behavior escalate?'); return; }
+  if (escalated === 'Yes' && !recovery) { showToast('⚠ Select recovery time'); return; }
+  if (!severity)  { showToast('⚠ Select severity 1–4'); return; }
 
-
-// ── SUBMIT ─────────────────────────────────────────────────────────────────
-async function submitIncident() {
-  const staffName = window.activeStaff || '';
-  const recovery  = document.getElementById('recoveryTime')?.value || '';
-  const adultText   = getFieldText('adult');
-  const studentText = getFieldText('student');
-
-  if (!staffName)           { showToast('⚠ Tap your name first'); switchStaff(); return; }
-  if (!state.shower)        { showToast('⚠ Did R.J. need to shower?'); return; }
-  if (!state.escalated)     { showToast('⚠ Did behavior escalate?'); return; }
-  if (state.escalated === 'Yes' && !recovery) { showToast('⚠ Select recovery time'); return; }
-  if (!state.severity)      { showToast('⚠ Select severity 1–4'); return; }
-  // voice fields optional — saves even if blank
-
-  const btn = document.getElementById('submitBtn');
+  const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Saving…';
 
-  const sevLabels = { 1: '1 — Cooperative', 2: '2', 3: '3', 4: '4 — Uncooperative' };
+  const sevMap = { 1:'1 — Cooperative', 2:'2', 3:'3', 4:'4 — Uncooperative' };
+  const ts     = new Date().toISOString();
+
+  const record = {
+    studentName:       'R.J.',
+    showerNeeded:      shower,
+    behaviorEscalated: escalated,
+    recoveryTime:      escalated === 'Yes' ? recovery : 'N/A',
+    severity:          sevMap[severity],
+    adultResponse:     adultTxt  || '(not recorded)',
+    studentResponse:   stuTxt    || '(not recorded)',
+    loggedBy:          'Staff',
+    timestamp:         ts
+  };
+
+  const behaviorText =
+    `🏥 HYGIENE INCIDENT | Shower: ${shower} | ` +
+    `Escalated: ${escalated}${escalated === 'Yes' ? ' (' + recovery + ')' : ''} | ` +
+    `Severity: ${sevMap[severity]} | ` +
+    `Adult: ${adultTxt || 'not recorded'} | ` +
+    `Student: ${stuTxt || 'not recorded'}`;
 
   try {
-    const timestamp = new Date().toISOString();
-    const behaviorText =
-      `🏥 HYGIENE INCIDENT | ` +
-      `Shower: ${state.shower} | ` +
-      `Escalated: ${state.escalated}${state.escalated === 'Yes' ? ' (Recovery: ' + recovery + ')' : ''} | ` +
-      `Severity: ${sevLabels[state.severity]} | ` +
-      `Adult: ${adultText} | Student: ${studentText}`;
-
-    const record = {
-      studentName:       'R.J.',
-      showerNeeded:      state.shower,
-      behaviorEscalated: state.escalated,
-      recoveryTime:      state.escalated === 'Yes' ? recovery : 'N/A',
-      severity:          sevLabels[state.severity],
-      adultResponse:     adultText,
-      studentResponse:   studentText,
-      loggedBy:          staffName,
-      timestamp
-    };
-
-    // Write 1: hygiene-specific collection (powers the frequency map)
+    // Write 1 — hygiene-specific log
     await db.collection('hygiene_incidents').add(record);
 
-    // Write 2: behaviors collection (shows in teacher & admin dashboard)
+    // Write 2 — shared behaviors feed (shows in teacher dashboard)
     await db.collection('behaviors').add({
       studentName:  'R.J.',
       behavior:     behaviorText,
       type:         'hygiene',
-      teacherEmail: staffName,
+      teacherEmail: 'Staff',
       teacherId:    'hygiene-logger',
-      date:         timestamp,
-      timestamp
+      date:         ts,
+      timestamp:    ts
     });
 
     showToast('✓ Saved! Opening school form…');
     resetForm();
+
     setTimeout(() => {
-      window.open('https://docs.google.com/forms/d/e/1FAIpQLScnrNcYKR4TcprvDyQLrM5lfhxE06yreYkDCPZMOZPZYOmKhw/viewform', '_blank');
+      window.open(
+        'https://docs.google.com/forms/d/e/1FAIpQLScnrNcYKR4TcprvDyQLrM5lfhxE06yreYkDCPZMOZPZYOmKhw/viewform',
+        '_blank'
+      );
     }, 1200);
+
   } catch (err) {
-    console.error(err);
-    showToast('✗ Save failed — check connection');
+    console.error('Save failed:', err);
+    showToast('✗ Save failed — ' + err.message);
   } finally {
     btn.disabled = false;
     btn.textContent = '💾 Save Incident';
   }
 }
 
+// ── RESET FORM ────────────────────────────────────────────────────
 function resetForm() {
+  // Buttons
+  sel.shower = null; sel.escalated = null; sel.severity = null;
+  ['btnShowerY','btnShowerN','btnEscY','btnEscN'].forEach(id => {
+    document.getElementById(id).className = 'yn-btn';
+  });
+  [1,2,3,4].forEach(i => document.getElementById('s'+i).className = 'sev-btn');
+
+  // Recovery
   document.getElementById('recoveryTime').value = '';
   document.getElementById('recoveryWrap').style.display = 'none';
 
-  state.shower = null; state.escalated = null; state.severity = null;
-  ['showerY','showerN','escalY','escalN'].forEach(id => document.getElementById(id).className = 'yn-btn');
-  [1,2,3,4].forEach(i => document.getElementById('sev'+i).className = 'sev-btn');
-
-  ['adult','student'].forEach(field => {
-    const btn = document.getElementById(field + 'MicBtn');
-    if (btn) { btn.className = 'mic-btn'; btn.innerHTML = '🎙 <span class="mic-text">Tap to Record</span>'; }
-    const box = document.getElementById(field + 'Transcript');
-    if (box) { box.textContent = ''; box.dataset.final = ''; box.classList.remove('has-text'); }
-    const edit = document.getElementById(field + 'Edit');
-    if (edit) { edit.value = ''; edit.classList.remove('visible'); }
-    const link = document.getElementById(field + 'EditLink');
-    if (link) { link.style.display = 'none'; link.textContent = '✏️ Edit transcript'; }
-    const status = document.getElementById(field + 'Status');
-    if (status) status.textContent = 'Tap to record';
-    const fallback = document.getElementById(field + 'FallbackText');
-    if (fallback) fallback.value = '';
+  // Voice fields
+  ['adult','student'].forEach(f => {
+    const mic  = document.getElementById(f + 'Mic');
+    const box  = document.getElementById(f + 'Transcript');
+    const edit = document.getElementById(f + 'Edit');
+    const link = document.getElementById(f + 'EditLink');
+    const stat = document.getElementById(f + 'Status');
+    const fb   = document.getElementById(f + 'Fallback');
+    if (mic)  { mic.className = 'mic-btn'; mic.innerHTML = '🎙 <span class="mic-txt">Tap to Record</span>'; }
+    if (box)  { box.textContent = ''; box.dataset.final = ''; box.classList.remove('show'); }
+    if (edit) { edit.value = ''; edit.classList.remove('show'); }
+    if (link) { link.classList.remove('show'); link.textContent = '✏️ Edit'; }
+    if (stat) stat.textContent = 'Tap to record';
+    if (fb)   fb.value = '';
   });
 }
 
-// ── FIRESTORE ──────────────────────────────────────────────────────────────
+// ── LOAD & RENDER LOGS ────────────────────────────────────────────
 function loadLogs() {
   db.collection('hygiene_incidents')
     .where('studentName', '==', 'R.J.')
@@ -772,7 +518,7 @@ function loadLogs() {
       snap.forEach(doc => allLogs.push({ id: doc.id, ...doc.data() }));
       renderLogs();
     }, err => {
-      console.error(err);
+      console.error('Firestore error:', err);
       showToast('⚠ Could not load logs');
     });
 }
@@ -780,29 +526,28 @@ function loadLogs() {
 function renderLogs() {
   document.getElementById('logCount').textContent = allLogs.length;
   const el = document.getElementById('logsList');
-  if (!allLogs.length) { el.innerHTML = '<div class="empty">No incidents logged yet.</div>'; return; }
-
+  if (!allLogs.length) {
+    el.innerHTML = '<div class="empty">No incidents logged yet.</div>';
+    return;
+  }
   el.innerHTML = allLogs.map(log => {
-    const d = new Date(log.timestamp);
-    const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const d   = new Date(log.timestamp);
+    const dt  = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const tm  = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+    const esc = log.behaviorEscalated === 'Yes';
     return `
-      <div class="log-card ${log.behaviorEscalated === 'Yes' ? 'escalated' : ''}">
-        <div class="log-top">
-          <div>
-            <div class="log-when">${dateStr} · ${timeStr}</div>
-            <div class="log-who">🕐 ${new Date(log.timestamp).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})} · ${log.loggedBy}</div>
-          </div>
-          <div class="chip-row">
-            <span class="chip ${log.showerNeeded==='Yes'?'c-shower':'c-noshower'}">${log.showerNeeded==='Yes'?'🚿 Shower':'✓ No shower'}</span>
-            <span class="chip ${log.behaviorEscalated==='Yes'?'c-esc':'c-calm'}">${log.behaviorEscalated==='Yes'?'⚠ Escalated':'✓ Calm'}</span>
-            <span class="chip c-sev">Sev ${log.severity}</span>
-            ${log.behaviorEscalated==='Yes'?`<span class="chip c-rec">⏱ ${log.recoveryTime}</span>`:''}
-          </div>
+      <div class="log-card ${esc ? 'esc' : ''}">
+        <div class="log-when">${dt} · ${tm}</div>
+        <div class="log-who">Logged by ${log.loggedBy || '—'}</div>
+        <div class="chips">
+          <span class="chip ${log.showerNeeded === 'Yes' ? 'c-shower' : 'c-noshower'}">${log.showerNeeded === 'Yes' ? '🚿 Shower' : '✓ No shower'}</span>
+          <span class="chip ${esc ? 'c-esc' : 'c-calm'}">${esc ? '⚠ Escalated' : '✓ Calm'}</span>
+          <span class="chip c-sev">Sev ${log.severity}</span>
+          ${esc ? `<span class="chip c-rec">⏱ ${log.recoveryTime}</span>` : ''}
         </div>
         <div class="log-notes">
-          <div class="note-block"><div class="note-label">Adult Response</div><div class="note-text">${log.adultResponse||'—'}</div></div>
-          <div class="note-block"><div class="note-label">Student Response</div><div class="note-text">${log.studentResponse||'—'}</div></div>
+          <div class="note-blk"><div class="note-lbl">Adult Response</div><div class="note-txt">${log.adultResponse || '—'}</div></div>
+          <div class="note-blk"><div class="note-lbl">Student Response</div><div class="note-txt">${log.studentResponse || '—'}</div></div>
         </div>
         <button class="del-btn" onclick="deleteLog('${log.id}')">🗑 Delete</button>
       </div>`;
@@ -814,13 +559,15 @@ async function deleteLog(id) {
   await db.collection('hygiene_incidents').doc(id).delete();
 }
 
-// ── REPORTS ────────────────────────────────────────────────────────────────
+// ── REPORTS ───────────────────────────────────────────────────────
 function buildText() {
   let t = `R.J. HYGIENE INCIDENT REPORT\nGenerated: ${new Date().toLocaleString()}\nTotal: ${allLogs.length}\n${'='.repeat(50)}\n\n`;
   allLogs.forEach((log, i) => {
-    t += `${i+1}. ${new Date(log.timestamp).toLocaleString()}\n   Shower: ${log.showerNeeded}\n   Escalated: ${log.behaviorEscalated}`;
+    t += `${i+1}. ${new Date(log.timestamp).toLocaleString()}\n`;
+    t += `   Shower: ${log.showerNeeded} | Escalated: ${log.behaviorEscalated}`;
     if (log.behaviorEscalated === 'Yes') t += ` (${log.recoveryTime})`;
-    t += `\n   Severity: ${log.severity}\n   Adult: ${log.adultResponse}\n   Student: ${log.studentResponse}\n   By: ${log.loggedBy}\n\n`;
+    t += `\n   Severity: ${log.severity}\n`;
+    t += `   Adult: ${log.adultResponse}\n   Student: ${log.studentResponse}\n   By: ${log.loggedBy}\n\n`;
   });
   return t + `${'='.repeat(50)}\nStudentScope`;
 }
@@ -832,76 +579,41 @@ function emailReport() {
 
 function printReport() {
   if (!allLogs.length) { showToast('No incidents yet'); return; }
-  const rows = allLogs.map((log,i)=>`<tr style="background:${i%2===0?'#f8fafc':'white'}"><td>${new Date(log.timestamp).toLocaleDateString()}</td><td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${log.showerNeeded}</td><td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td><td>${log.severity}</td><td>${log.adultResponse}</td><td>${log.studentResponse}</td><td>${log.loggedBy}</td></tr>`).join('');
+  const rows = allLogs.map((log, i) => `
+    <tr style="background:${i%2===0?'#f8fafc':'white'}">
+      <td>${new Date(log.timestamp).toLocaleDateString()}</td>
+      <td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+      <td>${log.showerNeeded}</td>
+      <td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td>
+      <td>${log.severity}</td>
+      <td>${log.adultResponse}</td>
+      <td>${log.studentResponse}</td>
+      <td>${log.loggedBy}</td>
+    </tr>`).join('');
   const w = window.open('','','width=960,height=700');
-  w.document.write(`<html><head><title>R.J. Hygiene Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style></head><body><h1>R.J. — Hygiene Incident Report</h1><div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div><table><thead><tr><th>Date</th><th>Time</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead><tbody>${rows}</tbody></table><div class="foot">🤖 StudentScope · Confidential Staff Document</div></body></html>`);
+  w.document.write(`<html><head><title>R.J. Hygiene Report</title>
+    <style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style>
+    </head><body>
+    <h1>R.J. — Hygiene Incident Report</h1>
+    <div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div>
+    <table><thead><tr><th>Date</th><th>Time</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="foot">🤖 StudentScope · Confidential Staff Document</div>
+    </body></html>`);
   w.document.close(); w.print();
 }
 
-// ── STAFF PICKER ────────────────────────────────────────────────────────────
-const STAFF_LIST = [
-  { name: 'Mackenzie', emoji: '👩‍💼' },
-  { name: 'Lindsay',   emoji: '👩‍💼' },
-  { name: 'Sam',       emoji: '🧑‍💼' },
-  { name: 'Angie',     emoji: '👩‍💼' },
-  { name: 'Morgan',    emoji: '🧑‍💼' },
-  { name: 'Courtney',  emoji: '👩‍💼' },
-  { name: 'Nicole',    emoji: '👩‍💼' },
-  { name: 'Brian',     emoji: '👨‍💼' },
-  { name: 'Joe',       emoji: '👨‍💼' },
-  { name: 'Kris',      emoji: '🧑‍💼' },
-  { name: 'Craig',     emoji: '👨‍💼' },
-  { name: 'Other (Sub)', emoji: '🔁' },
-];
-
-window.activeStaff = localStorage.getItem('rj_staff') || '';
-
-function buildStaffGrid() {
-  const grid = document.getElementById('staffGrid');
-  grid.innerHTML = STAFF_LIST.map(s => `
-    <button class="staff-btn" onclick="selectStaff('${s.name}')">
-      <span class="staff-initial">${s.emoji}</span>${s.name}
-    </button>`).join('');
-}
-
-function selectStaff(name) {
-  window.activeStaff = name;
-  localStorage.setItem('rj_staff', name);
-  document.getElementById('staffNameDisplay').textContent = name;
-  document.getElementById('staffScreen').style.display = 'none';
-}
-
-function switchStaff() {
-  document.getElementById('staffScreen').style.display = 'flex';
-}
-
-// ── TOAST ──────────────────────────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── INIT ───────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  buildStaffGrid();
-  // If staff already picked (remembered), skip the screen
-  if (window.activeStaff) {
-    document.getElementById('staffNameDisplay').textContent = window.activeStaff;
-    document.getElementById('staffScreen').style.display = 'none';
-  }
   loadLogs();
-  // Live clock
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('liveClock').textContent =
-      now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) +
-      '  ·  ' +
-      now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-  }
-  updateClock();
-  setInterval(updateClock, 30000);
 });
 </script>
 </body>

@@ -6,9 +6,6 @@
 <title>StudentScope — Full System Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════
-   RESET + ROOT
-═══════════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --navy:#1E3A5F; --blue:#2563EB; --blue2:#3B82F6;
@@ -18,13 +15,12 @@
   --esp:#7C3AED; --esp-bg:#F5F3FF;
   --parent:#0891B2; --parent-bg:#ECFEFF;
   --arcade:#EA580C; --arcade-bg:#FFF7ED;
+  --scope:#0F766E; --scope-bg:#F0FDFA;
   --ff-head:'Nunito',sans-serif; --ff-body:'Nunito',sans-serif; --ff-mono:'DM Mono',monospace;
 }
 body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ═══════════════════════════════════════════════
-   ROLE SWITCHER BAR (always visible once in demo)
-═══════════════════════════════════════════════ */
+/* ROLE BAR */
 #role-bar{
   display:none; position:sticky; top:0; z-index:500;
   background:var(--navy); padding:0 24px;
@@ -39,108 +35,60 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 }
 .role-tab:hover{color:rgba(255,255,255,0.8);}
 .role-tab.active{color:#fff; border-bottom-color:#60A5FA;}
-.role-tab .dot{
-  display:inline-block; width:7px; height:7px; border-radius:50%;
-  margin-right:7px; vertical-align:middle;
-}
+.role-tab .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle;}
 .bar-logo{font-family:var(--ff-head);font-size:0.9rem;font-weight:800;color:white;margin-right:24px;white-space:nowrap;}
 .bar-sep{width:1px;height:20px;background:rgba(255,255,255,0.12);margin:0 8px;}
 .bar-back{margin-left:auto;padding:7px 14px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:var(--ff-body);transition:all 0.2s;}
 .bar-back:hover{background:rgba(255,255,255,0.18);color:white;}
 
-/* ═══════════════════════════════════════════════
-   VIEWS
-═══════════════════════════════════════════════ */
+/* VIEWS */
 .view{display:none;}
 .view.active{display:block;}
 
-/* ═══════════════════════════════════════════════
-   LAUNCH SCREEN
-═══════════════════════════════════════════════ */
+/* LAUNCH */
 #launch{
   min-height:100vh;
-  background: radial-gradient(ellipse at 20% 50%, #0f2440 0%, #0a1628 60%, #050d1a 100%);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:40px 24px; position:relative; overflow:hidden;
+  background:radial-gradient(ellipse at 20% 50%,#0f2440 0%,#0a1628 60%,#050d1a 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;position:relative;overflow:hidden;
 }
 #launch::before{
   content:'';position:absolute;inset:0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,0.04) 1px,transparent 0);
   background-size:32px 32px;
 }
-.launch-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);
-  color:#93C5FD;padding:6px 16px;border-radius:20px;
-  font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  margin-bottom:28px;
-}
-.launch-title{
-  font-family:var(--ff-head);font-size:clamp(2.8rem,6vw,5rem);font-weight:800;
-  color:#fff;text-align:center;line-height:1.05;margin-bottom:12px;
-  letter-spacing:-1px;
-}
+.launch-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);color:#93C5FD;padding:6px 16px;border-radius:20px;font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:28px;}
+.launch-title{font-family:var(--ff-head);font-size:clamp(2.8rem,6vw,5rem);font-weight:800;color:#fff;text-align:center;line-height:1.05;margin-bottom:12px;letter-spacing:-1px;}
 .launch-title span{color:#60A5FA;}
-.launch-sub{
-  font-size:1.05rem;color:rgba(255,255,255,0.5);text-align:center;
-  max-width:520px;margin-bottom:16px;line-height:1.65;
-}
-.launch-tagline{
-  font-family:var(--ff-head);font-size:1rem;color:#93C5FD;
-  font-style:italic;margin-bottom:56px;text-align:center;
-}
-.launch-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
-  max-width:960px;width:100%;
-}
-@media(max-width:800px){.launch-grid{grid-template-columns:1fr 1fr;}}
+.launch-sub{font-size:1.05rem;color:rgba(255,255,255,0.5);text-align:center;max-width:520px;margin-bottom:16px;line-height:1.65;}
+.launch-tagline{font-family:var(--ff-head);font-size:1rem;color:#93C5FD;font-style:italic;margin-bottom:56px;text-align:center;}
+.launch-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;max-width:1100px;width:100%;}
+@media(max-width:900px){.launch-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:480px){.launch-grid{grid-template-columns:1fr;}}
-.launch-card{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:16px;padding:28px 20px;cursor:pointer;
-  transition:all 0.25s;text-align:center;position:relative;overflow:hidden;
-}
-.launch-card::before{
-  content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.25s;
-}
+.launch-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:26px 18px;cursor:pointer;transition:all 0.25s;text-align:center;position:relative;overflow:hidden;}
+.launch-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.25s;}
 .launch-card:hover{transform:translateY(-6px);border-color:rgba(255,255,255,0.2);}
 .launch-card:hover::before{opacity:1;}
 .launch-card.esp::before{background:linear-gradient(135deg,rgba(124,58,237,0.15),transparent);}
 .launch-card.teacher::before{background:linear-gradient(135deg,rgba(37,99,235,0.15),transparent);}
 .launch-card.parent::before{background:linear-gradient(135deg,rgba(8,145,178,0.15),transparent);}
 .launch-card.arcade::before{background:linear-gradient(135deg,rgba(234,88,12,0.15),transparent);}
+.launch-card.scope::before{background:linear-gradient(135deg,rgba(15,118,110,0.2),transparent);}
 .launch-card:hover .launch-card-icon{transform:scale(1.15);}
-.launch-card-icon{font-size:2.8rem;margin-bottom:14px;display:block;transition:transform 0.25s;}
-.launch-card-role{
-  font-family:var(--ff-head);font-size:0.65rem;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;
-}
+.launch-card-icon{font-size:2.4rem;margin-bottom:12px;display:block;transition:transform 0.25s;}
+.launch-card-role{font-family:var(--ff-head);font-size:0.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 .launch-card.esp .launch-card-role{color:#A78BFA;}
 .launch-card.teacher .launch-card-role{color:#60A5FA;}
 .launch-card.parent .launch-card-role{color:#22D3EE;}
 .launch-card.arcade .launch-card-role{color:#FB923C;}
-.launch-card-name{
-  font-family:var(--ff-head);font-size:1.15rem;font-weight:800;
-  color:#fff;margin-bottom:8px;
-}
-.launch-card-desc{font-size:0.8rem;color:rgba(255,255,255,0.45);line-height:1.55;}
-.launch-card-sub{
-  margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);
-  font-size:0.72rem;color:rgba(255,255,255,0.3);
-}
-.launch-card.esp .launch-card-sub{color:#A78BFA;}
-.launch-card.teacher .launch-card-sub{color:#60A5FA;}
-.launch-card.parent .launch-card-sub{color:#22D3EE;}
-.launch-card.arcade .launch-card-sub{color:#FB923C;}
-.launch-school{
-  margin-top:48px;font-size:0.78rem;color:rgba(255,255,255,0.25);
-  text-align:center;letter-spacing:0.5px;
-}
+.launch-card.scope .launch-card-role{color:#2DD4BF;}
+.launch-card-name{font-family:var(--ff-head);font-size:1.05rem;font-weight:800;color:#fff;margin-bottom:8px;}
+.launch-card-desc{font-size:0.76rem;color:rgba(255,255,255,0.45);line-height:1.55;}
+.launch-card-sub{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);font-size:0.7rem;color:rgba(255,255,255,0.3);}
+.launch-card.scope .launch-card-sub{color:#2DD4BF;}
+.launch-school{margin-top:48px;font-size:0.78rem;color:rgba(255,255,255,0.25);text-align:center;letter-spacing:0.5px;}
 
-/* ═══════════════════════════════════════════════
-   SHARED COMPONENTS
-═══════════════════════════════════════════════ */
+/* SHARED */
 .shell{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 46px);}
 .sidebar{background:var(--navy);display:flex;flex-direction:column;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto;}
 .sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
@@ -262,18 +210,35 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 .notif-time{font-size:0.7rem;color:var(--muted);margin-top:5px;}
 .notif-new{width:8px;height:8px;background:var(--blue);border-radius:50%;margin-top:4px;flex-shrink:0;}
 
-/* ═══════════════════════════════════════════════
-   ESP VIEW
-═══════════════════════════════════════════════ */
+/* ESP */
 #view-esp .sidebar{background:#2D1B69;}
 #view-esp .nav-item.active{border-left-color:#A78BFA;}
 #view-esp .role-chip{background:rgba(167,139,250,0.2);color:#A78BFA;}
 .esp-col-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
 @media(max-width:1100px){.esp-col-grid{grid-template-columns:1fr 1fr;}}
+#view-esp .main{padding:24px 28px;}
+#view-esp .sec-title h2{font-size:1.65rem;font-weight:900;letter-spacing:-0.3px;}
+#view-esp .sec-title p{font-size:0.95rem;}
+#view-esp .card{border-radius:16px;padding:24px;}
+#view-esp .card-title{font-size:1rem;font-weight:800;margin-bottom:18px;}
+#view-esp .form-group label{font-size:0.85rem;font-weight:800;letter-spacing:0;text-transform:none;margin-bottom:7px;color:var(--muted);}
+#view-esp .form-group input,#view-esp .form-group textarea,#view-esp .form-group select{padding:14px 16px;font-size:1rem;border-radius:12px;border-width:2px;font-weight:600;}
+#view-esp .form-group textarea{min-height:100px;font-size:1rem;}
+#view-esp .btn-primary{font-size:1.05rem;font-weight:800;border-radius:12px;padding:15px 20px;letter-spacing:0.2px;}
+#view-esp .feed-item{padding:16px 0;gap:14px;}
+#view-esp .feed-av{width:44px;height:44px;font-size:0.9rem;}
+#view-esp .feed-name{font-size:1rem;font-weight:800;}
+#view-esp .feed-desc{font-size:0.9rem;line-height:1.5;margin-top:4px;}
+#view-esp .type-badge{font-size:0.8rem;padding:4px 12px;border-radius:20px;}
+#view-esp .feed-time{font-size:0.78rem;}
+#view-esp .nav-item{padding:13px 18px;font-size:0.95rem;font-weight:700;}
+#view-esp .nav-badge{font-size:0.75rem;padding:3px 9px;}
+#esp-log-status{font-size:0.92rem;padding:13px 16px;border-radius:10px;}
+#view-esp .chat-in input{padding:13px 15px;font-size:0.95rem;border-radius:10px;}
+#view-esp .chat-hdr{font-size:1rem;padding:15px 18px;font-weight:800;}
+#view-esp .bubble{font-size:0.92rem;padding:12px 15px;border-radius:14px;}
 
-/* ═══════════════════════════════════════════════
-   PARENT VIEW  (mobile-first feel)
-═══════════════════════════════════════════════ */
+/* PARENT */
 #view-parent{background:#F0FDFF;}
 .parent-shell{max-width:480px;margin:0 auto;padding:20px 16px;min-height:calc(100vh - 46px);}
 .parent-header{background:linear-gradient(135deg,#0E7490,#0891B2);border-radius:14px;padding:20px;color:#fff;margin-bottom:18px;}
@@ -286,28 +251,14 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 .parent-tab{flex:1;padding:9px;text-align:center;font-size:0.8rem;font-weight:600;cursor:pointer;border-radius:7px;transition:all 0.15s;color:var(--muted);font-family:var(--ff-body);}
 .parent-tab.active{background:#0891B2;color:#fff;}
 
-/* ═══════════════════════════════════════════════
-   ARCADE VIEW
-═══════════════════════════════════════════════ */
-#view-arcade{
-  background:linear-gradient(160deg,#1a0533 0%,#0d1a3a 50%,#1a2a0a 100%);
-  min-height:calc(100vh - 46px);
-}
+/* ARCADE */
+#view-arcade{background:linear-gradient(160deg,#1a0533 0%,#0d1a3a 50%,#1a2a0a 100%);min-height:calc(100vh - 46px);}
 .arcade-shell{max-width:520px;margin:0 auto;padding:24px 16px;}
 .arcade-hdr{text-align:center;padding:20px 0 28px;}
 .arcade-hdr h1{font-family:var(--ff-head);font-size:2.2rem;font-weight:800;color:#fff;margin-bottom:4px;}
 .arcade-hdr p{font-size:0.85rem;color:rgba(255,255,255,0.45);}
-.arcade-student{
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-  border-radius:16px;padding:22px;margin-bottom:16px;text-align:center;
-}
-.arcade-avatar{
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(135deg,#7C3AED,#EA580C);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--ff-head);font-size:1.8rem;font-weight:800;color:#fff;
-  margin:0 auto 12px;
-}
+.arcade-student{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:22px;margin-bottom:16px;text-align:center;}
+.arcade-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#EA580C);display:flex;align-items:center;justify-content:center;font-family:var(--ff-head);font-size:1.8rem;font-weight:800;color:#fff;margin:0 auto 12px;}
 .arcade-name{font-family:var(--ff-head);font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:3px;}
 .arcade-grade{font-size:0.8rem;color:rgba(255,255,255,0.45);margin-bottom:18px;}
 .pts-big{font-family:var(--ff-head);font-size:3.5rem;font-weight:800;color:#FB923C;line-height:1;margin-bottom:4px;}
@@ -316,19 +267,11 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 .progress-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,#EA580C,#FB923C);transition:width 0.6s ease;}
 .progress-lbl{font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:right;}
 .streak-row{display:flex;justify-content:center;gap:8px;margin-top:18px;}
-.streak-day{
-  width:36px;height:36px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.75rem;font-weight:700;font-family:var(--ff-head);
-}
+.streak-day{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;font-family:var(--ff-head);}
 .streak-day.on{background:linear-gradient(135deg,#EA580C,#FB923C);color:#fff;}
 .streak-day.off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);}
 .arcade-section-title{font-family:var(--ff-head);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.3);margin:20px 0 10px;padding-left:2px;}
-.reward-card{
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;padding:16px;margin-bottom:10px;
-  display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;
-}
+.reward-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;}
 .reward-card:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);}
 .reward-card.locked{opacity:0.45;cursor:not-allowed;}
 .reward-card.locked:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);}
@@ -350,65 +293,92 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 .beh-pts.neg{color:#F87171;}
 .beh-time{font-size:0.7rem;color:rgba(255,255,255,0.25);}
 
-/* BRANDING PANEL */
+/* BRANDING */
 .preset-btn{padding:7px 12px;border-radius:6px;color:#fff;border:none;font-size:0.72rem;cursor:pointer;font-family:var(--ff-body);font-weight:600;}
 
-/* TOAST */
-.toast{position:fixed;bottom:22px;right:22px;z-index:600;background:var(--text);color:#fff;padding:11px 18px;border-radius:9px;font-size:0.85rem;font-weight:600;transform:translateY(60px);opacity:0;transition:all 0.28s;box-shadow:0 8px 24px rgba(0,0,0,0.2);font-family:var(--ff-body);}
-.toast.show{transform:translateY(0);opacity:1;}
-
-
 /* ═══════════════════════════════════════════════
-   TAMMY OVERRIDES — ESP view gets friendlier,
-   bigger, rounder, and easier on 58-year-old eyes
+   PERISCOPE VIEW
 ═══════════════════════════════════════════════ */
-#view-esp .main { padding: 24px 28px; }
-#view-esp .sec-title h2 { font-size: 1.65rem; font-weight: 900; letter-spacing: -0.3px; }
-#view-esp .sec-title p { font-size: 0.95rem; }
-#view-esp .card { border-radius: 16px; padding: 24px; }
-#view-esp .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 18px; }
+#view-scope{background:var(--bg);min-height:calc(100vh - 46px);}
+#view-scope .sidebar{background:#0F4C45;}
+#view-scope .nav-item.active{border-left-color:#2DD4BF;}
+#view-scope .role-chip{background:rgba(45,212,191,0.15);color:#2DD4BF;}
 
-/* Bigger form fields — finger-tap friendly */
-#view-esp .form-group label { font-size: 0.85rem; font-weight: 800; letter-spacing: 0; text-transform: none; margin-bottom: 7px; color: var(--muted); }
-#view-esp .form-group input,
-#view-esp .form-group textarea,
-#view-esp .form-group select {
-  padding: 14px 16px;
-  font-size: 1rem;
-  border-radius: 12px;
-  border-width: 2px;
-  font-weight: 600;
-}
-#view-esp .form-group textarea { min-height: 100px; font-size: 1rem; }
+.scope-shell{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 46px);}
+.scope-main{padding:28px 32px;overflow-y:auto;}
 
-/* Big friendly save button */
-#view-esp .btn-primary {
-  font-size: 1.05rem;
-  font-weight: 800;
-  border-radius: 12px;
-  padding: 15px 20px;
-  letter-spacing: 0.2px;
-}
+/* Student selector hero */
+.scope-selector-wrap{background:linear-gradient(135deg,#0F766E,#0F4C45);border-radius:16px;padding:24px;margin-bottom:24px;color:#fff;}
+.scope-selector-wrap label{font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);display:block;margin-bottom:10px;}
+.scope-student-select{width:100%;padding:14px 16px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-family:var(--ff-head);font-size:1.1rem;font-weight:700;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.scope-student-select:focus{outline:none;border-color:rgba(255,255,255,0.5);}
+.scope-student-select option{background:#0F4C45;color:#fff;}
+.scope-hero-row{display:flex;align-items:center;gap:18px;margin-top:18px;flex-wrap:wrap;}
+.scope-avatar{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:#fff;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;}
+.scope-student-info h2{font-family:var(--ff-head);font-size:1.4rem;font-weight:800;margin-bottom:2px;}
+.scope-student-info p{font-size:0.83rem;opacity:0.65;}
+.scope-quick-stats{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap;}
+.scope-qs{background:rgba(255,255,255,0.1);border-radius:10px;padding:10px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);}
+.scope-qs-val{font-family:var(--ff-head);font-size:1.5rem;font-weight:800;line-height:1;}
+.scope-qs-lbl{font-size:0.65rem;opacity:0.6;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;}
+.scope-qs.green .scope-qs-val{color:#6EE7B7;}
+.scope-qs.red .scope-qs-val{color:#FCA5A5;}
+.scope-qs.amber .scope-qs-val{color:#FCD34D;}
 
-/* Feed items — easier to scan */
-#view-esp .feed-item { padding: 16px 0; gap: 14px; }
-#view-esp .feed-av { width: 44px; height: 44px; font-size: 0.9rem; }
-#view-esp .feed-name { font-size: 1rem; font-weight: 800; }
-#view-esp .feed-desc { font-size: 0.9rem; line-height: 1.5; margin-top: 4px; }
-#view-esp .type-badge { font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; }
-#view-esp .feed-time { font-size: 0.78rem; }
+/* Ratio bar */
+.scope-ratio-wrap{margin-top:16px;}
+.scope-ratio-label{display:flex;justify-content:space-between;font-size:0.72rem;opacity:0.7;margin-bottom:6px;}
+.scope-ratio-bar{height:8px;border-radius:20px;background:rgba(255,255,255,0.1);overflow:hidden;display:flex;}
+.scope-ratio-pos{height:100%;background:linear-gradient(90deg,#10B981,#34D399);border-radius:20px 0 0 20px;transition:width 0.5s ease;}
+.scope-ratio-neg{height:100%;background:linear-gradient(90deg,#F87171,#EF4444);border-radius:0 20px 20px 0;transition:width 0.5s ease;}
 
-/* Nav items bigger */
-#view-esp .nav-item { padding: 13px 18px; font-size: 0.95rem; font-weight: 700; }
-#view-esp .nav-badge { font-size: 0.75rem; padding: 3px 9px; }
+/* Three-col grid */
+.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.scope-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px;}
+@media(max-width:1200px){.scope-grid-3{grid-template-columns:1fr 1fr;}}
 
-/* Success status */
-#esp-log-status { font-size: 0.92rem; padding: 13px 16px; border-radius: 10px; }
+/* Timeline */
+.scope-timeline{position:relative;padding-left:20px;}
+.scope-timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--border);}
+.scope-tl-item{position:relative;padding:0 0 16px 20px;}
+.scope-tl-item:last-child{padding-bottom:0;}
+.scope-tl-dot{position:absolute;left:-14px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;}
+.scope-tl-dot.pos{background:var(--pos);}
+.scope-tl-dot.neg{background:var(--neg);}
+.scope-tl-time{font-size:0.7rem;color:var(--muted);margin-bottom:3px;}
+.scope-tl-text{font-size:0.84rem;line-height:1.45;color:var(--text);}
+.scope-tl-meta{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
 
-/* Chat input bigger */
-#view-esp .chat-in input { padding: 13px 15px; font-size: 0.95rem; border-radius: 10px; }
-#view-esp .chat-hdr { font-size: 1rem; padding: 15px 18px; font-weight: 800; }
-#view-esp .bubble { font-size: 0.92rem; padding: 12px 15px; border-radius: 14px; }
+/* Bar chart (CSS only) */
+.scope-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.scope-bar-label{font-size:0.78rem;width:90px;flex-shrink:0;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scope-bar-track{flex:1;height:8px;background:var(--bg);border-radius:20px;overflow:hidden;border:1px solid var(--border);}
+.scope-bar-fill{height:100%;border-radius:20px;transition:width 0.5s ease;}
+.scope-bar-fill.neg{background:linear-gradient(90deg,#F87171,#EF4444);}
+.scope-bar-fill.pos{background:linear-gradient(90deg,#34D399,#10B981);}
+.scope-bar-count{font-size:0.75rem;font-weight:700;color:var(--muted);min-width:20px;text-align:right;}
+
+/* Spark dots (mini behavior calendar) */
+.scope-spark-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.scope-spark-cell{aspect-ratio:1;border-radius:3px;cursor:default;}
+.scope-spark-cell.empty{background:var(--bg);border:1px solid var(--border);}
+.scope-spark-cell.has-neg{background:#FCA5A5;}
+.scope-spark-cell.has-pos{background:#6EE7B7;}
+.scope-spark-cell.has-both{background:linear-gradient(135deg,#6EE7B7 50%,#FCA5A5 50%);}
+.scope-spark-day-label{font-size:0.62rem;color:var(--muted);text-align:center;padding-bottom:3px;}
+
+/* Staff notes / pinned */
+.scope-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:12px 14px;margin-bottom:8px;}
+.scope-note-meta{font-size:0.68rem;color:#92400E;font-weight:700;margin-bottom:4px;}
+.scope-note-text{font-size:0.83rem;line-height:1.5;color:var(--text);}
+
+/* Add note */
+.scope-add-note{width:100%;padding:10px 13px;border:2px dashed var(--border);border-radius:9px;font-family:var(--ff-body);font-size:0.85rem;background:transparent;color:var(--muted);cursor:pointer;text-align:left;transition:all 0.15s;}
+.scope-add-note:hover{border-color:var(--scope);color:var(--scope);background:var(--scope-bg);}
+
+/* Print trigger */
+.scope-print-btn{padding:8px 16px;background:var(--scope-bg);color:var(--scope);border:1px solid #99F6E4;border-radius:8px;font-family:var(--ff-body);font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.scope-print-btn:hover{background:#CCFBF1;border-color:var(--scope);}
 
 /* MODAL */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;padding:20px;}
@@ -417,13 +387,15 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
 .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
 .modal-ttl{font-family:var(--ff-head);font-size:1.05rem;font-weight:800;}
 .modal-x{background:none;border:none;font-size:1.3rem;color:var(--muted);cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:600;background:var(--text);color:#fff;padding:11px 18px;border-radius:9px;font-size:0.85rem;font-weight:600;transform:translateY(60px);opacity:0;transition:all 0.28s;box-shadow:0 8px 24px rgba(0,0,0,0.2);font-family:var(--ff-body);}
+.toast.show{transform:translateY(0);opacity:1;}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════
-     ROLE BAR (always on top once inside demo)
-═══════════════════════════════════════════════ -->
+<!-- ROLE BAR -->
 <div id="role-bar" style="display:none;">
   <span class="bar-logo">🤖 StudentScope</span>
   <div class="bar-sep"></div>
@@ -431,16 +403,15 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
   <div class="role-tab" onclick="goRole('teacher',this)" id="tab-teacher"><span class="dot" style="background:#60A5FA;"></span>🎛 Helm</div>
   <div class="role-tab" onclick="goRole('parent',this)" id="tab-parent"><span class="dot" style="background:#22D3EE;"></span>👨‍👩‍👧 Crew</div>
   <div class="role-tab" onclick="goRole('arcade',this)" id="tab-arcade"><span class="dot" style="background:#FB923C;"></span>🎮 Passengers</div>
+  <div class="role-tab" onclick="goRole('scope',this)" id="tab-scope"><span class="dot" style="background:#2DD4BF;"></span>🔭 Periscope</div>
   <button class="bar-back" onclick="goLaunch()">← Back to Launch</button>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     LAUNCH SCREEN
-═══════════════════════════════════════════════ -->
+<!-- LAUNCH -->
 <div id="launch" class="view active">
   <div class="launch-badge">🎯 Interactive System Demo</div>
   <div class="launch-title">Student<span>Scope</span></div>
-  <div class="launch-sub">The complete behavior tracking ecosystem for special education. Four roles. One ship.</div>
+  <div class="launch-sub">The complete behavior tracking ecosystem for special education. Five roles. One ship.</div>
   <div class="launch-tagline">"As easy as a Facebook post. As bulletproof as a sticker chart."</div>
   <div class="launch-grid">
     <div class="launch-card esp" onclick="goRole('esp')">
@@ -448,36 +419,41 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
       <div class="launch-card-role">ESP / Paraprofessional</div>
       <div class="launch-card-name">Engine Room</div>
       <div class="launch-card-desc">Tammy's world. Log behaviors in seconds. AI documentation. Weekly reports. As fast as Dee Dee throws a pencil.</div>
-      <div class="launch-card-sub">index.html · tvega@joeyramone.edu</div>
+      <div class="launch-card-sub">tvega@joeyramone.edu</div>
     </div>
     <div class="launch-card teacher" onclick="goRole('teacher')">
       <span class="launch-card-icon">🎛</span>
       <div class="launch-card-role">Teacher / Case Manager</div>
       <div class="launch-card-name">The Helm</div>
       <div class="launch-card-desc">Ms. Chen's dashboard. Full behavior feed, student roster, parent & staff messaging, weekly reports, branding.</div>
-      <div class="launch-card-sub">teacher-dashboard.html · ms.chen@joeyramone.edu</div>
+      <div class="launch-card-sub">ms.chen@joeyramone.edu</div>
     </div>
     <div class="launch-card parent" onclick="goRole('parent')">
       <span class="launch-card-icon">👨‍👩‍👧</span>
       <div class="launch-card-role">Parent / Guardian</div>
       <div class="launch-card-name">The Crew</div>
       <div class="launch-card-desc">Linda Ramone's view. Real-time notifications, behavior history for Dee Dee, direct messaging with Ms. Chen.</div>
-      <div class="launch-card-sub">parent-portal.html · lramone@gmail.com</div>
+      <div class="launch-card-sub">lramone@gmail.com</div>
     </div>
     <div class="launch-card arcade" onclick="goRole('arcade')">
       <span class="launch-card-icon">🎮</span>
       <div class="launch-card-role">Student</div>
       <div class="launch-card-name">The Passengers</div>
       <div class="launch-card-desc">Dee Dee's arcade. Points balance, streak tracker, reward redemption board. Transparent, purposeful, no slot machine.</div>
-      <div class="launch-card-sub">student-arcade.html · deedee@joeyramone.edu</div>
+      <div class="launch-card-sub">deedee@joeyramone.edu</div>
+    </div>
+    <div class="launch-card scope" onclick="goRole('scope')">
+      <span class="launch-card-icon">🔭</span>
+      <div class="launch-card-role">Admin / Specialist</div>
+      <div class="launch-card-name">Periscope</div>
+      <div class="launch-card-desc">Deep focus on any individual student. Behavior timeline, trend charts, staff notes, ratio analysis — one student at a time.</div>
+      <div class="launch-card-sub">Select any student on caseload</div>
     </div>
   </div>
   <div class="launch-school">🏫 Joey Ramone Middle School, Queens NY — Demo data only. No real students.</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     VIEW: ESP (ENGINE ROOM)
-═══════════════════════════════════════════════ -->
+<!-- VIEW: ESP -->
 <div id="view-esp" class="view">
   <div class="shell">
     <aside class="sidebar">
@@ -488,59 +464,31 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
       <div class="nav-item" onclick="espNav('reports',this)">📋 Weekly Reports</div>
       <div class="nav-lbl">Communication</div>
       <div class="nav-item" onclick="espNav('messages',this)">📨 Staff Messages <span class="nav-badge">1</span></div>
-      <div class="sb-foot">
-        <div class="sb-user"><strong>tvega@joeyramone.edu</strong>Tammy Vega<span class="role-chip">🧑‍💼 ESP Staff</span></div>
-      </div>
+      <div class="sb-foot"><div class="sb-user"><strong>tvega@joeyramone.edu</strong>Tammy Vega<span class="role-chip">🧑‍💼 ESP Staff</span></div></div>
     </aside>
     <main class="main">
-
-      <!-- LOG -->
       <div id="esp-log" class="section active">
-        <div class="sec-head">
-          <div class="sec-title"><h2>Log Behavior</h2><p>Two taps. Done. As fast as a sticker chart.</p></div>
-        </div>
+        <div class="sec-head"><div class="sec-title"><h2>Log Behavior</h2><p>Two taps. Done. As fast as a sticker chart.</p></div></div>
         <div class="two-col">
           <div class="card">
             <div class="card-title">📝 Quick Log</div>
-            <div class="form-group"><label>Student</label>
-              <select id="esp-student">
-                <option>Dee Dee Ramone</option><option>Joey Ramone</option><option>Johnny Ramone</option>
-                <option>Marky Ramone</option><option>Tommy Ramone</option><option>CJ Ramone</option>
-                <option>Richie Ramone</option><option>Elvis Ramone</option>
-              </select>
-            </div>
+            <div class="form-group"><label>Student</label><select id="esp-student"><option>Dee Dee Ramone</option><option>Joey Ramone</option><option>Johnny Ramone</option><option>Marky Ramone</option><option>Tommy Ramone</option><option>CJ Ramone</option><option>Richie Ramone</option><option>Elvis Ramone</option></select></div>
             <div class="form-group"><label>What happened?</label><textarea id="esp-behavior" placeholder="Brief description — your words, not formal language. AI handles that."></textarea></div>
-            <div class="form-group"><label>Type</label>
-              <select id="esp-type"><option value="neg">⚠️ Negative Behavior</option><option value="pos">⭐ Positive / Good Behavior</option></select>
-            </div>
+            <div class="form-group"><label>Type</label><select id="esp-type"><option value="neg">⚠️ Negative Behavior</option><option value="pos">⭐ Positive / Good Behavior</option></select></div>
             <button class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem;" onclick="espLog()">💾 Save Behavior</button>
-            <div id="esp-log-status" style="display:none;margin-top:10px;background:var(--pos-bg);color:var(--pos);padding:10px 14px;border-radius:7px;font-size:0.83rem;font-weight:700;text-align:center;">
-              ✓ Logged · Case manager notified · Parent alerted
-            </div>
+            <div id="esp-log-status" style="display:none;margin-top:10px;background:var(--pos-bg);color:var(--pos);padding:10px 14px;border-radius:7px;font-size:0.83rem;font-weight:700;text-align:center;">✓ Logged · Case manager notified · Parent alerted</div>
             <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:10px;background:linear-gradient(135deg,#059669,#047857);" onclick="espGoodBehavior()">⭐ Good Behavior Alert</button>
           </div>
-          <div class="card">
-            <div class="card-title">📋 Today's Log</div>
-            <div id="esp-feed"></div>
-          </div>
+          <div class="card"><div class="card-title">📋 Today's Log</div><div id="esp-feed"></div></div>
         </div>
       </div>
-
-      <!-- AI -->
       <div id="esp-ai" class="section">
         <div class="sec-head"><div class="sec-title"><h2>AI Assistant</h2><p>Turn your notes into IEP-ready documentation</p></div></div>
         <div class="card">
           <div class="two-col">
             <div>
-              <div class="form-group"><label>Describe the situation</label><textarea id="esp-ai-prompt" style="min-height:120px;" placeholder="e.g. Dee Dee threw his pencil during independent math work after I asked him to stop tapping on the desk..."></textarea></div>
-              <div class="form-group"><label>What do you need?</label>
-                <select id="esp-ai-focus">
-                  <option>Professional Documentation Language</option>
-                  <option>Parent Email Draft</option>
-                  <option>Behavior Strategy Suggestions</option>
-                  <option>Intervention Plan Ideas</option>
-                </select>
-              </div>
+              <div class="form-group"><label>Describe the situation</label><textarea id="esp-ai-prompt" style="min-height:120px;" placeholder="e.g. Dee Dee threw his pencil during independent math work..."></textarea></div>
+              <div class="form-group"><label>What do you need?</label><select id="esp-ai-focus"><option>Professional Documentation Language</option><option>Parent Email Draft</option><option>Behavior Strategy Suggestions</option><option>Intervention Plan Ideas</option></select></div>
               <button class="btn btn-primary" style="width:100%;padding:12px;background:linear-gradient(135deg,#7C3AED,#2563EB);" onclick="espAI()">✨ Generate with Claude AI</button>
             </div>
             <div>
@@ -550,8 +498,6 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
           </div>
         </div>
       </div>
-
-      <!-- REPORTS -->
       <div id="esp-reports" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Weekly Reports</h2><p>Your logging history, exportable</p></div></div>
         <div class="two-col">
@@ -559,28 +505,18 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
             <div class="wk-card"><h3>📊 This Week</h3><div class="wk-range">Feb 24 – Feb 28</div><div class="wk-count">12 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Email report opened')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print dialog opened')">🖨️ Print</button></div></div>
             <div class="wk-card" style="background:linear-gradient(135deg,#4C1D95,#7C3AED);"><h3>📅 Last Week</h3><div class="wk-range">Feb 17 – Feb 21</div><div class="wk-count">18 behaviors logged</div><div class="wk-btns"><button class="wk-btn" onclick="toast('📧 Email report opened')">📧 Email</button><button class="wk-btn" onclick="toast('🖨️ Print dialog opened')">🖨️ Print</button></div></div>
           </div>
-          <div class="card"><div class="card-title">📈 This Week by Student</div>
-            <div id="esp-weekly"></div>
-          </div>
+          <div class="card"><div class="card-title">📈 This Week by Student</div><div id="esp-weekly"></div></div>
         </div>
       </div>
-
-      <!-- MESSAGES -->
       <div id="esp-messages" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Staff Messages</h2><p>Direct messages with Ms. Chen</p></div></div>
-        <div class="chat-layout">
-          <div class="chat-threads" id="esp-thread-list"></div>
-          <div class="chat-area" id="esp-chat-area"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.88rem;">Select a conversation</div></div>
-        </div>
+        <div class="chat-layout"><div class="chat-threads" id="esp-thread-list"></div><div class="chat-area" id="esp-chat-area"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.88rem;">Select a conversation</div></div></div>
       </div>
-
     </main>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     VIEW: TEACHER (HELM)
-═══════════════════════════════════════════════ -->
+<!-- VIEW: TEACHER -->
 <div id="view-teacher" class="view">
   <div class="shell">
     <aside class="sidebar">
@@ -599,8 +535,6 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
       <div class="sb-foot"><div class="sb-user"><strong>ms.chen@joeyramone.edu</strong>Ms. Chen — Case Manager<span class="role-chip" style="background:rgba(96,165,250,0.15);color:#60A5FA;">👩‍🏫 Teacher</span></div></div>
     </aside>
     <main class="main">
-
-      <!-- OVERVIEW -->
       <div id="tch-overview" class="section active">
         <div class="sec-head"><div class="sec-title"><h2>Command Center</h2><p>Joey Ramone Middle School — your classroom, live</p></div><button class="btn btn-primary btn-sm" onclick="tchNav('log',document.querySelectorAll('#view-teacher .nav-item')[2])">⚡ Quick Log</button></div>
         <div class="stats-row">
@@ -611,14 +545,10 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
         </div>
         <div class="card"><div class="card-title">📡 Live Behavior Feed</div><div id="tch-feed"></div></div>
       </div>
-
-      <!-- STUDENTS -->
       <div id="tch-students" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Students</h2><p>8 students on caseload</p></div><button class="btn btn-primary btn-sm" onclick="openModal('addStuModal')">+ Add Student</button></div>
         <div class="stu-grid" id="tch-students-grid"></div>
       </div>
-
-      <!-- QUICK LOG -->
       <div id="tch-log" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Quick Log</h2><p>Log directly from the dashboard</p></div></div>
         <div class="two-col">
@@ -638,26 +568,18 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
           </div>
         </div>
       </div>
-
-      <!-- PARENT MESSAGES -->
       <div id="tch-messages" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Parent Messages</h2><p>3 unread conversations</p></div></div>
         <div class="chat-layout"><div class="chat-threads" id="tch-parent-threads"></div><div class="chat-area" id="tch-parent-chat"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);">Select a conversation</div></div></div>
       </div>
-
-      <!-- STAFF MESSAGES -->
       <div id="tch-staffmsg" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Staff Messages</h2><p>Direct messages with ESP staff</p></div></div>
         <div class="chat-layout"><div class="chat-threads" id="tch-staff-threads"></div><div class="chat-area" id="tch-staff-chat"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);">Select a conversation</div></div></div>
       </div>
-
-      <!-- ESP STAFF -->
       <div id="tch-esp" class="section">
         <div class="sec-head"><div class="sec-title"><h2>ESP Staff</h2><p>4 active staff</p></div><button class="btn btn-primary btn-sm" onclick="toast('Demo: account creation disabled')">+ Create Account</button></div>
         <div class="card"><table class="roster"><thead><tr><th>Name / Email</th><th>Behaviors</th><th>Students</th><th>Joined</th></tr></thead><tbody id="tch-roster"></tbody></table></div>
       </div>
-
-      <!-- REPORTS -->
       <div id="tch-reports" class="section">
         <div class="sec-head"><div class="sec-title"><h2>Weekly Reports</h2></div></div>
         <div class="two-col">
@@ -668,8 +590,6 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
           <div class="card"><div class="card-title">📈 This Week by Student</div><div id="tch-weekly-bd"></div></div>
         </div>
       </div>
-
-      <!-- BRANDING -->
       <div id="tch-branding" class="section">
         <div class="sec-head"><div class="sec-title"><h2>School Branding</h2><p>White-label configuration — admin only</p></div></div>
         <div class="two-col">
@@ -703,24 +623,18 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
           </div>
         </div>
       </div>
-
     </main>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     VIEW: PARENT (CREW)
-═══════════════════════════════════════════════ -->
+<!-- VIEW: PARENT -->
 <div id="view-parent" class="view">
   <div class="parent-shell">
     <div class="parent-header">
       <h2>👋 Hi, Linda!</h2>
       <p>Dee Dee Ramone · 7th Grade · Joey Ramone Middle School</p>
       <div class="parent-pts">
-        <div>
-          <div class="parent-pts-num">85</div>
-          <div class="parent-pts-lbl">Arcade Points</div>
-        </div>
+        <div><div class="parent-pts-num">85</div><div class="parent-pts-lbl">Arcade Points</div></div>
         <div style="flex:1;margin-left:4px;">
           <div style="background:rgba(255,255,255,0.15);border-radius:20px;height:8px;overflow:hidden;margin-bottom:4px;"><div style="width:57%;height:100%;background:linear-gradient(90deg,#FB923C,#FCD34D);border-radius:20px;"></div></div>
           <div style="font-size:0.72rem;opacity:0.65;">57 pts toward next reward (150 pts)</div>
@@ -732,47 +646,22 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
       <button class="parent-tab" onclick="parentTab('history',this)">📋 History</button>
       <button class="parent-tab" onclick="parentTab('msgs',this)">💬 Messages</button>
     </div>
-
-    <!-- NOTIFS -->
-    <div id="parent-notifs" class="section active">
-      <div class="card" style="padding:16px;">
-        <div class="card-title">Recent Notifications</div>
-        <div id="parent-notif-list"></div>
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div id="parent-history" class="section">
-      <div class="card" style="padding:16px;">
-        <div class="card-title">Dee Dee's Behavior History</div>
-        <div id="parent-history-list"></div>
-      </div>
-    </div>
-
-    <!-- MESSAGES -->
+    <div id="parent-notifs" class="section active"><div class="card" style="padding:16px;"><div class="card-title">Recent Notifications</div><div id="parent-notif-list"></div></div></div>
+    <div id="parent-history" class="section"><div class="card" style="padding:16px;"><div class="card-title">Dee Dee's Behavior History</div><div id="parent-history-list"></div></div></div>
     <div id="parent-msgs" class="section">
       <div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;height:460px;">
         <div class="chat-hdr">💬 Ms. Chen — Case Manager</div>
         <div class="chat-msgs" id="parent-chat-msgs"></div>
-        <div class="chat-in">
-          <input type="text" id="parent-msg-input" placeholder="Message Ms. Chen..." onkeypress="if(event.key==='Enter')parentSend()">
-          <button class="btn btn-primary btn-sm" onclick="parentSend()">Send</button>
-        </div>
+        <div class="chat-in"><input type="text" id="parent-msg-input" placeholder="Message Ms. Chen..." onkeypress="if(event.key==='Enter')parentSend()"><button class="btn btn-primary btn-sm" onclick="parentSend()">Send</button></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     VIEW: STUDENT ARCADE (PASSENGERS)
-═══════════════════════════════════════════════ -->
+<!-- VIEW: ARCADE -->
 <div id="view-arcade" class="view">
   <div class="arcade-shell">
-    <div class="arcade-hdr">
-      <h1>🎮 Arcade</h1>
-      <p>Joey Ramone Middle School</p>
-    </div>
-
+    <div class="arcade-hdr"><h1>🎮 Arcade</h1><p>Joey Ramone Middle School</p></div>
     <div class="arcade-student">
       <div class="arcade-avatar">DR</div>
       <div class="arcade-name">Dee Dee Ramone</div>
@@ -783,23 +672,162 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
       <div class="progress-lbl">57 pts to next reward (150)</div>
       <div style="margin-top:14px;">
         <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Good Behavior Streak</div>
-        <div class="streak-row">
-          <div class="streak-day on">M</div>
-          <div class="streak-day on">T</div>
-          <div class="streak-day off">W</div>
-          <div class="streak-day off">Th</div>
-          <div class="streak-day off">F</div>
-        </div>
+        <div class="streak-row"><div class="streak-day on">M</div><div class="streak-day on">T</div><div class="streak-day off">W</div><div class="streak-day off">Th</div><div class="streak-day off">F</div></div>
         <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:7px;">2-day streak this week</div>
       </div>
     </div>
-
     <div class="arcade-section-title">Rewards Board</div>
     <div id="arcade-rewards"></div>
-
     <div class="arcade-section-title">Recent Behavior Log</div>
     <div class="behavior-log" id="arcade-log"></div>
+  </div>
+</div>
 
+<!-- VIEW: PERISCOPE -->
+<div id="view-scope" class="view">
+  <div class="scope-shell">
+    <aside class="sidebar">
+      <div class="sb-brand"><h1>🔭 Periscope</h1><div class="sb-school">Joey Ramone Middle School<br>Individual Student Focus</div></div>
+      <div class="nav-lbl">Student View</div>
+      <div class="nav-item active" onclick="scopeNav('overview',this)">📊 Overview</div>
+      <div class="nav-item" onclick="scopeNav('timeline',this)">📅 Behavior Timeline</div>
+      <div class="nav-item" onclick="scopeNav('trends',this)">📈 Trends &amp; Patterns</div>
+      <div class="nav-item" onclick="scopeNav('notes',this)">📌 Staff Notes</div>
+      <div class="nav-item" onclick="scopeNav('report',this)">📋 Generate Report</div>
+      <div class="sb-foot"><div class="sb-user"><strong>Any authorized staff</strong>Admin / Specialist<span class="role-chip">🔭 Periscope</span></div></div>
+    </aside>
+    <main class="scope-main">
+
+      <!-- Student Selector (shared across all scope sections) -->
+      <div class="scope-selector-wrap">
+        <label>Viewing student</label>
+        <select class="scope-student-select" id="scope-student-select" onchange="renderScope()">
+          <option value="0">Dee Dee Ramone</option>
+          <option value="1">Joey Ramone</option>
+          <option value="2">Johnny Ramone</option>
+          <option value="3">Marky Ramone</option>
+          <option value="4">Tommy Ramone</option>
+          <option value="5">CJ Ramone</option>
+          <option value="6">Richie Ramone</option>
+          <option value="7">Elvis Ramone</option>
+        </select>
+        <div class="scope-hero-row">
+          <div class="scope-avatar" id="scope-avatar">DR</div>
+          <div class="scope-student-info">
+            <h2 id="scope-name">Dee Dee Ramone</h2>
+            <p id="scope-meta">7th Grade · ESP: T. Vega · Parent connected</p>
+          </div>
+          <div class="scope-quick-stats">
+            <div class="scope-qs red"><div class="scope-qs-val" id="scope-neg-count">5</div><div class="scope-qs-lbl">Negative</div></div>
+            <div class="scope-qs green"><div class="scope-qs-val" id="scope-pos-count">3</div><div class="scope-qs-lbl">Positive</div></div>
+            <div class="scope-qs amber"><div class="scope-qs-val" id="scope-pts">85</div><div class="scope-qs-lbl">Points</div></div>
+          </div>
+        </div>
+        <div class="scope-ratio-wrap">
+          <div class="scope-ratio-label"><span id="scope-ratio-pos-lbl">3 positive</span><span id="scope-ratio-neg-lbl">5 negative</span></div>
+          <div class="scope-ratio-bar">
+            <div class="scope-ratio-pos" id="scope-ratio-pos" style="width:37.5%"></div>
+            <div class="scope-ratio-neg" id="scope-ratio-neg" style="width:62.5%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div id="scope-overview" class="section active">
+        <div class="scope-grid">
+          <div class="card">
+            <div class="card-title">📅 Recent Behaviors</div>
+            <div id="scope-recent-feed"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">🗓 Behavior Calendar <span style="font-size:0.72rem;color:var(--muted);font-weight:400;">last 28 days</span></div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px;">
+              <div class="scope-spark-day-label">S</div><div class="scope-spark-day-label">M</div><div class="scope-spark-day-label">T</div><div class="scope-spark-day-label">W</div><div class="scope-spark-day-label">T</div><div class="scope-spark-day-label">F</div><div class="scope-spark-day-label">S</div>
+            </div>
+            <div class="scope-spark-grid" id="scope-spark"></div>
+            <div style="display:flex;gap:12px;margin-top:10px;font-size:0.7rem;color:var(--muted);">
+              <span><span style="display:inline-block;width:10px;height:10px;background:#FCA5A5;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Negative</span>
+              <span><span style="display:inline-block;width:10px;height:10px;background:#6EE7B7;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Positive</span>
+              <span><span style="display:inline-block;width:10px;height:10px;background:var(--bg);border:1px solid var(--border);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>None</span>
+            </div>
+          </div>
+        </div>
+        <div class="scope-grid">
+          <div class="card">
+            <div class="card-title">🧑‍💼 Behaviors by Staff</div>
+            <div id="scope-by-staff"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📌 Latest Staff Note</div>
+            <div id="scope-latest-note"></div>
+            <button class="scope-add-note" onclick="scopeNav('notes',document.querySelectorAll('#view-scope .nav-item')[3])">+ View all notes →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div id="scope-timeline" class="section">
+        <div class="card">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>📅 Full Behavior Timeline</span>
+            <button class="scope-print-btn" onclick="toast('🖨️ Timeline report printing...')">🖨️ Print</button>
+          </div>
+          <div class="scope-timeline" id="scope-tl"></div>
+        </div>
+      </div>
+
+      <!-- TRENDS -->
+      <div id="scope-trends" class="section">
+        <div class="scope-grid">
+          <div class="card">
+            <div class="card-title">📊 Behavior by Day of Week</div>
+            <div id="scope-dow-chart"></div>
+            <p style="font-size:0.72rem;color:var(--muted);margin-top:10px;" id="scope-dow-note"></p>
+          </div>
+          <div class="card">
+            <div class="card-title">⏱ Behavior by Time of Day</div>
+            <div id="scope-tod-chart"></div>
+            <p style="font-size:0.72rem;color:var(--muted);margin-top:10px;" id="scope-tod-note"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔍 Pattern Summary</div>
+          <div id="scope-pattern-summary" style="font-size:0.88rem;line-height:1.8;color:var(--text);"></div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div id="scope-notes" class="section">
+        <div class="card">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>📌 Staff Notes</span>
+            <button class="btn btn-primary btn-sm" onclick="addScopeNote()">+ Add Note</button>
+          </div>
+          <div id="scope-notes-list"></div>
+        </div>
+      </div>
+
+      <!-- REPORT -->
+      <div id="scope-report" class="section">
+        <div class="card">
+          <div class="card-title">📋 Generate Student Report</div>
+          <div class="two-col" style="margin-bottom:18px;">
+            <div class="form-group"><label>Date Range</label><select><option>This Week (Feb 24–28)</option><option>Last Week (Feb 17–21)</option><option>This Month</option><option>Last 30 Days</option><option>All Time</option></select></div>
+            <div class="form-group"><label>Include</label><select><option>All Behaviors</option><option>Negative Only</option><option>Positive Only</option></select></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="toast('📧 Report emailed to team')">📧 Email to Team</button>
+            <button class="btn btn-ghost" onclick="toast('🖨️ Print report opened')">🖨️ Print / PDF</button>
+            <button class="btn btn-ghost" onclick="toast('📤 Shared to parent portal')">📤 Share to Parent Portal</button>
+          </div>
+          <div style="margin-top:20px;padding:16px;background:var(--scope-bg);border:1px solid #99F6E4;border-radius:10px;">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--scope);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Report Preview</div>
+            <div id="scope-report-preview" style="font-size:0.84rem;line-height:1.8;color:var(--text);"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
   </div>
 </div>
 
@@ -811,6 +839,14 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);min-heigh
     <div class="form-group"><label>Grade</label><select><option>6th Grade</option><option>7th Grade</option><option>8th Grade</option></select></div>
     <div class="form-group"><label>Assigned ESP Staff</label><select><option>Tammy Vega</option><option>Marco Cruz</option><option>Dana Park</option></select></div>
     <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="closeModal('addStuModal');toast('✓ Student added · Access code generated · Parent link ready')">Create Student</button>
+  </div>
+</div>
+
+<div id="addNoteModal" class="modal-ov">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-ttl" id="addNoteTitle">Add Staff Note</div><button class="modal-x" onclick="closeModal('addNoteModal')">×</button></div>
+    <div class="form-group"><label>Note</label><textarea id="scope-note-input" placeholder="Add a clinical observation, strategy note, or IEP reminder..." style="min-height:120px;"></textarea></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="saveNote()">Save Note</button>
   </div>
 </div>
 
@@ -830,16 +866,70 @@ const STUDENTS=[
   {name:"Richie Ramone",grade:"7th",esp:"T. Vega",parent:true,pts:110},
   {name:"Elvis Ramone",grade:"8th",esp:"K. Torres",parent:true,pts:75},
 ];
+
 const BEHAVIORS=[
-  {student:"Dee Dee Ramone",type:"neg",desc:"Threw pencil during independent work; refused to retrieve it.",esp:"T. Vega",time:"9:14 AM"},
-  {student:"Marky Ramone",type:"pos",desc:"Helped a peer with reading without being asked. Excellent self-regulation.",esp:"D. Park",time:"9:47 AM"},
-  {student:"Joey Ramone",type:"neg",desc:"Used inappropriate language directed at substitute teacher.",esp:"M. Cruz",time:"10:22 AM"},
-  {student:"Tommy Ramone",type:"neg",desc:"Left classroom without permission twice. Returned with verbal prompt.",esp:"M. Cruz",time:"11:05 AM"},
-  {student:"Richie Ramone",type:"pos",desc:"Completed all morning work independently. Requested break appropriately.",esp:"T. Vega",time:"11:30 AM"},
-  {student:"CJ Ramone",type:"neg",desc:"Disruptive during group activity. Made noises to get peers' attention.",esp:"D. Park",time:"1:15 PM"},
-  {student:"Elvis Ramone",type:"pos",desc:"Volunteered to present to class. Strong eye contact. Major progress.",esp:"K. Torres",time:"1:48 PM"},
-  {student:"Johnny Ramone",type:"neg",desc:"Refused to participate in ELA. Head down for approximately 20 minutes.",esp:"T. Vega",time:"2:10 PM"},
+  {student:"Dee Dee Ramone",type:"neg",desc:"Threw pencil during independent work; refused to retrieve it.",esp:"T. Vega",time:"9:14 AM",day:"Mon",tod:"morning"},
+  {student:"Marky Ramone",type:"pos",desc:"Helped a peer with reading without being asked.",esp:"D. Park",time:"9:47 AM",day:"Mon",tod:"morning"},
+  {student:"Joey Ramone",type:"neg",desc:"Used inappropriate language directed at substitute teacher.",esp:"M. Cruz",time:"10:22 AM",day:"Mon",tod:"morning"},
+  {student:"Tommy Ramone",type:"neg",desc:"Left classroom without permission twice.",esp:"M. Cruz",time:"11:05 AM",day:"Mon",tod:"midday"},
+  {student:"Richie Ramone",type:"pos",desc:"Completed all morning work independently. Requested break appropriately.",esp:"T. Vega",time:"11:30 AM",day:"Tue",tod:"midday"},
+  {student:"CJ Ramone",type:"neg",desc:"Disruptive during group activity.",esp:"D. Park",time:"1:15 PM",day:"Tue",tod:"afternoon"},
+  {student:"Elvis Ramone",type:"pos",desc:"Volunteered to present to class. Strong eye contact. Major progress.",esp:"K. Torres",time:"1:48 PM",day:"Tue",tod:"afternoon"},
+  {student:"Johnny Ramone",type:"neg",desc:"Refused to participate in ELA. Head down for approximately 20 minutes.",esp:"T. Vega",time:"2:10 PM",day:"Wed",tod:"afternoon"},
+  {student:"Dee Dee Ramone",type:"neg",desc:"Used inappropriate language in hallway between classes.",esp:"D. Park",time:"10:05 AM",day:"Tue",tod:"morning"},
+  {student:"Dee Dee Ramone",type:"pos",desc:"Returned to seat after single verbal prompt. Great response.",esp:"T. Vega",time:"2:30 PM",day:"Tue",tod:"afternoon"},
+  {student:"Dee Dee Ramone",type:"neg",desc:"Refused to transition to specials. Required two staff.",esp:"M. Cruz",time:"12:45 PM",day:"Wed",tod:"midday"},
+  {student:"Dee Dee Ramone",type:"pos",desc:"Completed homework two days in a row. Celebrated with class.",esp:"T. Vega",time:"8:55 AM",day:"Thu",tod:"morning"},
+  {student:"Dee Dee Ramone",type:"neg",desc:"Tapped desk repeatedly during silent reading despite two redirects.",esp:"T. Vega",time:"1:20 PM",day:"Thu",tod:"afternoon"},
+  {student:"Dee Dee Ramone",type:"pos",desc:"Appropriately requested a sensory break and returned calmly.",esp:"T. Vega",time:"9:30 AM",day:"Fri",tod:"morning"},
+  {student:"Joey Ramone",type:"pos",desc:"Led morning meeting. Excellent public speaking skills today.",esp:"M. Cruz",time:"8:45 AM",day:"Wed",tod:"morning"},
+  {student:"Joey Ramone",type:"neg",desc:"Refused to complete math worksheet. Crumpled paper.",esp:"M. Cruz",time:"2:00 PM",day:"Thu",tod:"afternoon"},
+  {student:"Marky Ramone",type:"pos",desc:"Zero incidents all day. Used break card twice, both appropriate.",esp:"D. Park",time:"3:00 PM",day:"Fri",tod:"afternoon"},
+  {student:"Johnny Ramone",type:"neg",desc:"Eloped from classroom. Found in hallway near gym.",esp:"T. Vega",time:"11:15 AM",day:"Fri",tod:"midday"},
 ];
+
+// Per-student extended data
+const STUDENT_DATA={
+  "Dee Dee Ramone":{
+    notes:[
+      {author:"T. Vega",date:"Feb 27",text:"Dee Dee responds much better to non-verbal redirection in the morning. Verbal prompts before 10am tend to escalate. Consider updating BIP."},
+      {author:"Ms. Chen",date:"Feb 25",text:"IEP goal check-in: self-regulation benchmark at 60%. On track. Parent conference scheduled March 5."},
+      {author:"D. Park",date:"Feb 24",text:"Covered for Tammy today. Noticed Dee Dee does better with a written agenda visible on his desk. Mentioned to Ms. Chen."},
+    ],
+    dowData:{Mon:2,Tue:2,Wed:1,Thu:2,Fri:1},
+    todData:{morning:3,midday:2,afternoon:3},
+    pattern:"Behaviors cluster on Monday mornings and Thursday afternoons — likely tied to schedule transitions. Fridays show the best ratio (1:1 positive to negative). Morning verbal prompting tends to escalate; non-verbal works better before 10am."
+  },
+  "Joey Ramone":{
+    notes:[
+      {author:"M. Cruz",date:"Feb 26",text:"Joey is doing really well with public speaking tasks. Strong intrinsic motivation when given audience. Suggest incorporating more presentation-style tasks."},
+      {author:"Ms. Chen",date:"Feb 20",text:"Parent confirmed computer time at home is impacting sleep. May be affecting afternoon regulation. Following up."},
+    ],
+    dowData:{Mon:1,Tue:0,Wed:1,Thu:1,Fri:0},
+    todData:{morning:1,midday:0,afternoon:2},
+    pattern:"Joey's incidents are almost exclusively in the afternoon, suggesting fatigue or regulation challenges after lunch. Morning performance is strong. Consider front-loading challenging work before 11am."
+  },
+  "Marky Ramone":{
+    notes:[
+      {author:"D. Park",date:"Feb 28",text:"Best week in months. Break card protocol is working. Zero incidents Friday — acknowledged in front of class per reward plan."},
+    ],
+    dowData:{Mon:1,Tue:0,Wed:0,Thu:0,Fri:0},
+    todData:{morning:1,midday:0,afternoon:0},
+    pattern:"Strong positive trend this week. Break card system introduced Feb 17 appears to be the inflection point. Only 1 negative behavior logged all week, on Monday morning."
+  },
+  "Johnny Ramone":{
+    notes:[
+      {author:"T. Vega",date:"Feb 27",text:"Elopement is increasing — three incidents this week. Need to review antecedents with team. Hallway near gym appears to be destination each time."},
+      {author:"Ms. Chen",date:"Feb 25",text:"Behavior plan needs updating. Current plan doesn't address elopement. Scheduling team meeting."},
+    ],
+    dowData:{Mon:0,Tue:0,Wed:1,Thu:0,Fri:2},
+    todData:{morning:0,midday:2,afternoon:1},
+    pattern:"Johnny's elopements are concentrated on Fridays and midday — both transitions. The destination (hallway near gym) suggests a sensory or escape function. Recommend a designated calm-down space as an alternative."
+  },
+};
+
+const STAFF_NOTES_STATE = {};
+
 const ESP_STAFF=[
   {name:"Tammy Vega",email:"tvega@joeyramone.edu",behaviors:47,students:3,joined:"Sep 2021"},
   {name:"Marco Cruz",email:"mcruz@joeyramone.edu",behaviors:38,students:2,joined:"Jan 2022"},
@@ -847,37 +937,14 @@ const ESP_STAFF=[
   {name:"Kim Torres",email:"ktorres@joeyramone.edu",behaviors:29,students:1,joined:"Oct 2023"},
 ];
 const PARENT_CONVOS=[
-  {name:"Linda Ramone",student:"Dee Dee Ramone",initials:"LR",unread:true,bg:"#0E7490",
-    msgs:[
-      {from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning. We're working on it.",time:"9:20 AM"},
-      {from:"parent",text:"Thank you for letting me know. He had a tough morning at home too. Should I call the school?",time:"9:45 AM"},
-      {from:"teacher",text:"Not necessary today — let's see how the afternoon goes. I'll update you before dismissal.",time:"10:02 AM"},
-    ]},
-  {name:"Vera Ramone",student:"Joey Ramone",initials:"VR",unread:true,bg:"#7C3AED",
-    msgs:[
-      {from:"teacher",text:"Ms. Ramone, Joey used some inappropriate language with the sub today. He apologized and we talked through it.",time:"10:30 AM"},
-      {from:"parent",text:"I appreciate you telling me. We'll talk to him tonight.",time:"12:15 PM"},
-    ]},
-  {name:"Rose Ramone",student:"Richie Ramone",initials:"RR",unread:true,bg:"#059669",
-    msgs:[
-      {from:"teacher",text:"Great news — Richie had an excellent morning. Completed all his work independently and even helped a classmate.",time:"11:35 AM"},
-      {from:"parent",text:"That is SO wonderful to hear!! Thank you for telling me 😊",time:"12:00 PM"},
-    ]},
-  {name:"Barbara Ramone",student:"Tommy Ramone",initials:"BR",unread:false,bg:"#4338CA",
-    msgs:[{from:"teacher",text:"Tommy left the room twice today but came back with a verbal prompt. Progress from last week.",time:"11:10 AM"}]},
+  {name:"Linda Ramone",student:"Dee Dee Ramone",initials:"LR",unread:true,bg:"#0E7490",msgs:[{from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning.",time:"9:20 AM"},{from:"parent",text:"Thank you for letting me know. He had a tough morning at home too.",time:"9:45 AM"},{from:"teacher",text:"Not necessary today — let's see how the afternoon goes.",time:"10:02 AM"}]},
+  {name:"Vera Ramone",student:"Joey Ramone",initials:"VR",unread:true,bg:"#7C3AED",msgs:[{from:"teacher",text:"Ms. Ramone, Joey used some inappropriate language with the sub today.",time:"10:30 AM"},{from:"parent",text:"I appreciate you telling me. We'll talk to him tonight.",time:"12:15 PM"}]},
+  {name:"Rose Ramone",student:"Richie Ramone",initials:"RR",unread:true,bg:"#059669",msgs:[{from:"teacher",text:"Great news — Richie had an excellent morning.",time:"11:35 AM"},{from:"parent",text:"That is SO wonderful to hear!! 😊",time:"12:00 PM"}]},
+  {name:"Barbara Ramone",student:"Tommy Ramone",initials:"BR",unread:false,bg:"#4338CA",msgs:[{from:"teacher",text:"Tommy left the room twice today but came back with a verbal prompt.",time:"11:10 AM"}]},
 ];
 const STAFF_CONVOS=[
-  {name:"Tammy Vega",email:"tvega@joeyramone.edu",initials:"TV",unread:true,bg:"#7C3AED",
-    msgs:[
-      {from:"esp",text:"Ms. Chen — heads up that Dee Dee is having a really hard day. He seems exhausted.",time:"8:55 AM"},
-      {from:"teacher",text:"Thanks Tammy. I'll pull him for a 5 min check-in after 2nd period. Keep logging.",time:"9:05 AM"},
-      {from:"esp",text:"Also — Johnny refused to take off his headphones again. Third time this week.",time:"9:18 AM"},
-    ]},
-  {name:"Marco Cruz",email:"mcruz@joeyramone.edu",initials:"MC",unread:false,bg:"#0E7490",
-    msgs:[
-      {from:"teacher",text:"Marco, Tommy's behavior plan was updated last week. Prompting hierarchy starts non-verbal now.",time:"Yesterday"},
-      {from:"esp",text:"Got it, thanks. I missed that email. I'll update my notes.",time:"Yesterday"},
-    ]},
+  {name:"Tammy Vega",email:"tvega@joeyramone.edu",initials:"TV",unread:true,bg:"#7C3AED",msgs:[{from:"esp",text:"Ms. Chen — heads up that Dee Dee is having a really hard day.",time:"8:55 AM"},{from:"teacher",text:"Thanks Tammy. I'll pull him for a 5 min check-in after 2nd period.",time:"9:05 AM"},{from:"esp",text:"Also — Johnny refused to take off his headphones again.",time:"9:18 AM"}]},
+  {name:"Marco Cruz",email:"mcruz@joeyramone.edu",initials:"MC",unread:false,bg:"#0E7490",msgs:[{from:"teacher",text:"Marco, Tommy's behavior plan was updated last week.",time:"Yesterday"},{from:"esp",text:"Got it, thanks. I'll update my notes.",time:"Yesterday"}]},
 ];
 const REWARDS=[
   {icon:"🎵",name:"Free Music Friday",desc:"15 mins of free listening at end of day",cost:50,unlocked:true},
@@ -894,9 +961,9 @@ const ARCADE_LOG=[
   {type:"pos",text:"Helped classmate without being asked",pts:+10,time:"Last Thu"},
 ];
 const PARENT_NOTIFS=[
-  {type:"neg",icon:"⚠️",title:"Behavior logged — Dee Dee Ramone",desc:"Threw pencil during independent work; refused to retrieve it. Logged by T. Vega.",time:"9:14 AM today",new:true},
-  {type:"pos",icon:"⭐",title:"Good behavior! — Dee Dee Ramone",desc:"Returned to seat after single verbal prompt. Great response to redirection.",time:"Yesterday, 2:30 PM",new:false},
-  {type:"pos",icon:"📋",title:"Weekly report available",desc:"Dee Dee's behavior summary for Feb 17–21 is ready to view.",time:"Last Friday",new:false},
+  {type:"neg",icon:"⚠️",title:"Behavior logged — Dee Dee Ramone",desc:"Threw pencil during independent work; refused to retrieve it.",time:"9:14 AM today",new:true},
+  {type:"pos",icon:"⭐",title:"Good behavior! — Dee Dee Ramone",desc:"Returned to seat after single verbal prompt.",time:"Yesterday, 2:30 PM",new:false},
+  {type:"pos",icon:"📋",title:"Weekly report available",desc:"Dee Dee's behavior summary for Feb 17–21 is ready.",time:"Last Friday",new:false},
 ];
 const PARENT_HISTORY=[
   {type:"neg",text:"Threw pencil during independent work",esp:"T. Vega",date:"Today 9:14 AM"},
@@ -907,15 +974,15 @@ const PARENT_HISTORY=[
   {type:"neg",text:"Refused to transition between classes",esp:"T. Vega",date:"Wed Feb 19"},
 ];
 const PARENT_MSGS=[
-  {from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning. We're working on it.",time:"9:20 AM"},
+  {from:"teacher",text:"Hi Ms. Ramone — just a quick note that Dee Dee had a rough start this morning.",time:"9:20 AM"},
   {from:"parent",text:"Thank you for letting me know. He had a tough morning at home too.",time:"9:45 AM"},
-  {from:"teacher",text:"Not necessary today — let's see how the afternoon goes. I'll update you before dismissal.",time:"10:02 AM"},
+  {from:"teacher",text:"Not necessary today — let's see how the afternoon goes.",time:"10:02 AM"},
 ];
 const AI_RESPONSES={
   "Professional Documentation Language":`During the observed instructional period, the student demonstrated [behavior] in the classroom environment. The behavior occurred following [antecedent] and resulted in [consequence]. Instructional staff provided [level of prompting] with [effectiveness]. This incident is documented in accordance with the student's current behavior intervention plan for IEP review and data tracking purposes.`,
   "Parent Email Draft":`Dear [Parent/Guardian],\n\nI wanted to reach out regarding [student]'s day. During [period/time], [professional description of behavior]. Our staff responded by [intervention], and [student] was able to [outcome].\n\nWe remain committed to supporting [student] and wanted to keep you informed. Please don't hesitate to reach out.\n\nWarm regards,\nMs. Chen`,
-  "Behavior Strategy Suggestions":`1. Antecedent modification — Identify triggers and restructure environment proactively before the behavior occurs.\n\n2. Replacement behavior training — Teach a functionally equivalent behavior that serves the same communicative purpose.\n\n3. Differential reinforcement — Increase reinforcement density during high-risk periods and transitions.\n\n4. Scheduled check-ins — Brief (2-3 min) proactive check-ins before known trigger points.\n\n5. Visual supports — Provide schedule reminders and first/then boards to reduce transition anxiety.`,
-  "Intervention Plan Ideas":`Hypothesized function: Escape / avoidance of academic demand\n\nPrevention strategies:\n• Pre-teach content to reduce task frustration\n• Offer structured choice within the activity\n• Build in planned movement breaks\n\nReplacement behaviors:\n• Teach break card request protocol\n• Practice self-advocacy scripting\n\nResponse strategies:\n• Planned ignoring of low-level avoidance behavior\n• Prompt hierarchy: visual → gestural → vocal\n• Reinforce at first sign of on-task engagement`
+  "Behavior Strategy Suggestions":`1. Antecedent modification — Identify triggers and restructure environment proactively.\n\n2. Replacement behavior training — Teach a functionally equivalent behavior.\n\n3. Differential reinforcement — Increase reinforcement density during high-risk periods.\n\n4. Scheduled check-ins — Brief (2-3 min) proactive check-ins before known trigger points.\n\n5. Visual supports — Provide schedule reminders and first/then boards.`,
+  "Intervention Plan Ideas":`Hypothesized function: Escape / avoidance of academic demand\n\nPrevention strategies:\n• Pre-teach content to reduce task frustration\n• Offer structured choice within the activity\n• Build in planned movement breaks\n\nReplacement behaviors:\n• Teach break card request protocol\n• Practice self-advocacy scripting\n\nResponse strategies:\n• Planned ignoring of low-level avoidance\n• Prompt hierarchy: visual → gestural → vocal`
 };
 
 // ═══════════════════════════════════
@@ -932,6 +999,7 @@ function goRole(role,fromTab){
   if(role==='teacher'){renderTchFeed();renderTchStudents();renderTchRoster();renderTchWeekly();renderParentThreads();renderStaffThreads();}
   if(role==='parent'){renderParentNotifs();renderParentHistory();renderParentMsgs();}
   if(role==='arcade'){renderArcade();}
+  if(role==='scope'){renderScope();}
 }
 function goLaunch(){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -947,19 +1015,235 @@ function parentTab(s,el){
   document.getElementById(`parent-${s}`).classList.add('active');
 }
 function sectionSwitch(prefix,name,el){
-  const v=document.getElementById(`view-${prefix==='tch'?'teacher':'esp'}`);
+  const vId=prefix==='tch'?'view-teacher':'view-esp';
+  const v=document.getElementById(vId);
   v.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   v.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById(`${prefix}-${name}`).classList.add('active');
   if(el) el.classList.add('active');
 }
+function scopeNav(name,el){
+  document.querySelectorAll('#view-scope .section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#view-scope .nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`scope-${name}`).classList.add('active');
+  if(el) el.classList.add('active');
+}
 
 // ═══════════════════════════════════
-// RENDER: ESP
+// PERISCOPE RENDER
+// ═══════════════════════════════════
+function renderScope(){
+  const idx=parseInt(document.getElementById('scope-student-select').value);
+  const stu=STUDENTS[idx];
+  const name=stu.name;
+  const initials=name.split(' ').map(n=>n[0]).join('');
+  const data=STUDENT_DATA[name]||STUDENT_DATA["Dee Dee Ramone"];
+  const behaviors=BEHAVIORS.filter(b=>b.student===name);
+  const neg=behaviors.filter(b=>b.type==='neg').length;
+  const pos=behaviors.filter(b=>b.type==='pos').length;
+  const total=neg+pos;
+
+  // Update hero
+  document.getElementById('scope-avatar').textContent=initials;
+  document.getElementById('scope-name').textContent=name;
+  document.getElementById('scope-meta').textContent=`${stu.grade} Grade · ESP: ${stu.esp} · ${stu.parent?'Parent connected':'No parent account'}`;
+  document.getElementById('scope-neg-count').textContent=neg;
+  document.getElementById('scope-pos-count').textContent=pos;
+  document.getElementById('scope-pts').textContent=stu.pts;
+
+  // Ratio
+  const posP=total?Math.round(pos/total*100):0;
+  const negP=100-posP;
+  document.getElementById('scope-ratio-pos').style.width=posP+'%';
+  document.getElementById('scope-ratio-neg').style.width=negP+'%';
+  document.getElementById('scope-ratio-pos-lbl').textContent=`${pos} positive`;
+  document.getElementById('scope-ratio-neg-lbl').textContent=`${neg} negative`;
+
+  renderScopeOverview(behaviors,data,name,stu);
+  renderScopeTimeline(behaviors);
+  renderScopeTrends(data,name);
+  renderScopeNotes(data,name);
+  renderScopeReport(stu,behaviors,data,neg,pos);
+}
+
+function renderScopeOverview(behaviors,data,name,stu){
+  // Recent feed
+  const feed=document.getElementById('scope-recent-feed');
+  if(feed){
+    const recent=behaviors.slice(0,4);
+    if(recent.length){
+      feed.innerHTML=recent.map(b=>`
+        <div class="feed-item">
+          <div class="feed-av ${b.type}">${b.type==='pos'?'⭐':'⚠'}</div>
+          <div style="flex:1;">
+            <div class="feed-desc" style="color:var(--text);font-size:0.85rem;">${b.desc}</div>
+            <div class="feed-meta">
+              <span class="type-badge ${b.type}">${b.type==='pos'?'Positive':'Negative'}</span>
+              <span class="esp-tag">🧑‍💼 ${b.esp}</span>
+              <span class="feed-time">${b.day} ${b.time}</span>
+            </div>
+          </div>
+        </div>`).join('');
+    } else {
+      feed.innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:12px 0;">No behaviors logged for this student yet.</div>';
+    }
+  }
+
+  // Calendar spark
+  const spark=document.getElementById('scope-spark');
+  if(spark){
+    const dayMap={Mon:[],Tue:[],Wed:[],Thu:[],Fri:[]};
+    behaviors.forEach(b=>{if(dayMap[b.day])dayMap[b.day].push(b.type);});
+    const pattern=['S','M','T','W','T','F','S'];
+    const dayKeys=[null,'Mon','Tue','Wed','Thu','Fri',null];
+    let cells='';
+    // 4 weeks = 28 cells
+    for(let w=0;w<4;w++){
+      for(let d=0;d<7;d++){
+        const key=dayKeys[d];
+        if(!key||w>0){cells+=`<div class="scope-spark-cell empty"></div>`;continue;}
+        const types=dayMap[key]||[];
+        const hasPos=types.includes('pos');
+        const hasNeg=types.includes('neg');
+        let cls='empty';
+        if(hasPos&&hasNeg)cls='has-both';
+        else if(hasPos)cls='has-pos';
+        else if(hasNeg)cls='has-neg';
+        cells+=`<div class="scope-spark-cell ${cls}" title="${key}: ${types.length} behaviors"></div>`;
+      }
+    }
+    spark.innerHTML=cells;
+  }
+
+  // By staff chart
+  const staffEl=document.getElementById('scope-by-staff');
+  if(staffEl){
+    const staffCounts={};
+    behaviors.forEach(b=>{staffCounts[b.esp]=(staffCounts[b.esp]||0)+1;});
+    const max=Math.max(...Object.values(staffCounts),1);
+    staffEl.innerHTML=Object.entries(staffCounts).map(([staff,count])=>`
+      <div class="scope-bar-row">
+        <div class="scope-bar-label">${staff}</div>
+        <div class="scope-bar-track"><div class="scope-bar-fill neg" style="width:${Math.round(count/max*100)}%"></div></div>
+        <div class="scope-bar-count">${count}</div>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:0.84rem;">No data</div>';
+  }
+
+  // Latest note
+  const noteEl=document.getElementById('scope-latest-note');
+  if(noteEl){
+    const notes=[...(data.notes||[]),...(STAFF_NOTES_STATE[name]||[])];
+    if(notes.length){
+      const n=notes[0];
+      noteEl.innerHTML=`<div class="scope-note"><div class="scope-note-meta">${n.author} · ${n.date}</div><div class="scope-note-text">${n.text}</div></div>`;
+    } else {
+      noteEl.innerHTML='<div style="color:var(--muted);font-size:0.84rem;padding:8px 0;">No notes yet.</div>';
+    }
+  }
+}
+
+function renderScopeTimeline(behaviors){
+  const el=document.getElementById('scope-tl');
+  if(!el)return;
+  if(!behaviors.length){el.innerHTML='<div style="color:var(--muted);font-size:0.84rem;">No behaviors logged for this student.</div>';return;}
+  el.innerHTML=behaviors.map(b=>`
+    <div class="scope-tl-item">
+      <div class="scope-tl-dot ${b.type}"></div>
+      <div class="scope-tl-time">${b.day} · ${b.time}</div>
+      <div class="scope-tl-text">${b.desc}</div>
+      <div class="scope-tl-meta">
+        <span class="type-badge ${b.type}">${b.type==='pos'?'⭐ Positive':'⚠️ Negative'}</span>
+        <span class="esp-tag">🧑‍💼 ${b.esp}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderScopeTrends(data,name){
+  // Day of week
+  const dowEl=document.getElementById('scope-dow-chart');
+  if(dowEl){
+    const days=['Mon','Tue','Wed','Thu','Fri'];
+    const max=Math.max(...Object.values(data.dowData),1);
+    dowEl.innerHTML=days.map(d=>`
+      <div class="scope-bar-row">
+        <div class="scope-bar-label">${d}</div>
+        <div class="scope-bar-track"><div class="scope-bar-fill neg" style="width:${Math.round((data.dowData[d]||0)/max*100)}%"></div></div>
+        <div class="scope-bar-count">${data.dowData[d]||0}</div>
+      </div>`).join('');
+    const worstDay=Object.entries(data.dowData).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('scope-dow-note').textContent=`Most behaviors on ${worstDay[0]} (${worstDay[1]} logged).`;
+  }
+
+  // Time of day
+  const todEl=document.getElementById('scope-tod-chart');
+  if(todEl){
+    const slots=['morning','midday','afternoon'];
+    const labels={morning:'Morning (8–11)',midday:'Midday (11–1)',afternoon:'Afternoon (1–3)'};
+    const max=Math.max(...Object.values(data.todData),1);
+    todEl.innerHTML=slots.map(s=>`
+      <div class="scope-bar-row">
+        <div class="scope-bar-label">${labels[s]}</div>
+        <div class="scope-bar-track"><div class="scope-bar-fill neg" style="width:${Math.round((data.todData[s]||0)/max*100)}%"></div></div>
+        <div class="scope-bar-count">${data.todData[s]||0}</div>
+      </div>`).join('');
+    const worstSlot=Object.entries(data.todData).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('scope-tod-note').textContent=`Most incidents in the ${worstSlot[0]} (${worstSlot[1]} logged).`;
+  }
+
+  document.getElementById('scope-pattern-summary').textContent=data.pattern||'Not enough data to identify a clear pattern yet.';
+}
+
+function renderScopeNotes(data,name){
+  const el=document.getElementById('scope-notes-list');
+  if(!el)return;
+  document.getElementById('addNoteTitle').textContent=`Add Note for ${name}`;
+  const notes=[...(data.notes||[]),...(STAFF_NOTES_STATE[name]||[])];
+  if(notes.length){
+    el.innerHTML=notes.map(n=>`
+      <div class="scope-note">
+        <div class="scope-note-meta">${n.author} · ${n.date}</div>
+        <div class="scope-note-text">${n.text}</div>
+      </div>`).join('');
+  } else {
+    el.innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:12px 0;">No notes yet for this student.</div>';
+  }
+}
+
+function renderScopeReport(stu,behaviors,data,neg,pos){
+  const el=document.getElementById('scope-report-preview');
+  if(!el)return;
+  el.innerHTML=`
+    <strong>${stu.name}</strong> · ${stu.grade} Grade · ESP: ${stu.esp}<br>
+    Report Period: Feb 24 – Feb 28, 2025<br><br>
+    Total behaviors logged: <strong>${behaviors.length}</strong><br>
+    Negative: <strong>${neg}</strong> &nbsp;|&nbsp; Positive: <strong>${pos}</strong> &nbsp;|&nbsp; Points balance: <strong>${stu.pts}</strong><br><br>
+    <em>Pattern note: ${(data.pattern||'Insufficient data.').split('.')[0]}.</em><br><br>
+    Staff notes on file: <strong>${(data.notes||[]).length + ((STAFF_NOTES_STATE[stu.name]||[]).length)}</strong><br>
+    Parent connected: <strong>${stu.parent?'Yes':'No'}</strong>
+  `;
+}
+
+function addScopeNote(){
+  document.getElementById('scope-note-input').value='';
+  openModal('addNoteModal');
+}
+
+function saveNote(){
+  const name=STUDENTS[parseInt(document.getElementById('scope-student-select').value)].name;
+  const text=document.getElementById('scope-note-input').value.trim();
+  if(!text){toast('⚠ Please enter a note');return;}
+  if(!STAFF_NOTES_STATE[name])STAFF_NOTES_STATE[name]=[];
+  STAFF_NOTES_STATE[name].unshift({author:'Ms. Chen',date:'Just now',text});
+  closeModal('addNoteModal');
+  renderScope();
+  toast('✓ Note saved');
+}
+
+// ═══════════════════════════════════
+// ESP RENDER
 // ═══════════════════════════════════
 function renderESPFeed(){
-  const c=document.getElementById('esp-feed');
-  if(!c)return;
+  const c=document.getElementById('esp-feed');if(!c)return;
   c.innerHTML=BEHAVIORS.filter(b=>b.esp==='T. Vega').map(b=>`
     <div class="feed-item">
       <div class="feed-av ${b.type}">${b.student.split(' ').map(n=>n[0]).join('')}</div>
@@ -974,8 +1258,7 @@ function renderESPFeed(){
     </div>`).join('');
 }
 function renderESPWeekly(){
-  const el=document.getElementById('esp-weekly');
-  if(!el)return;
+  const el=document.getElementById('esp-weekly');if(!el)return;
   const data=[{n:"Dee Dee Ramone",neg:3,pos:1},{n:"Johnny Ramone",neg:2,pos:0},{n:"Richie Ramone",neg:0,pos:3}];
   el.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);">
     <div style="flex:1;font-size:0.84rem;font-weight:600;">${d.n}</div>
@@ -983,20 +1266,15 @@ function renderESPWeekly(){
   </div>`).join('');
 }
 function renderESPMessages(){
-  const list=document.getElementById('esp-thread-list');
-  if(!list)return;
-  list.innerHTML=`<div class="convo-item active" onclick="openESPChat(0,this)">
-    <div class="convo-av" style="background:linear-gradient(135deg,#2563EB,#1E3A5F);">MC</div>
-    <div class="convo-info"><div class="convo-name">Ms. Chen</div><div class="convo-prev">Tommy's behavior plan was updated...</div></div>
-    <div class="unread-dot"></div>
-  </div>`;
-  openESPChat(0,null);
+  const list=document.getElementById('esp-thread-list');if(!list)return;
+  list.innerHTML=`<div class="convo-item active"><div class="convo-av" style="background:linear-gradient(135deg,#2563EB,#1E3A5F);">MC</div><div class="convo-info"><div class="convo-name">Ms. Chen</div><div class="convo-prev">Tommy's behavior plan was updated...</div></div><div class="unread-dot"></div></div>`;
+  openESPChat();
 }
-function openESPChat(idx,el){
+function openESPChat(){
   const msgs=[
-    {from:"teacher",text:"Tammy — reminder that Dee Dee's morning check-in protocol starts this week. Please log his affect when you pick him up.",time:"8:30 AM"},
+    {from:"teacher",text:"Tammy — reminder that Dee Dee's morning check-in protocol starts this week.",time:"8:30 AM"},
     {from:"esp",text:"Got it. He was pretty agitated today. Logged it as a negative behavior but it was mostly anxiety I think.",time:"9:20 AM"},
-    {from:"teacher",text:"That's really useful context. Note that in the behavior description when you log — it helps me when I review.",time:"9:35 AM"},
+    {from:"teacher",text:"That's really useful context. Note that in the behavior description when you log.",time:"9:35 AM"},
   ];
   document.getElementById('esp-chat-area').innerHTML=`
     <div class="chat-hdr">📨 Ms. Chen — Case Manager</div>
@@ -1005,19 +1283,17 @@ function openESPChat(idx,el){
   scroll('esp-chat-msgs');
 }
 function espSend(){
-  const i=document.getElementById('esp-chat-input');
-  if(!i||!i.value.trim())return;
+  const i=document.getElementById('esp-chat-input');if(!i||!i.value.trim())return;
   const msgs=document.getElementById('esp-chat-msgs');
   msgs.innerHTML+=`<div><div class="bubble me">${i.value}<div class="bubble-time">Just now</div></div></div>`;
-  i.value=''; scroll('esp-chat-msgs'); toast('✓ Message sent to Ms. Chen');
+  i.value='';scroll('esp-chat-msgs');toast('✓ Message sent to Ms. Chen');
 }
 
 // ═══════════════════════════════════
-// RENDER: TEACHER
+// TEACHER RENDER
 // ═══════════════════════════════════
 function renderTchFeed(){
-  const c=document.getElementById('tch-feed');
-  if(!c)return;
+  const c=document.getElementById('tch-feed');if(!c)return;
   c.innerHTML=BEHAVIORS.map(b=>`
     <div class="feed-item">
       <div class="feed-av ${b.type}">${b.student.split(' ').map(n=>n[0]).join('')}</div>
@@ -1034,8 +1310,7 @@ function renderTchFeed(){
     </div>`).join('');
 }
 function renderTchStudents(){
-  const c=document.getElementById('tch-students-grid');
-  if(!c)return;
+  const c=document.getElementById('tch-students-grid');if(!c)return;
   c.innerHTML=STUDENTS.map(s=>`
     <div class="stu-card" onclick="toast('📋 Opening ${s.name}\'s report...')">
       <div class="stu-name">${s.name}</div>
@@ -1048,13 +1323,11 @@ function renderTchStudents(){
     </div>`).join('');
 }
 function renderTchRoster(){
-  const c=document.getElementById('tch-roster');
-  if(!c)return;
+  const c=document.getElementById('tch-roster');if(!c)return;
   c.innerHTML=ESP_STAFF.map(e=>`<tr><td><strong>${e.name}</strong><br><span style="font-size:0.75rem;color:var(--muted);">${e.email}</span></td><td>${e.behaviors}</td><td>${e.students}</td><td>${e.joined}</td></tr>`).join('');
 }
 function renderTchWeekly(){
-  const c=document.getElementById('tch-weekly-bd');
-  if(!c)return;
+  const c=document.getElementById('tch-weekly-bd');if(!c)return;
   const data=[{n:"Dee Dee Ramone",neg:3,pos:1},{n:"Joey Ramone",neg:2,pos:2},{n:"Johnny Ramone",neg:4,pos:0},{n:"Marky Ramone",neg:1,pos:2},{n:"Tommy Ramone",neg:2,pos:1},{n:"Richie Ramone",neg:0,pos:3}];
   c.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);">
     <div style="flex:1;font-size:0.84rem;font-weight:600;">${d.n}</div>
@@ -1062,8 +1335,7 @@ function renderTchWeekly(){
   </div>`).join('');
 }
 function renderParentThreads(){
-  const c=document.getElementById('tch-parent-threads');
-  if(!c)return;
+  const c=document.getElementById('tch-parent-threads');if(!c)return;
   c.innerHTML=PARENT_CONVOS.map((cv,i)=>`
     <div class="convo-item ${i===0?'active':''}" onclick="openParentConvo(${i},this,'tch')">
       <div class="convo-av" style="background:${cv.bg};">${cv.initials}</div>
@@ -1075,8 +1347,7 @@ function renderParentThreads(){
 function openParentConvo(idx,el,prefix){
   if(el){document.querySelectorAll(`#${prefix}-parent-threads .convo-item`).forEach(i=>i.classList.remove('active'));el.classList.add('active');}
   const cv=PARENT_CONVOS[idx];
-  const area=document.getElementById(`${prefix}-parent-chat`);
-  if(!area)return;
+  const area=document.getElementById(`${prefix}-parent-chat`);if(!area)return;
   area.innerHTML=`
     <div class="chat-hdr">💬 ${cv.name} — re: ${cv.student}</div>
     <div class="chat-msgs" id="${prefix}-pchat-${idx}">${cv.msgs.map(m=>`<div><div class="bubble ${m.from==='teacher'?'me':'them'}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('')}</div>
@@ -1085,15 +1356,13 @@ function openParentConvo(idx,el,prefix){
 }
 function sendParentMsg(idx,prefix){
   const area=document.getElementById(`${prefix}-parent-chat`);
-  const inp=area.querySelector('input');
-  if(!inp||!inp.value.trim())return;
+  const inp=area.querySelector('input');if(!inp||!inp.value.trim())return;
   const msgs=area.querySelector('.chat-msgs');
   msgs.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
-  inp.value=''; msgs.scrollTop=msgs.scrollHeight; toast('✓ Message sent · Parent notified');
+  inp.value='';msgs.scrollTop=msgs.scrollHeight;toast('✓ Message sent · Parent notified');
 }
 function renderStaffThreads(){
-  const c=document.getElementById('tch-staff-threads');
-  if(!c)return;
+  const c=document.getElementById('tch-staff-threads');if(!c)return;
   c.innerHTML=STAFF_CONVOS.map((cv,i)=>`
     <div class="convo-item ${i===0?'active':''}" onclick="openStaffConvo(${i},this)">
       <div class="convo-av" style="background:${cv.bg};">${cv.initials}</div>
@@ -1114,33 +1383,26 @@ function openStaffConvo(idx,el){
 }
 function sendStaffMsg(idx){
   const area=document.getElementById('tch-staff-chat');
-  const inp=area.querySelector('input');
-  if(!inp||!inp.value.trim())return;
+  const inp=area.querySelector('input');if(!inp||!inp.value.trim())return;
   const msgs=area.querySelector('.chat-msgs');
   msgs.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
-  inp.value=''; msgs.scrollTop=msgs.scrollHeight; toast('✓ Message sent to ESP staff');
+  inp.value='';msgs.scrollTop=msgs.scrollHeight;toast('✓ Message sent to ESP staff');
 }
 
 // ═══════════════════════════════════
-// RENDER: PARENT
+// PARENT RENDER
 // ═══════════════════════════════════
 function renderParentNotifs(){
-  const c=document.getElementById('parent-notif-list');
-  if(!c)return;
+  const c=document.getElementById('parent-notif-list');if(!c)return;
   c.innerHTML=PARENT_NOTIFS.map(n=>`
     <div class="notif">
       <div class="notif-icon ${n.type}">${n.icon}</div>
-      <div class="notif-body">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-desc">${n.desc}</div>
-        <div class="notif-time">${n.time}</div>
-      </div>
+      <div class="notif-body"><div class="notif-title">${n.title}</div><div class="notif-desc">${n.desc}</div><div class="notif-time">${n.time}</div></div>
       ${n.new?'<div class="notif-new"></div>':''}
     </div>`).join('');
 }
 function renderParentHistory(){
-  const c=document.getElementById('parent-history-list');
-  if(!c)return;
+  const c=document.getElementById('parent-history-list');if(!c)return;
   c.innerHTML=PARENT_HISTORY.map(h=>`
     <div class="feed-item">
       <div class="feed-av ${h.type}">${h.type==='pos'?'⭐':'⚠️'}</div>
@@ -1151,32 +1413,30 @@ function renderParentHistory(){
     </div>`).join('');
 }
 function renderParentMsgs(){
-  const c=document.getElementById('parent-chat-msgs');
-  if(!c)return;
-  c.innerHTML=PARENT_MSGS.map(m=>`<div><div class="bubble ${m.from==='parent'?'me':'them'}" style="${m.from==='me'?'--blue:#0891B2;':''}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('');
+  const c=document.getElementById('parent-chat-msgs');if(!c)return;
+  c.innerHTML=PARENT_MSGS.map(m=>`<div><div class="bubble ${m.from==='parent'?'me':'them'}">${m.text}<div class="bubble-time">${m.time}</div></div></div>`).join('');
   c.scrollTop=c.scrollHeight;
 }
 function parentSend(){
-  const inp=document.getElementById('parent-msg-input');
-  if(!inp||!inp.value.trim())return;
+  const inp=document.getElementById('parent-msg-input');if(!inp||!inp.value.trim())return;
   const c=document.getElementById('parent-chat-msgs');
   c.innerHTML+=`<div><div class="bubble me">${inp.value}<div class="bubble-time">Just now</div></div></div>`;
-  inp.value=''; c.scrollTop=c.scrollHeight; toast('✓ Message sent to Ms. Chen');
+  inp.value='';c.scrollTop=c.scrollHeight;toast('✓ Message sent to Ms. Chen');
 }
 
 // ═══════════════════════════════════
-// RENDER: ARCADE
+// ARCADE RENDER
 // ═══════════════════════════════════
 function renderArcade(){
   const rw=document.getElementById('arcade-rewards');
-  if(rw) rw.innerHTML=REWARDS.map(r=>`
+  if(rw)rw.innerHTML=REWARDS.map(r=>`
     <div class="reward-card ${r.unlocked?'':'locked'}" onclick="${r.unlocked?`redeemReward('${r.name}')`:''}" >
       <div class="reward-icon">${r.icon}</div>
       <div class="reward-info"><div class="reward-name">${r.name}</div><div class="reward-desc">${r.desc}</div></div>
       <div class="reward-cost ${r.unlocked?'unlocked':''}">${r.unlocked?'✓ Redeem':'🔒 '+r.cost+' pts'}</div>
     </div>`).join('');
   const lg=document.getElementById('arcade-log');
-  if(lg) lg.innerHTML=ARCADE_LOG.map(b=>`
+  if(lg)lg.innerHTML=ARCADE_LOG.map(b=>`
     <div class="beh-item">
       <div class="beh-dot ${b.type}"></div>
       <div class="beh-text">${b.text}</div>
@@ -1191,7 +1451,7 @@ function redeemReward(name){
 }
 
 // ═══════════════════════════════════
-// INTERACTIONS
+// SHARED INTERACTIONS
 // ═══════════════════════════════════
 function fwdParent(btn){
   btn.textContent='⏳';btn.disabled=true;
@@ -1202,16 +1462,14 @@ function espLog(){
   if(!b){toast('⚠ Please describe the behavior');return;}
   const type=document.getElementById('esp-type').value;
   const student=document.getElementById('esp-student').value;
-  BEHAVIORS.unshift({student,type,desc:b,esp:'T. Vega',time:'Just now'});
+  BEHAVIORS.unshift({student,type,desc:b,esp:'T. Vega',time:'Just now',day:'Today',tod:'now'});
   document.getElementById('esp-behavior').value='';
   renderESPFeed();
   const s=document.getElementById('esp-log-status');
   s.style.display='block';setTimeout(()=>s.style.display='none',3500);
-  toast(`✓ Logged · Case manager notified · Parent alerted`);
+  toast('✓ Logged · Case manager notified · Parent alerted');
 }
-function espGoodBehavior(){
-  toast('⭐ Good Behavior Alert sent to Ms. Chen and parent!');
-}
+function espGoodBehavior(){toast('⭐ Good Behavior Alert sent to Ms. Chen and parent!');}
 function espAI(){
   const p=document.getElementById('esp-ai-prompt').value.trim();
   const f=document.getElementById('esp-ai-focus').value;
@@ -1225,7 +1483,7 @@ function tchLog(){
   if(!b){toast('⚠ Please describe the behavior');return;}
   const student=document.getElementById('tch-log-student').value;
   const type=document.getElementById('tch-log-type').value;
-  BEHAVIORS.unshift({student,type,desc:b,esp:'Ms. Chen',time:'Just now'});
+  BEHAVIORS.unshift({student,type,desc:b,esp:'Ms. Chen',time:'Just now',day:'Today',tod:'now'});
   document.getElementById('tch-log-behavior').value='';
   document.getElementById('tch-today').textContent=parseInt(document.getElementById('tch-today').textContent)+1;
   renderTchFeed();
@@ -1272,7 +1530,7 @@ function applyBranding(){
   document.documentElement.style.setProperty('--blue2',a);
   document.querySelectorAll('.sb-brand h1').forEach(el=>{const t=el.textContent.split(' ');el.textContent=`${t[0]} ${n.split(' ')[0]}`;});
   document.querySelectorAll('.sb-school').forEach(el=>el.firstChild&&(el.firstChild.textContent=n));
-  toast(`✓ Branding applied — ${n} color scheme is live across all views`);
+  toast(`✓ Branding applied — ${n} color scheme is live`);
 }
 
 // UTILS

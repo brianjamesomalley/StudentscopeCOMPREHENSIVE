@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,6 +65,27 @@ textarea { min-height: 100px; resize: vertical; }
 .btn-success:hover { background: #059669; }
 .btn-danger { background: #ef4444; color: white; }
 .btn-full { width: 100%; justify-content: center; }
+
+/* Delete button style */
+.btn-delete {
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid #fca5a5;
+  color: #ef4444;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-delete:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
 
 /* Teacher Filter Bar */
 .filter-bar {
@@ -517,7 +537,6 @@ this.showError('Unable to verify permissions. Check your connection and try agai
   },
 
   showAccessDenied(message) {
-// Sign out and show error on login screen instead of destroying DOM
 auth.signOut().then(() => {
 document.getElementById('loginScreen').style.display = 'flex';
 document.getElementById('dashboardWrapper').classList.add('hidden');
@@ -703,7 +722,10 @@ const App = {
         <div class="behavior-item ${b.type}" id="behavior-item-${idx}">
           <div class="behavior-header">
             <span class="behavior-student">${b.studentName}</span>
-            <span class="behavior-type" style="color:${b.type === 'positive' ? '#10b981' : '#ef4444'}">${b.type === 'positive' ? '✓ Positive' : '⚠️ Negative'}</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="behavior-type" style="color:${b.type === 'positive' ? '#10b981' : '#ef4444'}">${b.type === 'positive' ? '✓ Positive' : '⚠️ Negative'}</span>
+              <button onclick="deleteBehavior('${b.id}', ${idx})" class="btn-delete" title="Delete this behavior log">🗑️ Delete</button>
+            </div>
           </div>
           ${b.behavior
             ? `<div style="margin:8px 0;padding:10px;background:white;border-radius:8px;color:#1e293b;font-size:0.95rem;line-height:1.5;border-left:3px solid ${b.type === 'positive' ? '#10b981' : '#ef4444'};"><strong>What happened:</strong> ${b.behavior}</div>`
@@ -803,6 +825,81 @@ const App = {
     }).join('');
   }
 };
+
+// ========== DELETE BEHAVIOR ==========
+
+// Delete from the Recent Activity list (Overview section)
+async function deleteBehavior(behaviorId, idx) {
+  if (!behaviorId) { alert('Cannot delete: behavior ID missing.'); return; }
+  const b = renderedBehaviors[idx];
+  const label = b ? `"${(b.behavior || 'no description').substring(0, 60)}"` : 'this entry';
+  if (!confirm(`Delete ${label}?\n\nThis cannot be undone.`)) return;
+
+  try {
+    await db.collection('behaviors').doc(behaviorId).delete();
+
+    // Also attempt to delete from the teacher's personal log subcollection.
+    // We don't have the sub-doc ID, so we query by matching fields.
+    if (b && b.teacherId) {
+      const subSnap = await db.collection('users').doc(b.teacherId)
+        .collection('logs')
+        .where('studentName', '==', b.studentName)
+        .where('date', '==', b.date || b.timestamp)
+        .get();
+      subSnap.forEach(async doc => await doc.ref.delete());
+    }
+
+    // Remove from local arrays and re-render without a full reload
+    behaviors = behaviors.filter(bh => bh.id !== behaviorId);
+    filteredBehaviors = filteredBehaviors.filter(bh => bh.id !== behaviorId);
+    App.updateStats();
+    App.renderRecentBehaviors(filteredBehaviors);
+    updatePortalWeeklyCards();
+  } catch (err) {
+    console.error('Delete failed:', err);
+    alert('Failed to delete: ' + err.message);
+  }
+}
+
+// Delete from within the Student Report modal
+async function deleteFromModal(behaviorId) {
+  if (!behaviorId) { alert('Cannot delete: behavior ID missing.'); return; }
+  const b = behaviors.find(bh => bh.id === behaviorId);
+  const label = b ? `"${(b.behavior || 'no description').substring(0, 60)}"` : 'this entry';
+  if (!confirm(`Delete ${label}?\n\nThis cannot be undone.`)) return;
+
+  try {
+    await db.collection('behaviors').doc(behaviorId).delete();
+
+    if (b && b.teacherId) {
+      const subSnap = await db.collection('users').doc(b.teacherId)
+        .collection('logs')
+        .where('studentName', '==', b.studentName)
+        .where('date', '==', b.date || b.timestamp)
+        .get();
+      subSnap.forEach(async doc => await doc.ref.delete());
+    }
+
+    // Remove from local arrays
+    behaviors = behaviors.filter(bh => bh.id !== behaviorId);
+    filteredBehaviors = filteredBehaviors.filter(bh => bh.id !== behaviorId);
+
+    // Re-render the modal summary counts + behavior list
+    const student = students.find(s => s.id === currentStudentForReport);
+    if (student) {
+      const allBehaviors = behaviors.filter(bh => bh.studentId === student.id || bh.studentName === student.name);
+      document.getElementById('reportTotal').textContent    = allBehaviors.length;
+      document.getElementById('reportPositive').textContent = allBehaviors.filter(bh => bh.type === 'positive').length;
+      document.getElementById('reportNegative').textContent = allBehaviors.filter(bh => bh.type === 'negative').length;
+    }
+    refreshStudentReportView();
+    App.updateStats();
+    updatePortalWeeklyCards();
+  } catch (err) {
+    console.error('Delete failed:', err);
+    alert('Failed to delete: ' + err.message);
+  }
+}
 
 // ========== ACTIONS ==========
 
@@ -959,7 +1056,10 @@ function refreshStudentReportView() {
     <div class="behavior-item ${b.type}" style="margin-bottom:15px;">
       <div class="behavior-header" style="margin-bottom:10px;">
         <span class="behavior-type" style="color:${b.type === 'positive' ? '#10b981' : '#ef4444'}">${b.type === 'positive' ? '✓ POSITIVE BEHAVIOR' : '⚠ NEGATIVE BEHAVIOR'}</span>
-        <span class="behavior-time">${new Date(b.timestamp).toLocaleString()}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="behavior-time">${new Date(b.timestamp).toLocaleString()}</span>
+          <button onclick="deleteFromModal('${b.id}')" class="btn-delete" title="Delete this entry">🗑️ Delete</button>
+        </div>
       </div>
       <div style="margin-bottom:8px;">
         <strong style="color:#0f172a;">Behavior:</strong>
@@ -1299,7 +1399,6 @@ function toggleReportMenu(menuId) {
     if (el) el.style.display = (id === menuId && el.style.display === 'none') ? 'block' : 'none';
   });
 }
-// Close any open report menu when clicking outside
 document.addEventListener('click', function(e) {
   if (!e.target.closest('[id^="menu-"]') && !e.target.closest('button[onclick*="toggleReportMenu"]')) {
     ['menu-current','menu-last','menu-batch'].forEach(id => {
@@ -1484,7 +1583,6 @@ async function batchDownloadDocx() {
     const headerFooter = _makeHeaderFooter(lib, `Batch Report — ${rangeLabel} — ${selected.length} Students`);
 
     const children = [
-      // Cover summary
       new Paragraph({ spacing: { before: 0, after: 200 },
         children: [new TextRun({ text: `Batch Behavior Report — ${rangeLabel}`, bold: true, size: 32, font: 'Arial', color: '1F4E79' })] }),
       new Paragraph({ spacing: { before: 0, after: 60 },
@@ -1506,7 +1604,6 @@ async function batchDownloadDocx() {
       const pos = all.filter(b => b.type === 'positive').length;
       const neg = all.filter(b => b.type === 'negative').length;
 
-      // Page break between students (not before first)
       if (idx > 0) children.push(new Paragraph({ children: [new PageBreak()] }));
 
       children.push(
@@ -1566,8 +1663,9 @@ async function batchDownloadDocx() {
   }
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => { AuthManager.init(); });
+// ========== BOOT ==========
+document.getElementById('authButton').addEventListener('click', () => AuthManager.handleAuth());
+AuthManager.init();
 </script>
 </body>
 </html>

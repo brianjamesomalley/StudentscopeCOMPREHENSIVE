@@ -1,1 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0f172a"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>Seabass</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=DM+Sans:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:      #0f172a;
+    --surface: #1e293b;
+    --border:  #334155;
+    --accent:  #38bdf8;
+    --green:   #10b981;
+    --red:     #f43f5e;
+    --text:    #f1f5f9;
+    --muted:   #64748b;
+    --radius:  22px;
+  }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+
+  /* ── FULL SCREEN LAYOUT ── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: 14px;
+    gap: 14px;
+  }
+
+  /* ── ① PHOTO FRAME ── */
+  .frame {
+    flex: 1 1 0;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.25s;
+  }
+  .frame.lit { border-color: var(--accent); }
+
+  .idle-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    user-select: none;
+    pointer-events: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .idle-msg .fish {
+    font-size: 64px;
+    filter: drop-shadow(0 0 18px var(--accent));
+    animation: bob 3s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%,100% { transform: translateY(0);   }
+    50%      { transform: translateY(-8px);}
+  }
+  .idle-msg .prompt-text {
+    font-size: 15px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  #photoFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: none;
+  }
+
+  .frame-label {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,23,42,0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .frame-label.show { opacity: 1; }
+
+  /* shimmer while loading */
+  @keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+  }
+  .frame.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.06), transparent);
+    background-size: 600px 100%;
+    animation: shimmer 1.1s infinite;
+    pointer-events: none;
+  }
+
+  /* ── ② INPUT ROW ── */
+  .input-row {
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  #wordInput {
+    width: 100%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 52px 18px 22px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    caret-color: var(--accent);
+  }
+  #wordInput:focus { border-color: var(--accent); }
+  #wordInput::placeholder {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  /* ghost completion hint */
+  #ghost {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--muted);
+    pointer-events: none;
+    white-space: pre;
+    opacity: 0.45;
+    letter-spacing: inherit;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    display: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .clear-btn.show { display: block; }
+
+  /* dropdown */
+  #dropdown {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0; right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 50;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+    display: none;
+  }
+  #dropdown.open { display: block; }
+  .drop-item {
+    padding: 15px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .drop-item:last-child { border-bottom: none; }
+  .drop-item.sel,
+  .drop-item:active { background: rgba(56,189,248,0.12); color: var(--accent); }
+  .drop-hi { color: var(--accent); }
+
+  /* voice button */
+  .voice-btn {
+    background: var(--green);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 26px;
+    width: 66px;
+    min-width: 66px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .voice-btn:active { transform: scale(0.92); }
+  .voice-btn.listening {
+    background: var(--red);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0   rgba(244,63,94,0.5); }
+    50%      { box-shadow: 0 0 0 12px rgba(244,63,94,0);  }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ① PHOTO FRAME -->
+  <div class="frame" id="frame">
+    <div class="idle-msg" id="idleMsg">
+      <div class="fish">🐟</div>
+      <div class="prompt-text">What's the word?</div>
+    </div>
+    <iframe id="photoFrame" title="Seabass viewer"></iframe>
+    <div class="frame-label" id="frameLabel"></div>
+  </div>
+
+  <!-- ② INPUT ROW -->
+  <div class="input-row">
+    <div class="input-wrap">
+      <span id="ghost"></span>
+      <input id="wordInput" type="search"
+             placeholder="Type or speak a word…"
+             autocomplete="off" autocorrect="off"
+             autocapitalize="off" spellcheck="false"/>
+      <button class="clear-btn" id="clearBtn" aria-label="Clear">✕</button>
+      <div id="dropdown"></div>
+    </div>
+    <button class="voice-btn" id="voiceBtn" aria-label="Speak">🎙</button>
+  </div>
+
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  WORDS CONFIG
+//  "word": "https://drive.google.com/file/d/FILE_ID/preview"
+//
+//  To get a Drive preview link:
+//    Share the PDF → copy the link → change "/view?usp=sharing" to "/preview"
+// ═══════════════════════════════════════════════════════════════
+const WORDS = {
+  "backpack":       "PASTE_DRIVE_LINK_HERE",
+  "bathroom":       "PASTE_DRIVE_LINK_HERE",
+  "cafeteria":      "PASTE_DRIVE_LINK_HERE",
+  "classroom":      "PASTE_DRIVE_LINK_HERE",
+  "computer":       "PASTE_DRIVE_LINK_HERE",
+  "desk":           "PASTE_DRIVE_LINK_HERE",
+  "door":           "PASTE_DRIVE_LINK_HERE",
+  "drink":          "PASTE_DRIVE_LINK_HERE",
+  "eat":            "PASTE_DRIVE_LINK_HERE",
+  "gym":            "PASTE_DRIVE_LINK_HERE",
+  "hallway":        "PASTE_DRIVE_LINK_HERE",
+  "homework":       "PASTE_DRIVE_LINK_HERE",
+  "library":        "PASTE_DRIVE_LINK_HERE",
+  "locker":         "PASTE_DRIVE_LINK_HERE",
+  "lunch":          "PASTE_DRIVE_LINK_HERE",
+  "pencil":         "PASTE_DRIVE_LINK_HERE",
+  "playground":     "PASTE_DRIVE_LINK_HERE",
+  "school bus":     "PASTE_DRIVE_LINK_HERE",
+  "sit down":       "PASTE_DRIVE_LINK_HERE",
+  "stand up":       "PASTE_DRIVE_LINK_HERE",
+  "teacher":        "PASTE_DRIVE_LINK_HERE",
+  "water fountain": "PASTE_DRIVE_LINK_HERE",
+};
+
+const EMOJI = {
+  "backpack":"🎒","bathroom":"🚻","cafeteria":"🍽️","classroom":"🏫",
+  "computer":"💻","desk":"🪑","door":"🚪","drink":"💧","eat":"🍎",
+  "gym":"🏃","hallway":"🚶","homework":"📝","library":"📚","locker":"🔒",
+  "lunch":"🥪","pencil":"✏️","playground":"🛝","school bus":"🚌",
+  "sit down":"⬇️","stand up":"⬆️","teacher":"👩‍🏫","water fountain":"⛲",
+};
+// ═══════════════════════════════════════════════════════════════
+
+const wordList  = Object.keys(WORDS);
+const inp       = document.getElementById('wordInput');
+const ghost     = document.getElementById('ghost');
+const clearBtn  = document.getElementById('clearBtn');
+const dropdown  = document.getElementById('dropdown');
+const frame     = document.getElementById('frame');
+const idleMsg   = document.getElementById('idleMsg');
+const photoFrame= document.getElementById('photoFrame');
+const frameLabel= document.getElementById('frameLabel');
+const voiceBtn  = document.getElementById('voiceBtn');
+
+let selIdx = -1;
+let currentMatches = [];
+
+// ── Autocomplete ───────────────────────────────────────────────
+inp.addEventListener('input', onType);
+
+function onType() {
+  const q = inp.value.toLowerCase();
+  clearBtn.classList.toggle('show', q.length > 0);
+
+  if (!q) { closeDropdown(); setGhost(''); return; }
+
+  currentMatches = wordList.filter(w => w.startsWith(q));
+  const extra    = wordList.filter(w => w.includes(q) && !w.startsWith(q));
+  currentMatches = [...currentMatches, ...extra];
+
+  // Ghost hint — inline completion for top prefix match
+  const top = wordList.find(w => w.startsWith(q));
+  setGhost(top ? inp.value + top.slice(q.length) : '');
+
+  if (currentMatches.length) showDropdown(currentMatches, q);
+  else closeDropdown();
+}
+
+function setGhost(text) { ghost.textContent = text; }
+
+inp.addEventListener('keydown', e => {
+  const items = dropdown.querySelectorAll('.drop-item');
+
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    // Tab completes the top prefix match
+    const top = wordList.find(w => w.startsWith(inp.value.toLowerCase()));
+    if (top) { inp.value = top; setGhost(''); closeDropdown(); }
+    else if (selIdx >= 0 && currentMatches[selIdx]) {
+      inp.value = currentMatches[selIdx]; setGhost(''); closeDropdown();
+    }
+  }
+  else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selIdx = Math.min(selIdx + 1, items.length - 1);
+    highlight(items);
+    // Update ghost to selected item
+    if (currentMatches[selIdx]) setGhost(currentMatches[selIdx]);
+  }
+  else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selIdx = Math.max(selIdx - 1, 0);
+    highlight(items);
+    if (currentMatches[selIdx]) setGhost(currentMatches[selIdx]);
+  }
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    const chosen = selIdx >= 0 && currentMatches[selIdx]
+      ? currentMatches[selIdx]
+      : wordList.find(w => w === inp.value.toLowerCase()) || currentMatches[0];
+    if (chosen) { inp.value = chosen; setGhost(''); closeDropdown(); showImage(chosen); }
+  }
+  else if (e.key === 'Escape') { closeDropdown(); setGhost(''); inp.blur(); }
+});
+
+function showDropdown(matches, q) {
+  selIdx = -1;
+  dropdown.innerHTML = matches.slice(0, 7).map((w, i) => {
+    const typed = q.length;
+    const hi    = `<span class="drop-hi">${w.slice(0, typed)}</span>${w.slice(typed)}`;
+    return `<div class="drop-item" data-word="${w}">${EMOJI[w]||'🖼️'} ${hi}</div>`;
+  }).join('');
+  dropdown.querySelectorAll('.drop-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); pick(el.dataset.word); });
+    el.addEventListener('touchend',  e => { e.preventDefault(); pick(el.dataset.word); });
+  });
+  dropdown.classList.add('open');
+}
+
+function closeDropdown() { dropdown.classList.remove('open'); selIdx = -1; }
+
+function highlight(items) {
+  items.forEach((el, i) => el.classList.toggle('sel', i === selIdx));
+  if (items[selIdx]) items[selIdx].scrollIntoView({ block: 'nearest' });
+}
+
+function pick(word) { inp.value = word; setGhost(''); closeDropdown(); showImage(word); }
+
+clearBtn.addEventListener('click', () => {
+  inp.value = ''; setGhost('');
+  clearBtn.classList.remove('show');
+  closeDropdown();
+  inp.focus();
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.input-wrap')) closeDropdown();
+});
+
+// ── Show image ─────────────────────────────────────────────────
+function showImage(word) {
+  const url = WORDS[word];
+  inp.blur();
+  clearBtn.classList.remove('show');
+
+  idleMsg.style.display  = 'none';
+  photoFrame.style.display = 'none';
+  frameLabel.classList.remove('show');
+  frame.classList.remove('lit');
+  frame.classList.add('loading');
+
+  if (!url || url === 'PASTE_DRIVE_LINK_HERE') {
+    frame.classList.remove('loading');
+    idleMsg.style.display = 'flex';
+    idleMsg.querySelector('.fish').textContent = '⚙️';
+    idleMsg.querySelector('.prompt-text').textContent = 'Add Drive link in config';
+    return;
+  }
+
+  photoFrame.src = url;
+
+  function reveal() {
+    frame.classList.remove('loading');
+    frame.classList.add('lit');
+    photoFrame.style.display = 'block';
+    frameLabel.textContent   = word;
+    frameLabel.classList.add('show');
+  }
+
+  photoFrame.onload = reveal;
+  setTimeout(() => { if (!frame.classList.contains('lit')) reveal(); }, 2500);
+}
+
+// ── Voice ──────────────────────────────────────────────────────
+let recognition = null;
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR    = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang            = 'en-US';
+  recognition.interimResults  = false;
+  recognition.maxAlternatives = 5;
+
+  recognition.onresult = e => {
+    const alts  = Array.from(e.results[0]).map(a => a.transcript.trim().toLowerCase());
+    // Best match: exact > starts-with > contains
+    const match = alts.reduce((found, alt) => {
+      if (found) return found;
+      return wordList.find(w => w === alt)
+          || wordList.find(w => w.startsWith(alt))
+          || wordList.find(w => alt.startsWith(w))
+          || null;
+    }, null);
+
+    if (match) {
+      inp.value = match;
+      setGhost('');
+      closeDropdown();
+      showImage(match);
+    } else {
+      inp.value = alts[0];
+      onType();
+    }
+  };
+
+  recognition.onerror = () => voiceBtn.classList.remove('listening');
+  recognition.onend   = () => voiceBtn.classList.remove('listening');
+} else {
+  voiceBtn.style.opacity = '0.35';
+  voiceBtn.title = 'Voice not supported in this browser';
+}
+
+voiceBtn.addEventListener('click', () => {
+  if (!recognition) return;
+  voiceBtn.classList.add('listening');
+  try { recognition.start(); }
+  catch { recognition.stop(); setTimeout(() => recognition.start(), 150); }
+});
+
+// Auto-focus input on load
+window.addEventListener('load', () => {
+  inp.focus();
+  // Register service worker for PWA / offline support
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+});
+</script>
+</body>
+</html>

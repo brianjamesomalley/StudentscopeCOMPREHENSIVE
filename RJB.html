@@ -286,6 +286,7 @@
 
 </div>
 
+<div id="printOverlay"></div>
 <footer><div class="wm">🤖 <b>StudentScope</b> · Made for Educators</div></footer>
 <div id="toast"></div>
 
@@ -353,51 +354,87 @@ function pickSev(n) {
 
 // ── SPEECH RECOGNITION ────────────────────────────────────────────
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recog = null, recField = null, isRec = false;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+let recog = null, recField = null, isRec = false, restartTimer = null;
 
-if (SR) {
-  recog = new SR();
-  recog.continuous = true;
-  recog.interimResults = true;
-  recog.lang = 'en-US';
+function makeRecognizer() {
+  if (!SR) return null;
+  const r = new SR();
+  // iOS Safari does NOT support continuous — we restart manually on onend
+  r.continuous    = !isIOS;
+  r.interimResults = true;
+  r.lang          = 'en-US';
+  r.maxAlternatives = 1;
 
-  recog.onresult = e => {
+  r.onresult = e => {
     let final = '', interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
       else interim += e.results[i][0].transcript;
     }
-    const box = document.getElementById(recField + 'Transcript');
+    if (!recField) return;
+    const box  = document.getElementById(recField + 'Transcript');
     const prev = box.dataset.final || '';
     const combined = (prev + final).trim();
     box.dataset.final = combined;
-    box.textContent = combined + (interim ? ' ' + interim : '');
+    box.textContent   = combined + (interim ? ' ' + interim : '');
     box.classList.add('show');
     const ta = document.getElementById(recField + 'Text');
-    if (ta) ta.value = combined;
+    if (ta) ta.value = combined + (interim ? ' ' + interim : '');
   };
 
-  recog.onerror = e => {
-    if (e.error !== 'aborted') showToast('⚠ Mic error: ' + e.error);
-    stopRec();
+  r.onerror = e => {
+    // iOS throws 'no-speech' on silence — not a real error, just restart
+    if (e.error === 'no-speech' && isRec) {
+      scheduleRestart(); return;
+    }
+    if (e.error === 'not-allowed') {
+      showToast('⚠ Microphone access denied');
+      stopRec(); return;
+    }
+    if (e.error !== 'aborted') {
+      console.warn('Speech error:', e.error);
+      if (isRec) scheduleRestart();
+    }
   };
 
-  recog.onend = () => { if (isRec) recog.start(); };
+  r.onend = () => {
+    // iOS always fires onend after each utterance — restart if still recording
+    if (isRec) scheduleRestart();
+  };
 
+  return r;
+}
+
+function scheduleRestart() {
+  // Debounce rapid restarts — iOS can fire onend + onerror back-to-back
+  clearTimeout(restartTimer);
+  restartTimer = setTimeout(() => {
+    if (!isRec || !recField) return;
+    try {
+      recog = makeRecognizer();
+      recog.start();
+    } catch(e) { console.warn('Restart failed:', e); }
+  }, 250);
+}
+
+// Init on load
+if (SR) {
+  recog = makeRecognizer();
 } else {
-  // No speech support — swap mic buttons for text areas
+  // No speech API at all — text areas are already always visible, nothing to do
   document.addEventListener('DOMContentLoaded', () => {
     ['adult','student'].forEach(f => {
-      const card = document.getElementById(f + 'Mic').closest('.voice-card');
-      const lbl  = f === 'adult' ? 'Adult Response' : 'Student Response';
-      card.innerHTML = `
-        <div class="voice-top"><span class="voice-lbl">${lbl}</span></div>
-        <textarea id="${f}Fallback" class="fallback-area" placeholder="Type response here…"></textarea>`;
+      const btn = document.getElementById(f + 'Mic');
+      if (btn) { btn.style.display = 'none'; }
+      const stat = document.getElementById(f + 'Status');
+      if (stat) stat.textContent = 'Type below';
     });
   });
 }
 
 function toggleRec(field) {
+  if (!SR) return; // no speech support, text area handles it
   if (isRec && recField === field) { stopRec(); return; }
   if (isRec) stopRec();
   startRec(field);
@@ -405,7 +442,14 @@ function toggleRec(field) {
 
 function startRec(field) {
   recField = field; isRec = true;
-  recog.start();
+  // Fresh recognizer each time — iOS requires this
+  recog = makeRecognizer();
+  try {
+    recog.start();
+  } catch(e) {
+    showToast('⚠ Could not start mic');
+    isRec = false; recField = null; return;
+  }
   const btn = document.getElementById(field + 'Mic');
   btn.className = 'mic-btn recording';
   btn.innerHTML = '⏹ <span class="mic-txt">Tap to Stop</span>';
@@ -415,23 +459,27 @@ function startRec(field) {
 function stopRec() {
   if (!isRec) return;
   isRec = false;
-  try { recog.stop(); } catch(e) {}
+  clearTimeout(restartTimer);
+  try { recog.stop(); recog.abort(); } catch(e) {}
   if (!recField) return;
   const field = recField;
   recField = null;
   const btn  = document.getElementById(field + 'Mic');
   const box  = document.getElementById(field + 'Transcript');
-  const link = document.getElementById(field + 'EditLink');
   const stat = document.getElementById(field + 'Status');
-  if (box.dataset.final && box.dataset.final.trim()) {
+  const ta   = document.getElementById(field + 'Text');
+  // Finalise: use textarea value if richer than raw transcript
+  const finalText = (ta && ta.value.trim()) ? ta.value.trim() : (box.dataset.final || '').trim();
+  if (ta) ta.value = finalText;
+  if (box) { box.dataset.final = finalText; box.textContent = finalText; }
+  if (finalText) {
     btn.className = 'mic-btn done';
     btn.innerHTML = '✓ <span class="mic-txt">Tap to Re-record</span>';
     stat.textContent = '✓ Done';
-    link.classList.add('show');
   } else {
     btn.className = 'mic-btn';
     btn.innerHTML = '🎙 <span class="mic-txt">Tap to Record</span>';
-    stat.textContent = 'Nothing recorded — try again';
+    stat.textContent = 'Nothing captured — try again';
   }
 }
 
@@ -630,27 +678,33 @@ function emailReport() {
 function printReport() {
   if (!allLogs.length) { showToast('No incidents yet'); return; }
   const rows = allLogs.map((log, i) => `
-    <tr style="background:${i%2===0?'#f8fafc':'white'}">
-      <td>${new Date(log.timestamp).toLocaleDateString()}</td>
-      <td>${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${log.showerNeeded}</td>
-      <td>${log.behaviorEscalated}${log.behaviorEscalated==='Yes'?' ('+log.recoveryTime+')':''}</td>
-      <td>${log.severity}</td>
-      <td>${log.adultResponse}</td>
-      <td>${log.studentResponse}</td>
-      <td>${log.loggedBy}</td>
-    </tr>`).join('');
-  const w = window.open('','','width=960,height=700');
-  w.document.write(`<html><head><title>R.J. Hygiene Report</title>
-    <style>body{font-family:Arial,sans-serif;padding:32px;color:#0f172a}h1{font-size:1.3rem;margin-bottom:4px}.meta{color:#64748b;margin-bottom:20px;font-size:.85rem}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1a2744;color:white;padding:8px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}</style>
-    </head><body>
-    <h1>R.J. — Hygiene Incident Report</h1>
-    <div class="meta">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</div>
-    <table><thead><tr><th>Date</th><th>Time</th><th>Shower?</th><th>Escalated?</th><th>Severity</th><th>Adult Response</th><th>Student Response</th><th>By</th></tr></thead>
-    <tbody>${rows}</tbody></table>
-    <div class="foot">🤖 StudentScope · Confidential Staff Document</div>
-    </body></html>`);
-  w.document.close(); w.print();
+    <div style="background:${i%2===0?'#f8fafc':'white'};padding:12px;border-radius:8px;margin-bottom:8px;border-left:4px solid ${log.behaviorEscalated==='Yes'?'#d97706':'#2563eb'}">
+      <div style="font-weight:700;font-size:0.88rem;color:#1a2744;margin-bottom:4px;">
+        ${new Date(log.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} ·
+        ${new Date(log.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+      </div>
+      <div style="font-size:0.78rem;color:#64748b;margin-bottom:6px;">Logged by ${log.loggedBy||'Staff'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;font-size:0.72rem;font-weight:700;">
+        <span style="background:${log.showerNeeded==='Yes'?'#fee2e2':'#ccfbf1'};color:${log.showerNeeded==='Yes'?'#dc2626':'#0d9488'};padding:2px 8px;border-radius:20px;">${log.showerNeeded==='Yes'?'🚿 Shower':'✓ No shower'}</span>
+        <span style="background:${log.behaviorEscalated==='Yes'?'#fef3c7':'#ccfbf1'};color:${log.behaviorEscalated==='Yes'?'#d97706':'#0d9488'};padding:2px 8px;border-radius:20px;">${log.behaviorEscalated==='Yes'?'⚠ Escalated':'✓ Calm'}</span>
+        <span style="background:#dbeafe;color:#2563eb;padding:2px 8px;border-radius:20px;">Sev ${log.severity}</span>
+        ${log.behaviorEscalated==='Yes'?`<span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:20px;">⏱ ${log.recoveryTime}</span>`:''}
+      </div>
+      <div style="font-size:0.82rem;line-height:1.5;color:#0f172a;"><strong>Adult:</strong> ${log.adultResponse}</div>
+      <div style="font-size:0.82rem;line-height:1.5;color:#0f172a;margin-top:3px;"><strong>Student:</strong> ${log.studentResponse}</div>
+    </div>`).join('');
+
+  const el = document.getElementById('printOverlay');
+  el.innerHTML = `
+    <button class="po-close" onclick="closePrintOverlay()">✕ Close</button>
+    <div style="max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#0f172a;">
+      <h1 style="font-size:1.2rem;margin-bottom:3px;color:#1a2744;">🤖 R.J. — Full Incident History</h1>
+      <p style="color:#64748b;font-size:0.8rem;margin-bottom:20px;">Generated: ${new Date().toLocaleString()} · Total: ${allLogs.length} incidents</p>
+      ${rows}
+      <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:0.72rem;">🤖 StudentScope · Confidential Staff Document</div>
+    </div>`;
+  el.classList.add('show');
+  setTimeout(() => window.print(), 400);
 }
 
 
@@ -716,51 +770,52 @@ function modalEmail() {
   window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildIncidentEmail(lastSaved))}`;
 }
 
-function modalPrint() {
-  if (!lastSaved) return;
-  const r = lastSaved;
-  const d = new Date(r.timestamp);
+function buildPrintHTML(r) {
+  const d       = new Date(r.timestamp);
   const dateStr = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
-  const w = window.open('','','width=700,height=900');
-  w.document.write(`
-    <html><head><title>R.J. Hygiene Incident</title>
-    <style>
-      body { font-family:Arial,sans-serif; padding:40px; color:#0f172a; max-width:600px; margin:0 auto; }
-      h1 { font-size:1.3rem; margin-bottom:4px; color:#1a2744; }
-      .meta { color:#64748b; font-size:0.85rem; margin-bottom:28px; }
-      .section { margin-bottom:24px; }
-      .section-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748b; margin-bottom:10px; border-bottom:2px solid #e2e8f0; padding-bottom:5px; }
-      .field-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.9rem; }
-      .field-label { color:#64748b; font-weight:600; }
-      .field-val   { font-weight:700; color:#0f172a; }
-      .note-block  { background:#f8fafc; padding:14px; border-radius:8px; margin-bottom:10px; }
-      .note-label  { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:6px; }
-      .note-text   { font-size:0.9rem; line-height:1.6; color:#0f172a; }
-      .footer { margin-top:40px; padding-top:14px; border-top:1px solid #e2e8f0; color:#94a3b8; font-size:0.75rem; }
-      .sev-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#dbeafe; color:#2563eb; }
-      @media print { body { padding:20px; } }
-    </style></head><body>
-    <h1>🤖 R.J. — Hygiene Incident Report</h1>
-    <div class="meta">StudentScope · Confidential Staff Document</div>
-    <div class="section">
-      <div class="section-title">Incident Details</div>
-      <div class="field-row"><span class="field-label">Date</span><span class="field-val">${dateStr}</span></div>
-      <div class="field-row"><span class="field-label">Time</span><span class="field-val">${timeStr}</span></div>
-      <div class="field-row"><span class="field-label">Shower needed?</span><span class="field-val">${r.showerNeeded}</span></div>
-      <div class="field-row"><span class="field-label">Behavior escalated?</span><span class="field-val">${r.behaviorEscalated}</span></div>
-      <div class="field-row"><span class="field-label">Recovery time</span><span class="field-val">${r.behaviorEscalated === 'Yes' ? r.recoveryTime : 'N/A'}</span></div>
-      <div class="field-row"><span class="field-label">Severity</span><span class="field-val"><span class="sev-badge">${r.severity}</span></span></div>
-    </div>
-    <div class="section">
-      <div class="section-title">Narrative</div>
-      <div class="note-block"><div class="note-label">Adult Response</div><div class="note-text">${r.adultResponse}</div></div>
-      <div class="note-block"><div class="note-label">Student Response</div><div class="note-text">${r.studentResponse}</div></div>
-    </div>
-    <div class="footer">Generated by StudentScope · ${new Date().toLocaleString()}</div>
-    </body></html>`);
-  w.document.close();
-  w.print();
+  return `
+    <button class="po-close" onclick="closePrintOverlay()">✕ Close</button>
+    <div style="max-width:560px;margin:0 auto;font-family:Arial,sans-serif;color:#0f172a;">
+      <h1 style="font-size:1.2rem;margin-bottom:3px;color:#1a2744;">🤖 R.J. — Hygiene Incident</h1>
+      <p style="color:#64748b;font-size:0.8rem;margin-bottom:24px;">StudentScope · Confidential Staff Document</p>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:8px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">Incident Details</div>
+        ${[['Date',dateStr],['Time',timeStr],['Shower needed?',r.showerNeeded],['Behavior escalated?',r.behaviorEscalated],['Recovery time',r.behaviorEscalated==='Yes'?r.recoveryTime:'N/A'],['Severity',r.severity]].map(([l,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:0.88rem;">
+          <span style="color:#64748b;font-weight:600;">${l}</span>
+          <span style="font-weight:700;">${v}</span>
+        </div>`).join('')}
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:8px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">Narrative</div>
+        <div style="background:#f8fafc;padding:12px;border-radius:8px;margin-bottom:8px;">
+          <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:5px;">Adult Response</div>
+          <div style="font-size:0.88rem;line-height:1.6;">${r.adultResponse}</div>
+        </div>
+        <div style="background:#f8fafc;padding:12px;border-radius:8px;">
+          <div style="font-size:0.68rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:5px;">Student Response</div>
+          <div style="font-size:0.88rem;line-height:1.6;">${r.studentResponse}</div>
+        </div>
+      </div>
+      <div style="margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:0.72rem;">Generated by StudentScope · ${new Date().toLocaleString()}</div>
+    </div>`;
+}
+
+function showPrintOverlay(r) {
+  const el = document.getElementById('printOverlay');
+  el.innerHTML = buildPrintHTML(r);
+  el.classList.add('show');
+  setTimeout(() => window.print(), 400);
+}
+
+function closePrintOverlay() {
+  document.getElementById('printOverlay').classList.remove('show');
+}
+
+function modalPrint() {
+  if (!lastSaved) return;
+  showPrintOverlay(lastSaved);
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────

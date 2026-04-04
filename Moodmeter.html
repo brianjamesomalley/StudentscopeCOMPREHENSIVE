@@ -701,8 +701,9 @@ function show(id) {
 
 function consent() {
   state.consentTimestamp = new Date().toISOString();
-  // Load base layer as soon as we enter the avatar screen
-  swapLayer('layer-base', 'base', false);
+  const baseLayer = document.getElementById('layer-base');
+  baseLayer.src = './art/base.png';
+  baseLayer.onload = () => onLayerLoad();
   show('screen-dress');
 }
 

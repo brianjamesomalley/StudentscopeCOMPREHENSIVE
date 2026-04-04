@@ -5,646 +5,423 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>StudentScope | Who Are You</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<style>
-  /* ============================================================
-     TOKENS — change these to retheme the whole page
-  ============================================================ */
-  :root {
-    --bg:        #0a0a0f;
-    --surface:   #13131a;
-    --border:    rgba(127,119,221,0.18);
-    --purple:    #7f77dd;
-    --purple-dim:#534AB7;
-    --green:     #1D9E75;
-    --amber:     #EF9F27;
-    --red:       #D85A30;
-    --blue:      #378ADD;
-    --gray:      #888780;
-    --white:     #ffffff;
-    --text:      rgba(255,255,255,0.85);
-    --muted:     rgba(255,255,255,0.35);
-    --font-ui:   'Rajdhani', sans-serif;
-    --font-mono: 'Share Tech Mono', monospace;
-  }
-
-  /* ============================================================
-     RESET + BASE
-  ============================================================ */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    font-size: 16px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ============================================================
-     GRID BACKGROUND
-  ============================================================ */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(127,119,221,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(127,119,221,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ============================================================
-     SCREENS — only one visible at a time
-  ============================================================ */
-  .screen {
-    display: none;
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    padding: 2rem 1.25rem;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.3s ease;
-  }
-  .screen.active { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ============================================================
-     TYPOGRAPHY HELPERS
-  ============================================================ */
-  .mono {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--purple-dim);
-    text-transform: uppercase;
-  }
-
-  .hero {
-    font-size: clamp(2.4rem, 9vw, 4.2rem);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: 0.5px;
-    color: var(--white);
-  }
-  .hero span { color: var(--purple); }
-
-  /* ============================================================
-     CORNER BRACKETS (decorative)
-  ============================================================ */
-  .bracket {
-    position: fixed;
-    width: 18px; height: 18px;
-    border-color: var(--purple-dim);
-    border-style: solid;
-    opacity: 0.3;
-    z-index: 2;
-    pointer-events: none;
-  }
-  .bracket-tl { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
-  .bracket-tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
-  .bracket-bl { bottom: 16px; left: 16px; border-width: 0 0 1px 1px; }
-  .bracket-br { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
-
-  /* ============================================================
-     CARDS / PANELS
-  ============================================================ */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 480px;
-  }
-
-  /* ============================================================
-     CONSENT BOX
-  ============================================================ */
-  .consent {
-    background: rgba(127,119,221,0.05);
-    border: 1px solid rgba(127,119,221,0.18);
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    margin: 2rem 0;
-    text-align: left;
-    max-width: 440px;
-    line-height: 1.9;
-    font-size: 15px;
-    color: var(--muted);
-  }
-  .consent strong { color: var(--white); font-weight: 600; }
-
-  /* ============================================================
-     BUTTONS
-  ============================================================ */
-  .btn {
-    display: inline-block;
-    padding: 1rem 2.5rem;
-    border: none;
-    border-radius: 5px;
-    font-family: var(--font-ui);
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:active { transform: scale(0.97); }
-
-  .btn-primary   { background: var(--purple); color: var(--white); }
-  .btn-primary:hover { background: #9088e8; }
-
-  .btn-success   { background: var(--green);  color: var(--white); }
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--muted);
-    font-size: 0.8rem;
-    padding: 0.6rem 1.5rem;
-    letter-spacing: 2px;
-    margin-top: 1rem;
-  }
-  .btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
-
-  .btn.pulse { animation: pulse 2.2s ease-in-out infinite; }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 0 0 rgba(127,119,221,0); }
-    50%      { box-shadow: 0 0 0 8px rgba(127,119,221,0.15); }
-  }
-
-  .btn.pop {
-    animation: pop 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes pop {
-    from { transform: scale(0.92); }
-    to   { transform: scale(1); }
-  }
-
-  /* ============================================================
-     CHARACTER TYPE GRID
-  ============================================================ */
-  .type-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    width: 100%;
-    max-width: 480px;
-    margin: 1.5rem 0;
-  }
-
-  .type-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem 1rem;
-    cursor: pointer;
-    text-align: center;
-    transition: border-color 0.15s, background 0.15s, transform 0.1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .type-card:hover { border-color: var(--purple); background: rgba(127,119,221,0.07); }
-  .type-card:active { transform: scale(0.97); }
-  .type-card.on {
-    border-color: var(--purple);
-    background: rgba(127,119,221,0.12);
-    animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  }
-
-  .type-art {
-    /* ── YOUR ART GOES HERE ──
-       Replace this placeholder div with an <img> tag pointing
-       to your PNG layers. Each type gets its own base image.
-       Example: <img src="./art/robot-base.png" width="80">
-    */
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 0.75rem;
-    border-radius: 8px;
-    background: rgba(127,119,221,0.08);
-    border: 1px dashed rgba(127,119,221,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    color: rgba(127,119,221,0.35);
-    font-family: var(--font-mono);
-    letter-spacing: 1px;
-  }
-
-  .type-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .type-vibe {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    letter-spacing: 1px;
-  }
-
-  /* ============================================================
-     MOOD ROW
-  ============================================================ */
-  .mood-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    width: 100%;
-    max-width: 480px;
-    margin: 1.5rem 0;
-  }
-
-  .mood-btn {
-    padding: 12px 4px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: var(--surface);
-    cursor: pointer;
-    font-size: 11px;
-    font-family: var(--font-ui);
-    font-weight: 700;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.3;
-    letter-spacing: 0.3px;
-    transition: all 0.12s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mood-btn:hover { color: var(--white); }
-  .mood-btn:active { transform: scale(0.95); }
-
-  .mood-btn.on { color: var(--white); animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1); }
-  .mood-btn[data-mood="fired"].on  { border-color: var(--red);   background: rgba(216,90,48,0.15); }
-  .mood-btn[data-mood="chill"].on  { border-color: var(--green); background: rgba(29,158,117,0.15); }
-  .mood-btn[data-mood="sad"].on    { border-color: var(--blue);  background: rgba(55,138,221,0.15); }
-  .mood-btn[data-mood="anxious"].on{ border-color: var(--amber); background: rgba(239,159,39,0.15); }
-  .mood-btn[data-mood="here"].on   { border-color: var(--gray);  background: rgba(136,135,128,0.12); }
-
-  /* ============================================================
-     AVATAR STAGE
-  ============================================================ */
-  .avatar-stage {
-    width: 160px;
-    height: 200px;
-    position: relative;
-    margin: 0 auto 1rem;
-  }
-
-  /* Each layer stacks absolutely — YOUR PNG FILES go here */
-  .avatar-layer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: opacity 0.2s;
-  }
-
-  /* Placeholder until art is ready */
-  .avatar-placeholder {
-    width: 160px;
-    height: 200px;
-    border-radius: 10px;
-    border: 2px dashed rgba(127,119,221,0.2);
-    background: rgba(127,119,221,0.04);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: rgba(127,119,221,0.3);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-align: center;
-    margin: 0 auto 1rem;
-  }
-
-  /* ============================================================
-     DRESS UP SLOTS
-  ============================================================ */
-  .slot-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-    max-width: 480px;
-    margin: 1rem 0;
-  }
-
-  .slot {
-    background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 8px;
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: all 0.12s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .slot:hover { border-color: var(--border); }
-  .slot:active { transform: scale(0.97); }
-  .slot.filled { border-color: rgba(127,119,221,0.25); }
-  .slot.filled .slot-val { color: var(--white); }
-
-  .slot-label {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.2);
-    margin-bottom: 4px;
-  }
-  .slot-val {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.4);
-    transition: color 0.15s;
-  }
-
-  /* ============================================================
-     COLOR SWATCHES
-  ============================================================ */
-  .color-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 1rem 0;
-  }
-
-  .swatch {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.1s, border-color 0.1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .swatch:hover  { transform: scale(1.15); }
-  .swatch:active { transform: scale(0.95); }
-  .swatch.on     { border-color: var(--white); transform: scale(1.18); }
-
-  /* ============================================================
-     INPUT FIELDS (name / text)
-  ============================================================ */
-  .field-group { width: 100%; max-width: 480px; margin-bottom: 1.25rem; }
-  .field-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--purple-dim);
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .field-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-family: var(--font-ui);
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--white);
-    outline: none;
-    transition: border-color 0.15s;
-    caret-color: var(--purple);
-  }
-  .field-input::placeholder { color: rgba(255,255,255,0.2); }
-  .field-input:focus { border-color: var(--purple); }
-
-  /* The secret field — styled differently to signal it's safe */
-  .field-input.secret {
-    border-color: rgba(127,119,221,0.35);
-    background: rgba(127,119,221,0.04);
-    font-style: italic;
-  }
-  .field-input.secret:focus { border-color: var(--purple); }
-
-  /* ============================================================
-     PROGRESS DOTS
-  ============================================================ */
-  .dots {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 1.5rem;
-  }
-  .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    transition: background 0.2s;
-  }
-  .dot.on { background: var(--purple); }
-  .dot.done { background: var(--green); }
-
-  /* ============================================================
-     SECTION LABEL
-  ============================================================ */
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--purple-dim);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-  }
-
-  /* ============================================================
-     SAVED STATE
-  ============================================================ */
-  .saved-ring {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 2px solid var(--green);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 1.5rem;
-    animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  }
-
-  /* ============================================================
-     TIMESTAMP WATERMARK
-  ============================================================ */
-  .timestamp {
-    position: fixed;
-    bottom: 12px;
-    right: 16px;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    color: rgba(127,119,221,0.2);
-    letter-spacing: 2px;
-    z-index: 10;
-    pointer-events: none;
-  }
-</style>
-
-<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+/* ── DESIGN TOKENS ── */
+:root {
+  --bg:         #0a0a0f;
+  --surface:    #13131a;
+  --border:     rgba(127,119,221,0.18);
+  --purple:     #7f77dd;
+  --purple-dim: #534AB7;
+  --green:      #1D9E75;
+  --amber:      #EF9F27;
+  --red:        #D85A30;
+  --blue:       #378ADD;
+  --gray:       #888780;
+  --white:      #ffffff;
+  --text:       rgba(255,255,255,0.85);
+  --muted:      rgba(255,255,255,0.35);
+  --font-ui:    'Rajdhani', sans-serif;
+  --font-mono:  'Share Tech Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(127,119,221,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127,119,221,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCREENS ── */
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 2rem 1.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TYPE ── */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--purple-dim);
+  text-transform: uppercase;
+}
+
+.hero {
+  font-size: clamp(2.4rem, 9vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.5px;
+  color: var(--white);
+}
+.hero span { color: var(--purple); }
+
+/* ── CORNER BRACKETS ── */
+.bracket { position: fixed; width: 18px; height: 18px; border-color: var(--purple-dim); border-style: solid; opacity: 0.3; z-index: 2; pointer-events: none; }
+.bracket-tl { top: 16px; left: 16px;  border-width: 1px 0 0 1px; }
+.bracket-tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
+.bracket-bl { bottom: 16px; left: 16px;  border-width: 0 0 1px 1px; }
+.bracket-br { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+
+/* ── SESSION PILL ── */
+.session-pill {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+  background: rgba(127,119,221,0.12); border: 1px solid rgba(127,119,221,0.25);
+  border-radius: 20px; padding: 4px 14px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
+  color: rgba(127,119,221,0.6); z-index: 100; pointer-events: none; display: none;
+}
+.session-pill.visible { display: block; }
+
+/* ── TIMESTAMP ── */
+.timestamp {
+  position: fixed; bottom: 12px; right: 16px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: rgba(127,119,221,0.2); letter-spacing: 2px;
+  z-index: 10; pointer-events: none;
+}
+
+/* ── PANEL ── */
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.5rem;
+  width: 100%; max-width: 480px;
+}
+
+/* ── CONSENT ── */
+.consent {
+  background: rgba(127,119,221,0.05);
+  border: 1px solid rgba(127,119,221,0.18);
+  border-radius: 8px; padding: 1.25rem 1.5rem;
+  margin: 2rem 0; text-align: left; max-width: 440px;
+  line-height: 1.9; font-size: 15px; color: var(--muted);
+}
+.consent strong { color: var(--white); font-weight: 600; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-block; padding: 1rem 2.5rem;
+  border: none; border-radius: 5px;
+  font-family: var(--font-ui); font-size: 1.2rem;
+  font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--purple); color: var(--white); }
+.btn-primary:hover { background: #9088e8; }
+.btn-success { background: var(--green); color: var(--white); }
+.btn-ghost {
+  background: transparent; border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); font-size: 0.8rem; padding: 0.6rem 1.5rem;
+  letter-spacing: 2px; margin-top: 1rem;
+}
+.btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+.btn.pulse { animation: pulse 2.2s ease-in-out infinite; }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(127,119,221,0); }
+  50%      { box-shadow: 0 0 0 8px rgba(127,119,221,0.15); }
+}
+.btn.pop { animation: pop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes pop {
+  from { transform: scale(0.92); }
+  to   { transform: scale(1); }
+}
+
+/* ── PROGRESS DOTS ── */
+.dots { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: background 0.2s; }
+.dot.on   { background: var(--purple); }
+.dot.done { background: var(--green); }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 3px; color: var(--purple-dim);
+  margin-bottom: 0.75rem; text-transform: uppercase;
+}
+
+/* ── AVATAR SCENE — Mii-style single character ── */
+.avatar-scene {
+  width: 200px; height: 260px;
+  perspective: 600px;
+  margin: 0 auto 1rem;
+  cursor: pointer;
+}
+.avatar-stage {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.34,1.20,0.64,1);
+}
+
+@keyframes turntable {
+  0%   { transform: rotateY(0deg); }
+  40%  { transform: rotateY(180deg); }
+  60%  { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+.avatar-stage.spinning {
+  animation: turntable 0.7s cubic-bezier(0.34,1.10,0.64,1) forwards;
+}
+@keyframes idle-float {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-6px); }
+}
+.avatar-stage.idle { animation: idle-float 3s ease-in-out infinite; }
+
+/* PNG layer stack */
+.avatar-layer {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain; opacity: 1;
+  transition: opacity 0.18s ease;
+  will-change: opacity, transform;
+}
+.avatar-layer.swapping { opacity: 0; }
+
+/* Color ring */
+.avatar-color-ring {
+  position: absolute; inset: -6px;
+  border-radius: 12px; border: 2px solid transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  pointer-events: none;
+}
+
+/* Placeholder shown before art loads */
+.avatar-placeholder {
+  position: absolute; inset: 0;
+  border-radius: 10px;
+  border: 2px dashed rgba(127,119,221,0.2);
+  background: rgba(127,119,221,0.04);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; color: rgba(127,119,221,0.3);
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 2px; text-align: center;
+  transition: opacity 0.3s ease;
+}
+.avatar-placeholder.hidden { opacity: 0; pointer-events: none; }
+
+/* Sparkles */
+.sparkle-container { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 20; }
+.sparkle {
+  position: absolute; width: 8px; height: 8px;
+  border-radius: 50%; opacity: 0;
+  animation: sparkle-pop 0.6s ease-out forwards;
+}
+@keyframes sparkle-pop {
+  0%   { transform: translate(0,0) scale(0);   opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0.3); opacity: 0; }
+}
+
+/* Slot confirm pulse */
+@keyframes slot-confirm {
+  0%   { border-color: var(--purple); box-shadow: 0 0 0 0 rgba(127,119,221,0.4); }
+  50%  { box-shadow: 0 0 0 6px rgba(127,119,221,0); }
+  100% { border-color: rgba(127,119,221,0.25); box-shadow: none; }
+}
+.slot.confirming { animation: slot-confirm 0.5s ease-out forwards; }
+
+/* ── COLOR SWATCHES ── */
+.color-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 1rem 0; }
+.swatch {
+  width: 30px; height: 30px; border-radius: 50%;
+  cursor: pointer; border: 2px solid transparent;
+  transition: transform 0.1s, border-color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.swatch:hover  { transform: scale(1.15); }
+.swatch:active { transform: scale(0.95); }
+.swatch.on     { border-color: var(--white); transform: scale(1.18); }
+
+/* ── OUTFIT SLOTS ── */
+.slot-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; width: 100%; max-width: 480px; margin: 1rem 0;
+}
+.slot {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px; padding: 10px 14px;
+  cursor: pointer; transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.slot:hover { border-color: var(--border); }
+.slot:active { transform: scale(0.97); }
+.slot.filled { border-color: rgba(127,119,221,0.25); }
+.slot-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-bottom: 4px; }
+.slot-val   { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.4); transition: color 0.15s; }
+.slot.filled .slot-val { color: var(--white); }
+
+/* ── FIELDS ── */
+.field-group { width: 100%; max-width: 480px; margin-bottom: 1.25rem; }
+.field-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 3px; color: var(--purple-dim);
+  margin-bottom: 8px; display: block;
+}
+.field-input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; font-family: var(--font-ui);
+  font-size: 1rem; font-weight: 600; color: var(--white);
+  outline: none; transition: border-color 0.15s;
+  caret-color: var(--purple);
+}
+.field-input::placeholder { color: rgba(255,255,255,0.2); }
+.field-input:focus { border-color: var(--purple); }
+
+/* ── SAVED RING ── */
+.saved-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; margin: 0 auto 1.5rem;
+  animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ── LOADING OVERLAY ── */
+#loadingOverlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 1000; gap: 1rem;
+}
+#loadingOverlay.hidden { display: none; }
+.loader-ring {
+  width: 40px; height: 40px;
+  border: 2px solid rgba(127,119,221,0.15);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
 
-<!-- Corner brackets — always visible -->
+<!-- Loading -->
+<div id="loadingOverlay">
+  <div class="loader-ring"></div>
+  <div class="mono">// checking session...</div>
+</div>
+
 <div class="bracket bracket-tl"></div>
 <div class="bracket bracket-tr"></div>
 <div class="bracket bracket-bl"></div>
 <div class="bracket bracket-br"></div>
-<div class="timestamp" id="timestamp"></div>
 
-<!-- ============================================================
-     SCREEN 1 — CONSENT / LANDING
-============================================================ -->
-<div class="screen active" id="screen-consent">
+<div class="session-pill" id="sessionPill"></div>
+<div class="timestamp"    id="timestamp"></div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1 — CONSENT
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-consent">
   <div class="mono" style="margin-bottom:2.5rem">StudentScope</div>
-
-  <h1 class="hero" style="text-align:center">
-    Tell us<br><span>who you are.</span>
-  </h1>
-
+  <h1 class="hero" style="text-align:center">Tell us<br><span>who you are.</span></h1>
   <div class="consent">
     This is <strong>yours</strong>.<br>
     Your teacher sees what you put here. <strong>Nobody else.</strong><br>
-    Change it anytime. Delete it anytime.<br>
-    No wrong answers. No grades. No judgment.
+    Change it anytime. No wrong answers. No grades.
   </div>
-
   <button class="btn btn-primary pulse" onclick="consent()">I'm in</button>
-  <button class="btn btn-ghost" onclick="notYet()">nah, not yet</button>
+  <button class="btn btn-ghost"         onclick="show('screen-notyet')">nah, not yet</button>
 </div>
 
-<!-- ============================================================
+<!-- ══════════════════════════════════════════
      SCREEN 2 — NOT YET
-============================================================ -->
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-notyet">
   <div class="mono" style="margin-bottom:2rem">// no pressure</div>
-  <h2 style="font-size:1.8rem;font-weight:700;color:var(--white);text-align:center;margin-bottom:1rem">
-    That's cool.
-  </h2>
+  <h2 style="font-size:1.8rem;font-weight:700;color:var(--white);text-align:center;margin-bottom:1rem">That's cool.</h2>
   <p style="color:var(--muted);text-align:center;line-height:1.8;margin-bottom:2rem;max-width:300px">
     Come back whenever.<br>Your page will be here.
   </p>
   <button class="btn btn-ghost" onclick="show('screen-consent')">← go back</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 3 — PICK YOUR CHARACTER TYPE
-============================================================ -->
-<div class="screen" id="screen-type">
-  <div class="dots" id="dots-type">
-    <div class="dot on"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-
-  <div class="mono" style="margin-bottom:0.75rem">// step 1 of 4</div>
-  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:0.25rem">
-    Pick your character.
-  </h2>
-  <p style="color:var(--muted);font-size:13px;margin-bottom:0">No wrong answer.</p>
-
-  <div class="type-grid">
-
-    <div class="type-card" onclick="pickType(this,'robot')" data-type="robot">
-      <!-- SWAP THIS DIV FOR: <img src="./art/robot-base.png" width="80"> -->
-      <div class="type-art">ROBOT<br>ART</div>
-      <div class="type-name">Robot</div>
-      <div class="type-vibe">// processing...</div>
-    </div>
-
-    <div class="type-card" onclick="pickType(this,'plague')" data-type="plague">
-      <div class="type-art">PLAGUE<br>ART</div>
-      <div class="type-name">Plague Doctor</div>
-      <div class="type-vibe">// mysterious</div>
-    </div>
-
-    <div class="type-card" onclick="pickType(this,'alien')" data-type="alien">
-      <div class="type-art">ALIEN<br>ART</div>
-      <div class="type-name">Alien</div>
-      <div class="type-vibe">// not from here</div>
-    </div>
-
-    <div class="type-card" onclick="pickType(this,'critter')" data-type="critter">
-      <div class="type-art">CRITTER<br>ART</div>
-      <div class="type-name">Critter</div>
-      <div class="type-vibe">// soft chaos</div>
-    </div>
-
-    <div class="type-card" onclick="pickType(this,'ramone')" data-type="ramone">
-      <div class="type-art">RAMONE<br>ART</div>
-      <div class="type-name">Ramone</div>
-      <div class="type-vibe">// too loud</div>
-    </div>
-
-    <div class="type-card" onclick="pickType(this,'custom')" data-type="custom">
-      <div class="type-art">?</div>
-      <div class="type-name">Make mine</div>
-      <div class="type-vibe">// idk yet</div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ============================================================
-     SCREEN 4 — DRESS YOUR CHARACTER
-============================================================ -->
+<!-- ══════════════════════════════════════════
+     SCREEN 3 — DRESS YOUR CHARACTER
+     Single Mii-style avatar, full swap system
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-dress">
-  <div class="dots" id="dots-dress">
-    <div class="dot done"></div>
-    <div class="dot on"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
+  <div class="dots">
+    <div class="dot on"></div><div class="dot"></div><div class="dot"></div>
   </div>
+  <div class="mono" style="margin-bottom:0.75rem">// step 1 of 3</div>
+  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1.5rem">Build your character.</h2>
 
-  <div class="mono" style="margin-bottom:0.75rem">// step 2 of 4</div>
-  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1.5rem">
-    Dress your character.
-  </h2>
+  <!-- AVATAR STAGE — tap to spin -->
+  <div class="avatar-scene" onclick="spinAvatar()">
+    <div class="avatar-stage idle" id="avatarStage">
+      <div class="avatar-color-ring"  id="avatarColorRing"></div>
+      <div class="sparkle-container"  id="sparkleContainer"></div>
 
-  <!-- Avatar display -->
-  <!--
-    WHEN YOUR ART IS READY replace the placeholder below with:
+      <!-- Fallback placeholder — hidden once base layer loads -->
+      <div class="avatar-placeholder" id="avatarPlaceholder">
+        <span style="font-size:2rem">🤖</span>
+        <span>your character</span>
+        <span style="font-size:9px;opacity:0.5">// tap to spin</span>
+      </div>
 
-    <div class="avatar-stage">
-      <img class="avatar-layer" id="layer-base"    src="./art/[type]-base.png">
-      <img class="avatar-layer" id="layer-mood"    src="./art/[type]-mood-chill.png">
-      <img class="avatar-layer" id="layer-top"     src="./art/[type]-top-hoodie.png">
-      <img class="avatar-layer" id="layer-color"   src="./art/[type]-color-overlay.png"
-           style="mix-blend-mode:multiply">
+      <!--
+        LAYER STACK — z-order: base → bottom → top → hair → vibe → expression
+        All src="" until ./art/ folder is populated.
+        onLayerLoad fires when base loads and hides the placeholder.
+      -->
+      <img class="avatar-layer" id="layer-base"   src="" alt="" style="z-index:1" onload="onLayerLoad()" onerror="onLayerError(this)">
+      <img class="avatar-layer" id="layer-bottom" src="" alt="" style="z-index:2" onerror="onLayerError(this)">
+      <img class="avatar-layer" id="layer-top"    src="" alt="" style="z-index:3" onerror="onLayerError(this)">
+      <img class="avatar-layer" id="layer-hair"   src="" alt="" style="z-index:4" onerror="onLayerError(this)">
+      <img class="avatar-layer" id="layer-vibe"   src="" alt="" style="z-index:5" onerror="onLayerError(this)">
+      <img class="avatar-layer" id="layer-expr"   src="" alt="" style="z-index:6" onerror="onLayerError(this)">
     </div>
-
-    JavaScript swaps the src of each layer when the kid makes a pick.
-    Keep each PNG 300x380px transparent background.
-  -->
-  <div class="avatar-placeholder" id="avatarDisplay">
-    <span id="avatarTypeLabel">YOUR ART</span>
-    <span style="font-size:9px;opacity:0.5">// layers go here</span>
   </div>
 
-  <div class="section-label">pick your colors</div>
+  <div class="section-label">color</div>
   <div class="color-row">
     <div class="swatch" style="background:#7f77dd" onclick="pickColor(this,'#7f77dd')"></div>
     <div class="swatch" style="background:#D85A30" onclick="pickColor(this,'#D85A30')"></div>
@@ -656,7 +433,7 @@
     <div class="swatch" style="background:#0a0a0f;border:1px solid rgba(255,255,255,0.2)" onclick="pickColor(this,'#0a0a0f')"></div>
   </div>
 
-  <div class="section-label">dress them up</div>
+  <div class="section-label">outfit</div>
   <div class="slot-grid">
     <div class="slot" id="slot-top"    onclick="cycleSlot('top')">
       <div class="slot-label">top</div>
@@ -676,131 +453,66 @@
     </div>
   </div>
 
-  <button class="btn btn-primary" onclick="show('screen-mood')" style="margin-top:1rem">
-    next →
-  </button>
-  <button class="btn btn-ghost" onclick="show('screen-type')">← back</button>
+  <button class="btn btn-primary" onclick="show('screen-info')" style="margin-top:1rem">next →</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 5 — MOOD TODAY
-============================================================ -->
-<div class="screen" id="screen-mood">
-  <div class="dots">
-    <div class="dot done"></div>
-    <div class="dot done"></div>
-    <div class="dot on"></div>
-    <div class="dot"></div>
-  </div>
-
-  <div class="mono" style="margin-bottom:0.75rem">// step 3 of 4</div>
-  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:0.5rem">
-    How you feeling today?
-  </h2>
-  <p style="color:var(--muted);font-size:13px;margin-bottom:0">
-    Just today. You can change it tomorrow.
-  </p>
-
-  <div class="mood-row">
-    <div class="mood-btn" data-mood="fired"   onclick="pickMood(this)">fired<br>up</div>
-    <div class="mood-btn" data-mood="chill"   onclick="pickMood(this)">chill</div>
-    <div class="mood-btn" data-mood="sad"     onclick="pickMood(this)">not<br>great</div>
-    <div class="mood-btn" data-mood="anxious" onclick="pickMood(this)">anxious</div>
-    <div class="mood-btn" data-mood="here"    onclick="pickMood(this)">just<br>here</div>
-  </div>
-
-  <!-- Mood updates the avatar display label -->
-  <p class="mono" id="moodLabel" style="margin-bottom:1.5rem;min-height:20px"></p>
-
-  <button class="btn btn-primary" id="moodNext" onclick="show('screen-info')" disabled>
-    next →
-  </button>
-  <button class="btn btn-ghost" onclick="show('screen-dress')">← back</button>
-</div>
-
-<!-- ============================================================
-     SCREEN 6 — THE FOUR FIELDS
-============================================================ -->
+<!-- ══════════════════════════════════════════
+     SCREEN 4 — INFO FIELDS
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-info">
   <div class="dots">
-    <div class="dot done"></div>
-    <div class="dot done"></div>
-    <div class="dot done"></div>
-    <div class="dot on"></div>
+    <div class="dot done"></div><div class="dot on"></div><div class="dot"></div>
   </div>
-
-  <div class="mono" style="margin-bottom:0.75rem">// step 4 of 4</div>
-  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1.5rem">
-    Last few things.
-  </h2>
+  <div class="mono" style="margin-bottom:0.75rem">// step 2 of 3</div>
+  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1.5rem">A few things.</h2>
 
   <div class="field-group">
     <label class="field-label">name</label>
-    <input class="field-input" id="f-name" type="text"
-           placeholder="what do people call you"
-           oninput="state.name=this.value">
+    <input class="field-input" id="f-name"   type="text"   placeholder="what do people call you"   oninput="state.name=this.value">
   </div>
-
   <div class="field-group">
     <label class="field-label">age</label>
-    <input class="field-input" id="f-age" type="number" min="5" max="21"
-           placeholder="how old are you"
-           oninput="state.age=this.value">
+    <input class="field-input" id="f-age"    type="number" placeholder="how old are you" min="5" max="21" oninput="state.age=this.value">
   </div>
-
   <div class="field-group">
     <label class="field-label">stuff you like</label>
-    <input class="field-input" id="f-likes" type="text"
-           placeholder="games, music, whatever"
-           oninput="state.likes=this.value">
+    <input class="field-input" id="f-likes"  type="text"   placeholder="games, music, whatever"     oninput="state.likes=this.value">
   </div>
 
-  <div class="field-group">
-    <label class="field-label" style="color:var(--purple)">
-      stuff you REALLY like but don't want to tell me
-    </label>
-    <input class="field-input secret" id="f-secret" type="text"
-           placeholder="it's okay. this one's just for you."
-           oninput="state.secret=this.value">
-  </div>
-
-  <button class="btn btn-success" onclick="saveProfile()" style="width:100%;margin-top:0.5rem">
-    save my character
-  </button>
-  <button class="btn btn-ghost" onclick="show('screen-mood')">← back</button>
+  <button class="btn btn-success" onclick="saveProfile()" style="width:100%;margin-top:0.5rem">save my character</button>
+  <button class="btn btn-ghost"   onclick="show('screen-dress')">← back</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 7 — SAVED
-============================================================ -->
+<!-- ══════════════════════════════════════════
+     SCREEN 5 — SAVED
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-saved">
   <div class="saved-ring">&#10003;</div>
-  <div class="mono" style="margin-bottom:0.75rem;color:var(--green)">// profile saved</div>
-  <h2 style="font-size:2rem;font-weight:700;color:var(--white);margin-bottom:0.5rem;text-align:center">
-    You're in the system.
-  </h2>
-  <p style="color:var(--muted);text-align:center;line-height:1.8;max-width:300px;margin-bottom:2rem">
-    Your teacher will see your character.<br>
-    Come back tomorrow to update your mood.
+  <div class="mono" style="margin-bottom:0.75rem;color:var(--green)">// character saved</div>
+  <h2 style="font-size:2rem;font-weight:700;color:var(--white);margin-bottom:0.5rem;text-align:center">You're in.</h2>
+  <p style="color:var(--muted);text-align:center;line-height:1.8;max-width:300px;margin-bottom:1.5rem">
+    Your teacher can see your character now.<br>Come back anytime to change it.
   </p>
-  <button class="btn btn-ghost" onclick="show('screen-mood')">
-    update my mood
-  </button>
+  <div class="panel" style="text-align:center;margin-bottom:1.5rem;max-width:340px">
+    <div class="mono" style="margin-bottom:6px">your student code</div>
+    <div id="savedStudentId" style="font-size:1.6rem;font-weight:700;color:var(--purple);letter-spacing:4px;font-family:var(--font-mono)"></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">write this down if you share a device</div>
+  </div>
+  <button class="btn btn-ghost" onclick="show('screen-dress')">edit my character</button>
 </div>
 
 
-<!-- ============================================================
-     FIREBASE CONFIG — replace with your real values
-     (move to environment variable before going live)
-============================================================ -->
+<!-- ══════════════════════════════════════════
+     FIREBASE CONFIG
+══════════════════════════════════════════ -->
 <script>
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
+  apiKey:            "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
   authDomain:        "studentscopebehaviorcenter.firebaseapp.com",
   projectId:         "studentscopebehaviorcenter",
   storageBucket:     "studentscopebehaviorcenter.firebasestorage.app",
   messagingSenderId: "311398911099",
-  appId:             "YOUR_APP_ID"
+  appId:             "1:311398911099:web:6703268a2b65cdd969a6de"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -808,216 +520,440 @@ const db = firebase.firestore();
 
 
 <script>
-/* ============================================================
-   STATE — everything the kid has chosen lives here
-============================================================ */
+/* ════════════════════════════════════════════════════════════
+   SESSION SYSTEM
+   Persistent student ID stored in localStorage.
+   Format: WORD-NNNN  e.g. "WOLF-4821"
+════════════════════════════════════════════════════════════ */
+const SESSION_KEY = 'ss_student_id';
+const ID_WORDS    = ['WOLF','CROW','FROG','STAR','BOLT','WAVE','SAGE','ECHO',
+                     'REEF','MIST','DUSK','DAWN','PIKE','RUNE','FLUX','GLOW'];
+
+let studentId      = null;
+let firestoreDocId = null;
+let isReturning    = false;
+
+function generateStudentId() {
+  const word = ID_WORDS[Math.floor(Math.random() * ID_WORDS.length)];
+  const num  = String(Math.floor(Math.random() * 9000) + 1000);
+  return `${word}-${num}`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+   Single source of truth for the current avatar composition.
+   avatarSnapshot() serialises this for every Firestore write.
+════════════════════════════════════════════════════════════ */
 const state = {
-  consentTimestamp: null,   // when they clicked "I'm in"
-  type:    null,            // robot | plague | alien | critter | ramone | custom
-  color:   null,            // hex string
-  outfit: {
-    top:    null,
-    bottom: null,
-    hair:   null,
-    vibe:   null,
-  },
-  mood:    null,            // fired | chill | sad | anxious | here
-  name:    '',
-  age:     '',
-  likes:   '',
-  secret:  '',             // stored locally only — never sent to teacher view
+  consentTimestamp: null,
+  color:  null,
+  outfit: { top: null, bottom: null, hair: null, vibe: null },
+  name:   '',
+  age:    '',
+  likes:  '',
 };
 
-/* ============================================================
-   SLOT OPTIONS
-   Add or remove options freely — kids tap to cycle through them.
-   When you have art, each option maps to a PNG layer filename.
-============================================================ */
+/*
+  OUTFIT OPTIONS
+  Add / remove options here as your art folder grows.
+  The slot cycles through these in order.
+  Key names MUST match the ASSET_MAP filenames below.
+*/
 const SLOTS = {
-  top:    { options: ['hoodie', 'tee', 'jacket', 'sweater', 'nothing'], idx: -1 },
-  bottom: { options: ['jeans', 'sweats', 'shorts', 'skirt', 'joggers'], idx: -1 },
-  hair:   { options: ['down', 'up', 'hat', 'hood up', 'bun', 'messy'], idx: -1 },
-  vibe:   { options: ['headphones', 'toad jar', 'book', 'shield', 'sword', 'nothing'], idx: -1 },
+  top:    { options: ['hoodie','tee','jacket','sweater','nothing'], idx: -1 },
+  bottom: { options: ['jeans','sweats','shorts','skirt','joggers'], idx: -1 },
+  hair:   { options: ['down','up','hat','hood up','bun','messy'],   idx: -1 },
+  vibe:   { options: ['headphones','toad jar','book','shield','sword','nothing'], idx: -1 },
 };
 
-/* ============================================================
-   MOOD CONFIG — label + color + what the avatar layer shows
-============================================================ */
-const MOODS = {
-  fired:   { label: 'fired up',  color: '#D85A30', layer: 'mood-fired'   },
-  chill:   { label: 'chill',     color: '#1D9E75', layer: 'mood-chill'   },
-  sad:     { label: 'not great', color: '#378ADD', layer: 'mood-sad'     },
-  anxious: { label: 'anxious',   color: '#EF9F27', layer: 'mood-anxious' },
-  here:    { label: 'just here', color: '#888780', layer: 'mood-here'    },
+/* ════════════════════════════════════════════════════════════
+   ASSET MAP
+   ─────────────────────────────────────────────────────────
+   NAMING CONVENTION  →  ./art/<slot>-<option>.png
+   All PNGs: 300×380px, transparent background.
+   Export from GIMP: File → Export As → PNG → check Transparency.
+
+   Steps to add art:
+   1. Export your PNG to ./art/
+   2. Add the key-value pair below
+   3. The layer swap system picks it up automatically — no other changes needed.
+
+   Until a PNG exists, that layer stays blank (no broken image icons).
+════════════════════════════════════════════════════════════ */
+const ASSET_MAP = {
+  // ── BASE BODY (always loaded first) ──────────────────────
+  'base':              './art/base.png',
+
+  // ── TOPS ─────────────────────────────────────────────────
+  'top-hoodie':        './art/top-hoodie.png',
+  'top-tee':           './art/top-tee.png',
+  'top-jacket':        './art/top-jacket.png',
+  'top-sweater':       './art/top-sweater.png',
+  'top-nothing':       './art/top-nothing.png',   // transparent PNG
+
+  // ── BOTTOMS ──────────────────────────────────────────────
+  'bottom-jeans':      './art/bottom-jeans.png',
+  'bottom-sweats':     './art/bottom-sweats.png',
+  'bottom-shorts':     './art/bottom-shorts.png',
+  'bottom-skirt':      './art/bottom-skirt.png',
+  'bottom-joggers':    './art/bottom-joggers.png',
+
+  // ── HAIR ─────────────────────────────────────────────────
+  'hair-down':         './art/hair-down.png',
+  'hair-up':           './art/hair-up.png',
+  'hair-hat':          './art/hair-hat.png',
+  'hair-hood up':      './art/hair-hoodup.png',
+  'hair-bun':          './art/hair-bun.png',
+  'hair-messy':        './art/hair-messy.png',
+
+  // ── VIBE ITEMS ───────────────────────────────────────────
+  'vibe-headphones':   './art/vibe-headphones.png',
+  'vibe-toad jar':     './art/vibe-toadjar.png',
+  'vibe-book':         './art/vibe-book.png',
+  'vibe-shield':       './art/vibe-shield.png',
+  'vibe-sword':        './art/vibe-sword.png',
+  'vibe-nothing':      './art/vibe-nothing.png',  // transparent PNG
 };
 
-/* ============================================================
+/* ════════════════════════════════════════════════════════════
+   AVATAR SNAPSHOT
+   Called on every Firestore write — captures the exact
+   composition the student has built RIGHT NOW.
+   This is the behavioral fingerprint data point.
+════════════════════════════════════════════════════════════ */
+function avatarSnapshot() {
+  return {
+    color:       state.color  || null,
+    outfit: {
+      top:       state.outfit.top    || null,
+      bottom:    state.outfit.bottom || null,
+      hair:      state.outfit.hair   || null,
+      vibe:      state.outfit.vibe   || null,
+    },
+    capturedAt:  new Date().toISOString(),
+  };
+}
+
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+async function init() {
+  updateTimestamp();
+
+  const stored = localStorage.getItem(SESSION_KEY);
+
+  if (stored) {
+    studentId = stored;
+    try {
+      const snap = await db.collection('studentProfiles')
+        .where('studentId', '==', studentId)
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .get();
+
+      if (!snap.empty) {
+        const doc  = snap.docs[0];
+        firestoreDocId = doc.id;
+        const data = doc.data();
+
+        // Restore avatar state from saved profile
+        state.color  = data.color  || null;
+        state.outfit = data.outfit || state.outfit;
+        state.name   = data.name   || '';
+        state.age    = data.age    || '';
+        state.likes  = data.likes  || '';
+
+        isReturning = true;
+        showSessionPill();
+        restoreAvatarFromState();
+        hideLoading();
+        show('screen-dress');  // returning student lands straight on their avatar
+        return;
+      }
+    } catch(e) {
+      console.warn('Session lookup failed, starting fresh:', e);
+    }
+  }
+
+  studentId = generateStudentId();
+  localStorage.setItem(SESSION_KEY, studentId);
+  showSessionPill();
+  hideLoading();
+  show('screen-consent');
+}
+
+function hideLoading()  { document.getElementById('loadingOverlay').classList.add('hidden'); }
+function showSessionPill() {
+  const pill = document.getElementById('sessionPill');
+  pill.textContent = studentId;
+  pill.classList.add('visible');
+}
+
+/* ════════════════════════════════════════════════════════════
    SCREEN NAVIGATION
-============================================================ */
+════════════════════════════════════════════════════════════ */
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
-/* ============================================================
-   CONSENT
-============================================================ */
 function consent() {
   state.consentTimestamp = new Date().toISOString();
-  // Log the consent decision — even this moment is data
-  console.log('consent_granted', state.consentTimestamp);
-  show('screen-type');
+  // Load base layer as soon as we enter the avatar screen
+  swapLayer('layer-base', 'base', false);
+  show('screen-dress');
 }
 
-function notYet() {
-  console.log('consent_deferred', new Date().toISOString());
-  show('screen-notyet');
-}
-
-/* ============================================================
-   CHARACTER TYPE
-============================================================ */
-function pickType(el, type) {
-  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-  state.type = type;
-
-  // Update avatar display label (swap for real image logic when art is ready)
-  document.getElementById('avatarTypeLabel').textContent = type.toUpperCase();
-
-  // Small delay so the pop animation is satisfying before transition
-  setTimeout(() => show('screen-dress'), 280);
-}
-
-/* ============================================================
+/* ════════════════════════════════════════════════════════════
    COLOR PICKER
-============================================================ */
+════════════════════════════════════════════════════════════ */
 function pickColor(el, hex) {
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('on'));
   el.classList.add('on');
   state.color = hex;
 
-  /*
-    WHEN ART IS READY:
-    document.getElementById('layer-color').style.filter =
-      `hue-rotate(...)` or swap to a pre-colored overlay PNG.
-  */
+  const ring = document.getElementById('avatarColorRing');
+  if (ring) {
+    ring.style.borderColor = hex;
+    ring.style.boxShadow   = `0 0 16px 2px ${hex}33`;
+  }
+  spinAvatar();
 }
 
-/* ============================================================
-   OUTFIT SLOTS — tap to cycle
-============================================================ */
+/* ════════════════════════════════════════════════════════════
+   OUTFIT SLOTS
+════════════════════════════════════════════════════════════ */
 function cycleSlot(key) {
   const slot = SLOTS[key];
-  slot.idx = (slot.idx + 1) % slot.options.length;
-  const val = slot.options[slot.idx];
-
+  slot.idx   = (slot.idx + 1) % slot.options.length;
+  const val  = slot.options[slot.idx];
   state.outfit[key] = val;
 
-  const el = document.getElementById('slot-' + key);
-  const valEl = document.getElementById('val-' + key);
-  valEl.textContent = val;
-  el.classList.add('filled');
+  document.getElementById('slot-' + key).classList.add('filled');
+  document.getElementById('val-'  + key).textContent = val;
 
-  /*
-    WHEN ART IS READY — swap the layer src:
-    const layerEl = document.getElementById('layer-' + key);
-    if (layerEl) layerEl.src = `./art/${state.type}-${key}-${val}.png`;
-  */
+  // Pulse the slot border
+  const slotEl = document.getElementById('slot-' + key);
+  slotEl.classList.remove('confirming');
+  void slotEl.offsetWidth;
+  slotEl.classList.add('confirming');
+  setTimeout(() => slotEl.classList.remove('confirming'), 500);
+
+  spinAvatar();
+  swapLayer('layer-' + key, `${key}-${val}`, true);
 }
 
-/* ============================================================
-   MOOD PICKER
-============================================================ */
-function pickMood(el) {
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
+/* ════════════════════════════════════════════════════════════
+   LAYER SWAP ENGINE
+   Fades a layer out, swaps src, fades back in.
+   Fires sparkle burst on success if withSparkle=true.
+   Missing art silently blanks the layer — no broken images.
+════════════════════════════════════════════════════════════ */
+function swapLayer(layerId, assetKey, withSparkle = false) {
+  const el  = document.getElementById(layerId);
+  const src = ASSET_MAP[assetKey];
+  if (!el) return;
 
-  const key = el.dataset.mood;
-  state.mood = key;
+  el.classList.add('swapping');
 
-  const cfg = MOODS[key];
-  const label = document.getElementById('moodLabel');
-  label.textContent = '// today: ' + cfg.label;
-  label.style.color = cfg.color;
-
-  document.getElementById('moodNext').disabled = false;
-
-  /*
-    WHEN ART IS READY — swap mood face layer:
-    document.getElementById('layer-mood').src = `./art/${state.type}-${cfg.layer}.png`;
-  */
+  el.addEventListener('transitionend', () => {
+    el.src = src || '';
+    if (src) {
+      el.onload  = () => {
+        el.classList.remove('swapping');
+        if (layerId === 'layer-base') onLayerLoad();
+        if (withSparkle) fireSparkles();
+      };
+      el.onerror = () => { el.src = ''; el.classList.remove('swapping'); };
+    } else {
+      el.classList.remove('swapping');
+    }
+  }, { once: true });
 }
 
-/* ============================================================
-   SAVE TO FIREBASE
-   Note: the "secret" field is intentionally excluded from
-   the teacher-visible data. It logs to console only —
-   a future feature can let the kid decide to share it.
-============================================================ */
+/* ════════════════════════════════════════════════════════════
+   AVATAR SPIN
+   Guard against rapid-tap stacking.
+════════════════════════════════════════════════════════════ */
+function spinAvatar() {
+  const stage = document.getElementById('avatarStage');
+  if (!stage || stage.classList.contains('spinning')) return;
+  stage.classList.remove('idle', 'spinning');
+  void stage.offsetWidth;
+  stage.classList.add('spinning');
+  stage.addEventListener('animationend', () => {
+    stage.classList.remove('spinning');
+    stage.classList.add('idle');
+  }, { once: true });
+}
+
+/* ════════════════════════════════════════════════════════════
+   SPARKLE BURST
+════════════════════════════════════════════════════════════ */
+function fireSparkles() {
+  const container = document.getElementById('sparkleContainer');
+  if (!container) return;
+  const colors = ['#7f77dd','#EF9F27','#1D9E75','#D85A30','#378ADD','#D4537E','#ffffff'];
+  for (let i = 0; i < 8; i++) {
+    const dot      = document.createElement('div');
+    dot.className  = 'sparkle';
+    const angle    = (i / 8) * 360 + Math.random() * 20;
+    const distance = 40 + Math.random() * 40;
+    const rad      = (angle * Math.PI) / 180;
+    dot.style.setProperty('--sx', `${Math.cos(rad) * distance}px`);
+    dot.style.setProperty('--sy', `${Math.sin(rad) * distance}px`);
+    dot.style.background     = colors[Math.floor(Math.random() * colors.length)];
+    dot.style.left           = '50%';
+    dot.style.top            = '40%';
+    dot.style.animationDelay = `${Math.random() * 0.1}s`;
+    container.appendChild(dot);
+    dot.addEventListener('animationend', () => dot.remove());
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   LAYER LOAD / ERROR HELPERS
+════════════════════════════════════════════════════════════ */
+function onLayerLoad() {
+  const ph = document.getElementById('avatarPlaceholder');
+  if (ph) ph.classList.add('hidden');
+}
+function onLayerError(imgEl) { imgEl.src = ''; }
+
+/* ════════════════════════════════════════════════════════════
+   RESTORE AVATAR (returning student)
+   Rebuilds layers from saved state with a staggered load.
+════════════════════════════════════════════════════════════ */
+function restoreAvatarFromState() {
+  swapLayer('layer-base', 'base', false);
+
+  const layers = ['bottom','top','hair','vibe'];
+  layers.forEach((key, i) => {
+    if (state.outfit[key]) {
+      setTimeout(() => swapLayer(`layer-${key}`, `${key}-${state.outfit[key]}`, false), i * 80);
+    }
+  });
+
+  // Restore color ring
+  if (state.color) {
+    const ring = document.getElementById('avatarColorRing');
+    if (ring) {
+      ring.style.borderColor = state.color;
+      ring.style.boxShadow   = `0 0 16px 2px ${state.color}33`;
+    }
+    // Re-check the matching swatch
+    document.querySelectorAll('.swatch').forEach(s => {
+      if (s.style.background === state.color) s.classList.add('on');
+    });
+  }
+
+  // Restore slot labels
+  Object.keys(state.outfit).forEach(key => {
+    if (state.outfit[key]) {
+      document.getElementById('slot-' + key)?.classList.add('filled');
+      const valEl = document.getElementById('val-' + key);
+      if (valEl) valEl.textContent = state.outfit[key];
+      // Sync the slot index so cycling continues from the right position
+      const opts = SLOTS[key].options;
+      const idx  = opts.indexOf(state.outfit[key]);
+      if (idx !== -1) SLOTS[key].idx = idx;
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   SAVE PROFILE
+   ─────────────────────────────────────────────────────────
+   Writes to TWO Firestore collections:
+
+   1. /studentProfiles  — avatar identity + metadata
+      Read by: teacher-portal.html (student roster cards)
+
+   2. /behaviors        — behavioral fingerprint event
+      Read by: teacher-portal.html, data-analytics.html
+      The avatarSnapshot() here is the KEY DATA POINT
+      for the pattern correlation algorithm.
+════════════════════════════════════════════════════════════ */
 async function saveProfile() {
   const btn = document.querySelector('#screen-info .btn-success');
   btn.textContent = 'saving...';
-  btn.disabled = true;
+  btn.disabled    = true;
 
-  // What the teacher sees
-  const teacherVisible = {
-    name:      state.name    || 'anonymous',
-    age:       state.age     || null,
-    likes:     state.likes   || null,
-    type:      state.type,
-    color:     state.color,
-    outfit:    state.outfit,
-    mood:      state.mood,
-    timestamp: new Date().toISOString(),
-    consent:   state.consentTimestamp,
+  const ts       = new Date().toISOString();
+  const snapshot = avatarSnapshot();
+
+  const profileData = {
+    studentId:         studentId,
+    name:              state.name   || 'anonymous',
+    age:               state.age    || null,
+    likes:             state.likes  || null,
+    color:             state.color  || null,
+    outfit:            state.outfit,
+    avatarSnapshot:    snapshot,
+    timestamp:         ts,
+    consent:           state.consentTimestamp,
+    source:            'student-portal',
   };
 
-  // The secret field — kid's data, not teacher's
-  // Store it separately or not at all. Your call.
-  if (state.secret) {
-    console.log('kid_secret_interest', '(not logged to Firestore by design)');
-  }
-
   try {
-    // Save to Firestore
-    await db.collection('studentProfiles').add(teacherVisible);
+    // ── WRITE 1: /studentProfiles ──────────────────────────
+    if (firestoreDocId) {
+      // Returning student — update existing doc
+      await db.collection('studentProfiles').doc(firestoreDocId).update({
+        ...profileData,
+        lastUpdated: ts,
+      });
+    } else {
+      // New student — create doc
+      const docRef = await db.collection('studentProfiles').add(profileData);
+      firestoreDocId = docRef.id;
+    }
 
-    // Also log a daily mood snapshot to the behaviors feed
+    // ── WRITE 2: /behaviors ────────────────────────────────
+    // This is what the teacher sees in the dashboard.
+    // avatarSnapshot is the behavioral fingerprint attached
+    // to this moment in time.
     await db.collection('behaviors').add({
-      studentName: state.name || 'anonymous',
-      type:        'mood_checkin',
-      behavior:    `Daily check-in: ${MOODS[state.mood]?.label || state.mood}`,
-      mood:        state.mood,
-      timestamp:   teacherVisible.timestamp,
-      date:        teacherVisible.timestamp,
-      source:      'intro.html',
+      studentName:    state.name     || 'anonymous',
+      studentId:      studentId,
+      behavior:       isReturning
+                        ? `Avatar updated — ${state.name || 'student'} changed their character`
+                        : `Avatar created — ${state.name || 'student'} built their character`,
+      type:           'avatar_save',   // distinct type so teacher can filter
+      teacherId:      'student-portal',
+      teacherEmail:   'student-portal',
+      timestamp:      ts,
+      date:           ts,
+      source:         'student-portal',
+      avatarSnapshot: snapshot,        // ← THE FINGERPRINT
     });
 
+    isReturning = true;
+    document.getElementById('savedStudentId').textContent = studentId;
     show('screen-saved');
 
   } catch(err) {
     console.error('Save failed:', err);
     btn.textContent = 'save my character';
-    btn.disabled = false;
+    btn.disabled    = false;
     alert('Could not save. Check your connection and try again.');
   }
 }
 
-/* ============================================================
+/* ════════════════════════════════════════════════════════════
    TIMESTAMP WATERMARK
-============================================================ */
+════════════════════════════════════════════════════════════ */
 function updateTimestamp() {
   const el = document.getElementById('timestamp');
-  if (el) {
-    const now = new Date();
-    el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+  if (el) el.textContent = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
 }
 setInterval(updateTimestamp, 60000);
-updateTimestamp();
-</script>
 
+/* ════════════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════════════ */
+window.addEventListener('load', init);
+</script>
 </body>
 </html>

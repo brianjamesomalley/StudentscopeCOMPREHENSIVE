@@ -672,10 +672,11 @@ async function init() {
         hideLoading();
         show('screen-dress');  // returning student lands straight on their avatar
         return;
-      }
     } catch(e) {
-      console.warn('Session lookup failed, starting fresh:', e);
-    }
+  console.warn('Session lookup failed, starting fresh:', e);
+  hideLoading();
+  show('screen-consent');
+}
   }
 
   studentId = generateStudentId();

@@ -281,19 +281,17 @@ body::before {
     <div class="dot done"></div><div class="dot on"></div><div class="dot"></div>
   </div>
   <div class="mono" style="margin-bottom:0.75rem">// step 2 of 3</div>
-  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1.5rem">A few things.</h2>
+  <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:0.5rem">Name your character.</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:1.5rem">No wrong answers. Go wild.</p>
 
   <div class="field-group">
-    <label class="field-label">name</label>
-    <input class="field-input" id="f-name" type="text" placeholder="what do people call you" oninput="state.name=this.value">
+    <label class="field-label">character name</label>
+    <input class="field-input" id="f-name" type="text" 
+           placeholder="what's their name"
+           oninput="state.name=this.value">
   </div>
-  <div class="field-group">
-    <label class="field-label">age</label>
-    <input class="field-input" id="f-age" type="number" placeholder="how old are you" min="5" max="21" oninput="state.age=this.value">
-  </div>
-  <div class="field-group">
-    <label class="field-label">stuff you like</label>
-    <input class="field-input" id="f-likes" type="text" placeholder="games, music, whatever" oninput="state.likes=this.value">
+  <div id="name-warning" style="color:#D85A30;font-family:var(--font-mono);font-size:10px;letter-spacing:2px;margin-bottom:1rem;display:none">
+    // CAP &#x1F9E2;
   </div>
 
   <button class="btn btn-success" onclick="saveProfile()" style="width:100%;margin-top:0.5rem">save my character</button>
@@ -366,26 +364,67 @@ function cycleSlot(key) {
   if (layer) layer.src = ART + key + '-' + val + '.png';
 }
 
+const SWEARS = [
+  'fuck','shit','ass','bitch','cunt','dick','cock','pussy',
+  'bastard','crap','piss','fag','slut','whore','rape',
+  'nigger','nigga','retard','nazi','homo','dyke',
+  'chink','spic','kike','tranny','twat','wank',
+  'noob','trash','dogwater','kys','kms','kill yourself',
+  'suck my','eat my','lick my','blow me',
+  'incel','simp','virgin','loser',
+];
+
+function normalise(str) {
+  return str
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[._\-*]/g, '')
+    .replace(/ph/g, 'f')
+    .replace(/0/g, 'o')
+    .replace(/3/g, 'e')
+    .replace(/1/g, 'i')
+    .replace(/4/g, 'a')
+    .replace(/@/g, 'a')
+    .replace(/\$/g, 's')
+    .replace(/5/g, 's')
+    .replace(/7/g, 't')
+    .replace(/8/g, 'b')
+    .replace(/\+/g, 't')
+    .replace(/!/g, 'i')
+    .replace(/x+/g, 'x')
+    .replace(/(.)\1+/g, '$1');
+}
+
+function isDirty(val) {
+  const clean = normalise(val);
+  return SWEARS.some(w => clean.includes(normalise(w)));
+}
+
 async function saveProfile() {
+  const nameVal = (state.name || '').trim();
+  if (isDirty(nameVal)) {
+    document.getElementById('name-warning').style.display = 'block';
+    return;
+  }
+  document.getElementById('name-warning').style.display = 'none';
   const btn = document.querySelector('#screen-info .btn-success');
   btn.textContent = 'saving...';
   btn.disabled = true;
   const ts = new Date().toISOString();
   try {
     await db.collection('studentProfiles').add({
-      name:      state.name   || 'anonymous',
-      age:       state.age    || null,
-      likes:     state.likes  || null,
+      name:      nameVal || 'anonymous',
       color:     state.color,
       outfit:    state.outfit,
       timestamp: ts,
       source:    'Moodmeter',
     });
     await db.collection('behaviors').add({
-      studentName: state.name || 'anonymous',
+      studentName: nameVal || 'anonymous',
       behavior:    'Avatar saved',
       type:        'avatar_save',
       outfit:      state.outfit,
+      color:       state.color,
       timestamp:   ts,
       source:      'Moodmeter',
     });

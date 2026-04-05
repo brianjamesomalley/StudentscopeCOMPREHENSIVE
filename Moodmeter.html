@@ -640,7 +640,14 @@ function avatarSnapshot() {
    INIT
 ════════════════════════════════════════════════════════════ */
 async function init() {
-  hideLoading();
+  // Failsafe: never spin forever
+  setTimeout(() => {
+    hideLoading();
+    if (!document.querySelector('.screen.active')) {
+      show('screen-consent');
+    }
+  }, 4000);
+
   updateTimestamp();
 
   const stored = localStorage.getItem(SESSION_KEY);
@@ -658,39 +665,34 @@ async function init() {
         const doc  = snap.docs[0];
         firestoreDocId = doc.id;
         const data = doc.data();
-
-        // Restore avatar state from saved profile
         state.color  = data.color  || null;
         state.outfit = data.outfit || state.outfit;
         state.name   = data.name   || '';
         state.age    = data.age    || '';
         state.likes  = data.likes  || '';
-
-        isReturning = true;
+        isReturning  = true;
         showSessionPill();
         restoreAvatarFromState();
         hideLoading();
-        show('screen-dress');  // returning student lands straight on their avatar
+        show('screen-dress');
         return;
+      }
     } catch(e) {
-  console.warn('Session lookup failed, starting fresh:', e);
-  hideLoading();
-  show('screen-consent');
-}
+      console.warn('Session lookup failed:', e);
+    }
+    // Stored ID but no Firestore doc found
+    showSessionPill();
+    hideLoading();
+    show('screen-consent');
+    return;
   }
 
+  // Brand new student
   studentId = generateStudentId();
   localStorage.setItem(SESSION_KEY, studentId);
   showSessionPill();
   hideLoading();
   show('screen-consent');
-}
-
-function hideLoading()  { document.getElementById('loadingOverlay').classList.add('hidden'); }
-function showSessionPill() {
-  const pill = document.getElementById('sessionPill');
-  pill.textContent = studentId;
-  pill.classList.add('visible');
 }
 
 /* ════════════════════════════════════════════════════════════

@@ -640,55 +640,7 @@ function avatarSnapshot() {
    INIT
 ════════════════════════════════════════════════════════════ */
 async function init() {
-  // Failsafe: never spin forever
-  setTimeout(() => {
-    hideLoading();
-    if (!document.querySelector('.screen.active')) {
-      show('screen-consent');
-    }
-  }, 4000);
-
-  updateTimestamp();
-
-  const stored = localStorage.getItem(SESSION_KEY);
-
-  if (stored) {
-    studentId = stored;
-    try {
-      const snap = await db.collection('studentProfiles')
-        .where('studentId', '==', studentId)
-        .orderBy('timestamp', 'desc')
-        .limit(1)
-        .get();
-
-      if (!snap.empty) {
-        const doc  = snap.docs[0];
-        firestoreDocId = doc.id;
-        const data = doc.data();
-        state.color  = data.color  || null;
-        state.outfit = data.outfit || state.outfit;
-        state.name   = data.name   || '';
-        state.age    = data.age    || '';
-        state.likes  = data.likes  || '';
-        isReturning  = true;
-        showSessionPill();
-        restoreAvatarFromState();
-        hideLoading();
-        show('screen-dress');
-        return;
-      }
-    } catch(e) {
-      console.warn('Session lookup failed:', e);
-    }
-    // Stored ID but no Firestore doc found
-    showSessionPill();
-    hideLoading();
-    show('screen-consent');
-    return;
-  }
-
-  // Brand new student
-  studentId = generateStudentId();
+  studentId = localStorage.getItem(SESSION_KEY) || generateStudentId();
   localStorage.setItem(SESSION_KEY, studentId);
   showSessionPill();
   hideLoading();

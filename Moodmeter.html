@@ -705,7 +705,6 @@ function consent() {
   state.consentTimestamp = new Date().toISOString();
   const baseLayer = document.getElementById('layer-base');
   baseLayer.src = ASSET_MAP['base'];
-  baseLayer.onload = () => onLayerLoad();
   show('screen-dress');
 }
 

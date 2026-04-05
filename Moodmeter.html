@@ -704,8 +704,7 @@ function show(id) {
 
 function consent() {
   state.consentTimestamp = new Date().toISOString();
-  const baseLayer = document.getElementById('layer-base');
-  baseLayer.src = ASSET_MAP['base'];
+  swapLayer('layer-base', 'base', false);
   show('screen-dress');
 }
 

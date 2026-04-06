@@ -235,7 +235,7 @@ body::before {
   <h2 style="font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:1rem">Build your character.</h2>
 
   <div class="avatar-wrap">
-    <img class="avatar-base" id="layer-base" src="/art/base.png" alt="">
+    <img class="avatar-base" id="layer-base" src="./art/base.png" alt="">
     <img class="avatar-top"    id="layer-top"    src="" alt="">
     <img class="avatar-hair"   id="layer-hair"   src="" alt="">
     <img class="avatar-vibe"   id="layer-vibe"   src="" alt="">
@@ -321,7 +321,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const ART = '/art/';
+const ART = './art/';
 
 const SLOTS = {
   top:    { options: ['hoodie','tee','jacket','sweater'], idx: -1 },

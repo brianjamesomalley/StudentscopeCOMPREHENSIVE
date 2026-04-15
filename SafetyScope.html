@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentScope — Emergency Alert System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:      #e11d48;
+    --red-dark: #9f0e2c;
+    --red-glow: rgba(225,29,72,0.35);
+    --amber:    #f59e0b;
+    --green:    #10b981;
+    --blue:     #3b82f6;
+    --bg:       #0a0a0f;
+    --surface:  #13131a;
+    --surface2: #1c1c28;
+    --border:   #2a2a3a;
+    --text:     #e8e8f0;
+    --muted:    #6b6b88;
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'IBM Plex Sans', sans-serif;
+    --display:  'Bebas Neue', cursive;
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: var(–sans);
+min-height: 100vh;
+background-image:
+radial-gradient(ellipse 80% 40% at 50% -10%, rgba(225,29,72,0.12) 0%, transparent 60%),
+repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px),
+repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+}
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+#loginScreen {
+display: flex; align-items: center; justify-content: center;
+min-height: 100vh;
+}
+.login-box {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 48px 40px;
+width: 100%; max-width: 420px;
+box-shadow: 0 0 60px rgba(225,29,72,0.1);
+}
+.login-logo {
+font-family: var(–display);
+font-size: 2.6rem;
+letter-spacing: 2px;
+color: var(–red);
+text-align: center;
+margin-bottom: 4px;
+}
+.login-sub {
+text-align: center;
+font-family: var(–mono);
+font-size: 0.72rem;
+color: var(–muted);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin-bottom: 36px;
+}
+.field {
+margin-bottom: 14px;
+}
+.field input {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 13px 16px;
+color: var(–text);
+font-family: var(–mono);
+font-size: 0.9rem;
+outline: none;
+transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(–red); }
+.field input::placeholder { color: var(–muted); }
+
+.btn-signin {
+width: 100%;
+background: var(–red);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 14px;
+font-family: var(–display);
+font-size: 1.2rem;
+letter-spacing: 2px;
+cursor: pointer;
+transition: background 0.2s, box-shadow 0.2s;
+margin-top: 6px;
+}
+.btn-signin:hover { background: var(–red-dark); box-shadow: 0 0 20px var(–red-glow); }
+#loginError {
+color: var(–red);
+font-family: var(–mono);
+font-size: 0.8rem;
+text-align: center;
+margin-top: 14px;
+display: none;
+}
+
+/* ── DASHBOARD SHELL ─────────────────────────────────────── */
+#app { display: none; }
+.topbar {
+display: flex; align-items: center; justify-content: space-between;
+padding: 16px 32px;
+border-bottom: 1px solid var(–border);
+background: rgba(10,10,15,0.9);
+backdrop-filter: blur(12px);
+position: sticky; top: 0; z-index: 100;
+}
+.topbar-logo {
+font-family: var(–display);
+font-size: 1.8rem;
+letter-spacing: 2px;
+color: var(–red);
+}
+.topbar-meta {
+font-family: var(–mono);
+font-size: 0.75rem;
+color: var(–muted);
+text-align: right;
+}
+.topbar-meta strong { color: var(–text); display: block; }
+.btn-logout {
+background: transparent;
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 7px 16px;
+border-radius: 6px;
+font-family: var(–mono);
+font-size: 0.78rem;
+cursor: pointer;
+transition: all 0.2s;
+margin-left: 20px;
+}
+.btn-logout:hover { border-color: var(–red); color: var(–red); }
+
+.main { padding: 36px 32px; max-width: 1100px; margin: 0 auto; }
+
+/* ── ACCESS DENIED BANNER ────────────────────────────────── */
+#accessDenied {
+display: none;
+background: #1a0a0a;
+border: 1px solid var(–red);
+border-radius: 10px;
+padding: 24px;
+text-align: center;
+font-family: var(–mono);
+color: var(–red);
+margin-top: 40px;
+}
+
+/* ── SECTION TABS ────────────────────────────────────────── */
+.tabs {
+display: flex; gap: 4px;
+margin-bottom: 32px;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 4px;
+width: fit-content;
+}
+.tab {
+padding: 9px 22px;
+border-radius: 7px;
+font-family: var(–mono);
+font-size: 0.82rem;
+font-weight: 600;
+letter-spacing: 1px;
+text-transform: uppercase;
+cursor: pointer;
+color: var(–muted);
+border: none;
+background: transparent;
+transition: all 0.2s;
+}
+.tab.active { background: var(–surface2); color: var(–text); border: 1px solid var(–border); }
+.tab:hover:not(.active) { color: var(–text); }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── RED BUTTON PANEL ─────────────────────────────────────── */
+.alert-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 24px;
+margin-bottom: 28px;
+}
+
+.panel {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 14px;
+padding: 28px;
+}
+.panel-title {
+font-family: var(–mono);
+font-size: 0.7rem;
+letter-spacing: 3px;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 20px;
+display: flex; align-items: center; gap: 8px;
+}
+.panel-title::before {
+content: ‘’;
+display: inline-block;
+width: 6px; height: 6px;
+border-radius: 50%;
+background: var(–red);
+box-shadow: 0 0 6px var(–red);
+}
+
+/* Alert type selector */
+.alert-types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.alert-type-btn {
+padding: 14px 10px;
+border-radius: 10px;
+border: 1px solid var(–border);
+background: var(–surface2);
+color: var(–text);
+font-family: var(–mono);
+font-size: 0.78rem;
+font-weight: 600;
+cursor: pointer;
+text-align: center;
+transition: all 0.2s;
+line-height: 1.4;
+}
+.alert-type-btn .icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+.alert-type-btn:hover { border-color: var(–red); background: rgba(225,29,72,0.08); }
+.alert-type-btn.selected { border-color: var(–red); background: rgba(225,29,72,0.15); color: #fca5a5; box-shadow: 0 0 12px rgba(225,29,72,0.2); }
+.alert-type-btn.selected-amber { border-color: var(–amber); background: rgba(245,158,11,0.15); color: #fcd34d; box-shadow: 0 0 12px rgba(245,158,11,0.2); }
+.alert-type-btn.selected-green { border-color: var(–green); background: rgba(16,185,129,0.15); color: #6ee7b7; box-shadow: 0 0 12px rgba(16,185,129,0.2); }
+
+.custom-message {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 12px 14px;
+color: var(–text);
+font-family: var(–mono);
+font-size: 0.85rem;
+resize: vertical;
+min-height: 80px;
+outline: none;
+margin-bottom: 16px;
+transition: border-color 0.2s;
+}
+.custom-message:focus { border-color: var(–red); }
+
+/* THE BIG RED BUTTON */
+.red-button-wrap {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 16px;
+padding: 10px 0;
+}
+
+.red-button {
+width: 180px; height: 180px;
+border-radius: 50%;
+background: radial-gradient(circle at 35% 35%, #ff4d6d, var(–red) 55%, var(–red-dark));
+border: none;
+cursor: pointer;
+font-family: var(–display);
+font-size: 1.5rem;
+letter-spacing: 3px;
+color: white;
+text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+box-shadow:
+0 0 0 8px rgba(225,29,72,0.12),
+0 0 0 16px rgba(225,29,72,0.06),
+0 12px 40px rgba(225,29,72,0.5),
+inset 0 -6px 20px rgba(0,0,0,0.3);
+transition: all 0.15s;
+position: relative;
+overflow: hidden;
+}
+.red-button::after {
+content: ‘’;
+position: absolute;
+top: 18%; left: 22%;
+width: 36%; height: 22%;
+background: rgba(255,255,255,0.2);
+border-radius: 50%;
+transform: rotate(-30deg);
+pointer-events: none;
+}
+.red-button:hover {
+transform: scale(1.04);
+box-shadow:
+0 0 0 10px rgba(225,29,72,0.18),
+0 0 0 22px rgba(225,29,72,0.08),
+0 20px 60px rgba(225,29,72,0.7),
+inset 0 -6px 20px rgba(0,0,0,0.3);
+}
+.red-button:active { transform: scale(0.97); }
+.red-button.firing {
+animation: pulse-fire 0.6s ease-in-out infinite;
+}
+@keyframes pulse-fire {
+0%, 100% { box-shadow: 0 0 0 10px rgba(225,29,72,0.3), 0 0 60px rgba(225,29,72,0.8), inset 0 -6px 20px rgba(0,0,0,0.3); }
+50%       { box-shadow: 0 0 0 20px rgba(225,29,72,0.1), 0 0 100px rgba(225,29,72,1), inset 0 -6px 20px rgba(0,0,0,0.3); }
+}
+
+.button-status {
+font-family: var(–mono);
+font-size: 0.75rem;
+color: var(–muted);
+text-align: center;
+letter-spacing: 1px;
+}
+.button-status.live { color: var(–red); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Recipient chips */
+.recipient-count {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 10px 14px;
+font-family: var(–mono);
+font-size: 0.8rem;
+color: var(–muted);
+text-align: center;
+margin-bottom: 16px;
+}
+.recipient-count strong { color: var(–text); font-size: 1.1rem; }
+
+/* Channel toggles */
+.channels { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.channel-toggle {
+display: flex; align-items: center; gap: 8px;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 9px 14px;
+cursor: pointer;
+font-family: var(–mono);
+font-size: 0.8rem;
+color: var(–muted);
+transition: all 0.2s;
+user-select: none;
+}
+.channel-toggle.active { border-color: var(–blue); color: var(–text); background: rgba(59,130,246,0.1); }
+.channel-toggle input { display: none; }
+.channel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–muted); }
+.channel-toggle.active .channel-dot { background: var(–blue); box-shadow: 0 0 6px var(–blue); }
+
+/* ── STAFF TABLE ─────────────────────────────────────────── */
+.staff-toolbar {
+display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+}
+.input-field {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 10px 14px;
+color: var(–text);
+font-family: var(–mono);
+font-size: 0.85rem;
+outline: none;
+transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(–blue); }
+.input-field::placeholder { color: var(–muted); }
+.input-name { width: 180px; }
+.input-email { width: 240px; }
+.input-phone { width: 160px; }
+
+.btn-add {
+background: var(–blue);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 10px 20px;
+font-family: var(–mono);
+font-size: 0.82rem;
+font-weight: 600;
+cursor: pointer;
+letter-spacing: 1px;
+transition: background 0.2s;
+}
+.btn-add:hover { background: #2563eb; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+background: var(–surface2);
+padding: 10px 14px;
+text-align: left;
+font-family: var(–mono);
+font-size: 0.7rem;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–muted);
+border-bottom: 1px solid var(–border);
+}
+tbody tr {
+border-bottom: 1px solid rgba(255,255,255,0.04);
+transition: background 0.15s;
+}
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody td {
+padding: 12px 14px;
+font-family: var(–mono);
+font-size: 0.83rem;
+color: var(–text);
+}
+.td-muted { color: var(–muted); }
+.btn-remove {
+background: transparent;
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 4px 10px;
+border-radius: 5px;
+font-family: var(–mono);
+font-size: 0.72rem;
+cursor: pointer;
+transition: all 0.15s;
+}
+.btn-remove:hover { border-color: var(–red); color: var(–red); }
+
+/* ── ALERT LOG ───────────────────────────────────────────── */
+.log-item {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 18px 22px;
+margin-bottom: 12px;
+display: flex;
+align-items: flex-start;
+gap: 20px;
+border-left: 3px solid;
+transition: border-color 0.2s;
+}
+.log-item.LOCKDOWN  { border-left-color: var(–red); }
+.log-item.SHELTER   { border-left-color: var(–amber); }
+.log-item.ALLCLEAR  { border-left-color: var(–green); }
+.log-item.EVACUATION { border-left-color: #8b5cf6; }
+.log-item.CUSTOM    { border-left-color: var(–blue); }
+.log-type {
+font-family: var(–display);
+font-size: 1rem;
+letter-spacing: 2px;
+white-space: nowrap;
+min-width: 110px;
+}
+.log-type.LOCKDOWN  { color: var(–red); }
+.log-type.SHELTER   { color: var(–amber); }
+.log-type.ALLCLEAR  { color: var(–green); }
+.log-type.EVACUATION{ color: #8b5cf6; }
+.log-type.CUSTOM    { color: var(–blue); }
+.log-body { flex: 1; }
+.log-msg { font-size: 0.88rem; color: var(–text); margin-bottom: 5px; }
+.log-meta { font-family: var(–mono); font-size: 0.72rem; color: var(–muted); }
+
+/* ── CONFIRM MODAL ───────────────────────────────────────── */
+.modal-overlay {
+display: none; position: fixed;
+inset: 0; background: rgba(0,0,0,0.8);
+z-index: 500; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+background: var(–surface);
+border: 1px solid var(–red);
+border-radius: 16px;
+padding: 40px;
+max-width: 480px; width: 90%;
+box-shadow: 0 0 60px rgba(225,29,72,0.3);
+text-align: center;
+}
+.modal-title {
+font-family: var(–display);
+font-size: 2rem;
+letter-spacing: 3px;
+color: var(–red);
+margin-bottom: 12px;
+}
+.modal-body { font-size: 0.9rem; color: var(–muted); margin-bottom: 28px; line-height: 1.6; }
+.modal-preview {
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 14px;
+font-family: var(–mono);
+font-size: 0.78rem;
+text-align: left;
+margin-bottom: 24px;
+color: var(–text);
+line-height: 1.6;
+max-height: 150px;
+overflow-y: auto;
+}
+.modal-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-confirm {
+background: var(–red);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 12px 32px;
+font-family: var(–display);
+font-size: 1.1rem;
+letter-spacing: 2px;
+cursor: pointer;
+transition: all 0.2s;
+}
+.btn-confirm:hover { background: var(–red-dark); box-shadow: 0 0 20px var(–red-glow); }
+.btn-cancel {
+background: transparent;
+color: var(–muted);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 12px 24px;
+font-family: var(–mono);
+font-size: 0.85rem;
+cursor: pointer;
+transition: all 0.2s;
+}
+.btn-cancel:hover { color: var(–text); border-color: var(–text); }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast {
+position: fixed; bottom: 32px; right: 32px;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 14px 22px;
+font-family: var(–mono);
+font-size: 0.82rem;
+color: var(–text);
+box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+z-index: 9999;
+transform: translateY(80px);
+opacity: 0;
+transition: all 0.3s ease;
+max-width: 340px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(–green); }
+.toast.error   { border-color: var(–red); }
+
+/* ── UTIL ────────────────────────────────────────────────── */
+.empty-state {
+text-align: center;
+padding: 48px;
+color: var(–muted);
+font-family: var(–mono);
+font-size: 0.85rem;
+}
+.badge {
+display: inline-block;
+padding: 2px 8px;
+border-radius: 4px;
+font-size: 0.68rem;
+font-weight: 700;
+font-family: var(–mono);
+letter-spacing: 1px;
+text-transform: uppercase;
+}
+.badge-red   { background: rgba(225,29,72,0.15); color: #fca5a5; }
+.badge-amber { background: rgba(245,158,11,0.15); color: #fcd34d; }
+.badge-green { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+.badge-blue  { background: rgba(59,130,246,0.15);  color: #93c5fd; }
+
+@media (max-width: 720px) {
+.main { padding: 20px 16px; }
+.topbar { padding: 14px 16px; }
+.alert-grid { grid-template-columns: 1fr; }
+.input-name, .input-email, .input-phone { width: 100%; }
+.staff-toolbar { flex-direction: column; align-items: stretch; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════ -->
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">⚠ ALERTSCOPE</div>
+    <div class="login-sub">Emergency Communications System</div>
+    <div class="field"><input type="email" id="loginEmail" placeholder="staff@school.edu" autocomplete="email"></div>
+    <div class="field"><input type="password" id="loginPass" placeholder="Password" autocomplete="current-password"></div>
+    <button class="btn-signin" onclick="doLogin()">SIGN IN</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════ -->
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">⚠ ALERTSCOPE</div>
+    <div style="display:flex;align-items:center;gap:0;">
+      <div class="topbar-meta">
+        <strong id="topbarEmail">—</strong>
+        <span id="topbarRole">—</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">SIGN OUT</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+```
+<!-- Admin-only gate -->
+<div id="accessDenied">
+  <div style="font-size:2rem;margin-bottom:12px;">🔒</div>
+  <div style="font-size:0.9rem;">ADMIN ACCESS REQUIRED<br><br>
+  This system requires an Admin role. Your current role does not permit access.<br>
+  Contact your portal administrator.</div>
+</div>
+
+<!-- Main content (admin only) -->
+<div id="adminContent" style="display:none;">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('send')">🚨 SEND ALERT</button>
+    <button class="tab" onclick="switchTab('staff')">👥 STAFF ROSTER</button>
+    <button class="tab" onclick="switchTab('log')">📋 ALERT LOG</button>
+  </div>
+
+  <!-- ─── TAB: SEND ALERT ─────────────────────────────── -->
+  <div class="section active" id="tab-send">
+    <div class="alert-grid">
+
+      <!-- LEFT: Alert Composer -->
+      <div class="panel">
+        <div class="panel-title">Alert Type</div>
+
+        <div class="alert-types">
+          <button class="alert-type-btn selected" data-type="LOCKDOWN" data-color="red" onclick="selectAlertType(this)">
+            <span class="icon">🔒</span>LOCKDOWN
+          </button>
+          <button class="alert-type-btn" data-type="SHELTER" data-color="amber" onclick="selectAlertType(this)">
+            <span class="icon">🏠</span>SHELTER IN PLACE
+          </button>
+          <button class="alert-type-btn" data-type="EVACUATION" data-color="purple" onclick="selectAlertType(this)">
+            <span class="icon">🚪</span>EVACUATION
+          </button>
+          <button class="alert-type-btn" data-type="ALLCLEAR" data-color="green" onclick="selectAlertType(this)">
+            <span class="icon">✅</span>ALL CLEAR
+          </button>
+        </div>
+
+        <div class="panel-title" style="margin-top:10px;">Additional Message (optional)</div>
+        <textarea class="custom-message" id="customMessage"
+          placeholder="e.g. Threat reported in Building B. Remain in classrooms. Do not use hallways. Await further instructions."></textarea>
+
+        <div class="panel-title">Delivery Channels</div>
+        <div class="channels">
+          <label class="channel-toggle active" id="toggle-email">
+            <input type="checkbox" checked onchange="updateChannels()">
+            <span class="channel-dot"></span> 📧 EMAIL
+          </label>
+          <label class="channel-toggle" id="toggle-sms">
+            <input type="checkbox" onchange="updateChannels()">
+            <span class="channel-dot"></span> 📱 SMS (manual)
+          </label>
+        </div>
+
+        <div id="smsNote" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px;font-family:var(--mono);font-size:0.75rem;color:#fcd34d;line-height:1.6;margin-bottom:14px;">
+          📱 <strong>SMS mode:</strong> Clicking the button will open your default SMS/messaging app with the alert pre-filled. Staff phone numbers must be added in the roster. For automated SMS, integrate Twilio — see the README comment in this file.
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Big Red Button -->
+      <div class="panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div class="panel-title" style="margin-bottom:24px;">Broadcast to All Staff</div>
+
+        <div class="recipient-count">
+          <strong id="recipientCount">0</strong> staff recipients loaded
+        </div>
+
+        <div class="red-button-wrap">
+          <button class="red-button" id="redBtn" onclick="initiateAlert()">SEND<br>ALERT</button>
+          <div class="button-status" id="btnStatus">SELECT ALERT TYPE → PRESS TO BROADCAST</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Last alert strip -->
+    <div id="lastAlertStrip" style="display:none;" class="panel" style="margin-top:0;">
+      <div class="panel-title">Last Alert Sent</div>
+      <div id="lastAlertContent" style="font-family:var(--mono);font-size:0.82rem;color:var(--muted);"></div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: STAFF ROSTER ───────────────────────────── -->
+  <div class="section" id="tab-staff">
+    <div class="panel">
+      <div class="panel-title" style="margin-bottom:18px;">Staff Roster — Email &amp; SMS Recipients</div>
+
+      <div class="staff-toolbar">
+        <input class="input-field input-name"  id="newName"  placeholder="Full Name" />
+        <input class="input-field input-email" id="newEmail" placeholder="email@school.edu" type="email" />
+        <input class="input-field input-phone" id="newPhone" placeholder="Phone (optional)" type="tel" />
+        <button class="btn-add" onclick="addStaffMember()">+ ADD STAFF</button>
+      </div>
+
+      <div id="staffTable">
+        <div class="empty-state">No staff added yet. Add the first member above.</div>
+      </div>
+
+      <div style="margin-top:20px;font-family:var(--mono);font-size:0.72rem;color:var(--muted);line-height:1.8;">
+        💡 <strong style="color:var(--text);">Tip:</strong> Staff are stored in Firebase under your school's userRoles collection by default.
+        You can also paste a CSV of names, emails, and phones — click <span style="color:var(--blue);cursor:pointer;" onclick="showCsvImport()">Import CSV</span>.
+      </div>
+
+      <!-- CSV Import (hidden by default) -->
+      <div id="csvImportBox" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-bottom:8px;">Paste CSV (Name, Email, Phone — one per line):</div>
+        <textarea class="custom-message" id="csvInput" placeholder="Jane Smith, jsmith@school.edu, 555-0101&#10;Tom Brown, tbrown@school.edu, 555-0102" style="min-height:100px;"></textarea>
+        <button class="btn-add" onclick="importCsv()" style="margin-top:8px;">IMPORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: ALERT LOG ──────────────────────────────── -->
+  <div class="section" id="tab-log">
+    <div id="alertLogList">
+      <div class="empty-state">No alerts have been sent yet.</div>
+    </div>
+  </div>
+
+</div><!-- /adminContent -->
+```
+
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">CONFIRM ALERT</div>
+    <div class="modal-body" id="modalBody">You are about to broadcast an emergency alert to all staff. This action cannot be undone.</div>
+    <div class="modal-preview" id="modalPreview"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">CANCEL</button>
+      <button class="btn-confirm" id="modalConfirmBtn" onclick="fireAlert()">🚨 SEND NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  FIREBASE CONFIG — same project as your teacher portal
+// ════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyDFI44iKYUJNu9-67UkfHQHeKHBRAjKleA",
+  authDomain:        "studentscopebehaviorcenter.firebaseapp.com",
+  projectId:         "studentscopebehaviorcenter",
+  storageBucket:     "studentscopebehaviorcenter.firebasestorage.app",
+  messagingSenderId: "311398911099",
+  appId:             "1:311398911099:web:6703268a2b65cdd969a6de"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════
+let currentUser   = null;
+let currentRole   = null;
+let staffList     = [];       // { id, name, email, phone }
+let alertLog      = [];
+let selectedType  = 'LOCKDOWN';
+let emailEnabled  = true;
+let smsEnabled    = false;
+
+const ALERT_META = {
+  LOCKDOWN:   { label: 'LOCKDOWN',         emoji: '🔒', color: '#e11d48' },
+  SHELTER:    { label: 'SHELTER IN PLACE', emoji: '🏠', color: '#f59e0b' },
+  EVACUATION: { label: 'EVACUATION',       emoji: '🚪', color: '#8b5cf6' },
+  ALLCLEAR:   { label: 'ALL CLEAR',        emoji: '✅', color: '#10b981' },
+  CUSTOM:     { label: 'CUSTOM ALERT',     emoji: '📢', color: '#3b82f6' },
+};
+
+// ════════════════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════════════════
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    showLogin(); return;
+  }
+  currentUser = user;
+  try {
+    const roleDoc = await db.collection('userRoles').doc(user.uid).get();
+    currentRole = roleDoc.exists ? roleDoc.data().role : null;
+  } catch (e) {
+    currentRole = null;
+  }
+  showApp();
+});
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('topbarEmail').textContent = currentUser.email;
+  document.getElementById('topbarRole').textContent  = currentRole || 'unknown';
+
+  if (currentRole !== 'admin') {
+    document.getElementById('accessDenied').style.display = 'block';
+    document.getElementById('adminContent').style.display  = 'none';
+  } else {
+    document.getElementById('accessDenied').style.display = 'none';
+    document.getElementById('adminContent').style.display  = 'block';
+    loadStaff();
+    loadAlertLog();
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pass) { showLoginError('Enter email and password.'); return; }
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (e) {
+    showLoginError(e.message);
+  }
+}
+function doLogout() { auth.signOut(); }
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
+});
+
+// ════════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  const tabs = { send: 0, staff: 1, log: 2 };
+  document.querySelectorAll('.tab')[tabs[name]]?.classList.add('active');
+  if (name === 'log') loadAlertLog();
+}
+
+// ════════════════════════════════════════════════════════════
+//  STAFF ROSTER (stored in Firestore: alertStaff collection)
+// ════════════════════════════════════════════════════════════
+async function loadStaff() {
+  try {
+    const snap = await db.collection('alertStaff').get();
+    staffList = [];
+    snap.forEach(doc => staffList.push({ id: doc.id, ...doc.data() }));
+  } catch (e) {
+    // Fallback: pull emails from userRoles if alertStaff doesn't exist yet
+    try {
+      const snap = await db.collection('userRoles').get();
+      staffList = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        staffList.push({ id: doc.id, name: d.email?.split('@')[0] || '—', email: d.email || '', phone: '' });
+      });
+    } catch (e2) { console.error(e2); }
+  }
+  renderStaffTable();
+  document.getElementById('recipientCount').textContent = staffList.length;
+}
+
+function renderStaffTable() {
+  const el = document.getElementById('staffTable');
+  document.getElementById('recipientCount').textContent = staffList.length;
+  if (!staffList.length) {
+    el.innerHTML = '<div class="empty-state">No staff added yet.</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Name</th><th>Email</th><th>Phone</th><th></th>
+    </tr></thead>
+    <tbody>
+      ${staffList.map(s => `
+        <tr>
+          <td>${s.name || '—'}</td>
+          <td class="td-muted">${s.email || '—'}</td>
+          <td class="td-muted">${s.phone || '<span style="opacity:0.4;">no phone</span>'}</td>
+          <td><button class="btn-remove" onclick="removeStaff('${s.id}')">✕</button></td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+async function addStaffMember() {
+  const name  = document.getElementById('newName').value.trim();
+  const email = document.getElementById('newEmail').value.trim();
+  const phone = document.getElementById('newPhone').value.trim();
+  if (!name || !email) { toast('Enter at least a name and email.', 'error'); return; }
+  try {
+    const ref = await db.collection('alertStaff').add({ name, email, phone, addedBy: currentUser.email, addedAt: new Date().toISOString() });
+    staffList.push({ id: ref.id, name, email, phone });
+    renderStaffTable();
+    document.getElementById('newName').value  = '';
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newPhone').value = '';
+    toast(`✓ Added ${name}`, 'success');
+  } catch (e) { toast('Failed to add: ' + e.message, 'error'); }
+}
+
+async function removeStaff(id) {
+  if (!confirm('Remove this staff member from alert recipients?')) return;
+  try {
+    await db.collection('alertStaff').doc(id).delete();
+    staffList = staffList.filter(s => s.id !== id);
+    renderStaffTable();
+    toast('Removed.', 'success');
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+function showCsvImport() {
+  const box = document.getElementById('csvImportBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function importCsv() {
+  const raw = document.getElementById('csvInput').value.trim();
+  if (!raw) return;
+  const lines = raw.split('\n').filter(l => l.trim());
+  let added = 0;
+  for (const line of lines) {
+    const parts = line.split(',').map(p => p.trim());
+    const name  = parts[0] || '';
+    const email = parts[1] || '';
+    const phone = parts[2] || '';
+    if (!name || !email) continue;
+    try {
+      const ref = await db.collection('alertStaff').add({ name, email, phone, addedBy: currentUser.email, addedAt: new Date().toISOString() });
+      staffList.push({ id: ref.id, name, email, phone });
+      added++;
+    } catch (e) { console.error('CSV import error', e); }
+  }
+  renderStaffTable();
+  document.getElementById('csvImportBox').style.display = 'none';
+  document.getElementById('csvInput').value = '';
+  toast(`✓ Imported ${added} staff member${added !== 1 ? 's' : ''}.`, 'success');
+}
+
+// ════════════════════════════════════════════════════════════
+//  ALERT COMPOSER
+// ════════════════════════════════════════════════════════════
+function selectAlertType(btn) {
+  document.querySelectorAll('.alert-type-btn').forEach(b => {
+    b.className = 'alert-type-btn';
+  });
+  const colorClass = { red: 'selected', amber: 'selected-amber', green: 'selected-green', purple: 'selected-amber' }[btn.dataset.color] || 'selected';
+  btn.classList.add(colorClass);
+  selectedType = btn.dataset.type;
+}
+
+function updateChannels() {
+  const emailCb = document.querySelector('#toggle-email input');
+  const smsCb   = document.querySelector('#toggle-sms input');
+  emailEnabled  = emailCb.checked;
+  smsEnabled    = smsCb.checked;
+  document.getElementById('toggle-email').className = `channel-toggle ${emailEnabled ? 'active' : ''}`;
+  document.getElementById('toggle-sms').className   = `channel-toggle ${smsEnabled ? 'active' : ''}`;
+  document.getElementById('smsNote').style.display  = smsEnabled ? 'block' : 'none';
+}
+
+function buildAlertMessage() {
+  const meta   = ALERT_META[selectedType] || ALERT_META.CUSTOM;
+  const custom = document.getElementById('customMessage').value.trim();
+  const ts     = new Date().toLocaleString();
+  let msg  = `${meta.emoji} [${meta.label}] — ${ts}\n`;
+  msg += `Sent by: ${currentUser.email}\n`;
+  if (custom) msg += `\n${custom}`;
+  return msg;
+}
+
+// ════════════════════════════════════════════════════════════
+//  SEND FLOW: initiate → confirm → fire
+// ════════════════════════════════════════════════════════════
+function initiateAlert() {
+  if (staffList.length === 0) {
+    toast('⚠ No staff in roster. Add recipients first.', 'error');
+    switchTab('staff');
+    return;
+  }
+  const meta = ALERT_META[selectedType] || ALERT_META.CUSTOM;
+  document.getElementById('modalTitle').textContent  = `${meta.emoji} ${meta.label}`;
+  document.getElementById('modalBody').textContent   =
+    `You are about to broadcast to ${staffList.length} staff member${staffList.length !== 1 ? 's' : ''} via ${[emailEnabled ? 'email' : null, smsEnabled ? 'SMS' : null].filter(Boolean).join(' + ') || 'no channel selected'}. This cannot be undone.`;
+  document.getElementById('modalPreview').textContent = buildAlertMessage();
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+
+async function fireAlert() {
+  closeModal();
+  const meta = ALERT_META[selectedType] || ALERT_META.CUSTOM;
+  const msg  = buildAlertMessage();
+  const btn  = document.getElementById('redBtn');
+  const statusEl = document.getElementById('btnStatus');
+
+  // Visual feedback
+  btn.classList.add('firing');
+  statusEl.textContent = 'BROADCASTING...';
+  statusEl.className   = 'button-status live';
+
+  const emails = staffList.map(s => s.email).filter(Boolean);
+  const phones = smsEnabled ? staffList.map(s => s.phone).filter(Boolean) : [];
+
+  // ── EMAIL blast via mailto: ──────────────────────────────
+  if (emailEnabled && emails.length > 0) {
+    const subject = `🚨 ${meta.label} — ${new Date().toLocaleTimeString()}`;
+    // mailto: supports BCC list; most clients handle ~50 addresses
+    // For larger lists, split into batches of 30
+    const BATCH = 30;
+    for (let i = 0; i < emails.length; i += BATCH) {
+      const batch = emails.slice(i, i + BATCH).join(',');
+      const mailtoLink = `mailto:${encodeURIComponent(batch)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+      const a = document.createElement('a');
+      a.href = mailtoLink;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (i + BATCH < emails.length) await sleep(600);
+    }
+  }
+
+  // ── SMS (manual open in Messages app) ───────────────────
+  // NOTE: sms: URI scheme only supports one number at a time on most
+  // devices. For true bulk SMS, integrate Twilio — see README below.
+  if (smsEnabled && phones.length > 0) {
+    for (const phone of phones) {
+      const smsLink = `sms:${phone}?body=${encodeURIComponent(msg)}`;
+      const a = document.createElement('a');
+      a.href = smsLink;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      await sleep(400);
+    }
+  }
+
+  // ── Log to Firestore ─────────────────────────────────────
+  const logEntry = {
+    type:         selectedType,
+    label:        meta.label,
+    message:      msg,
+    customText:   document.getElementById('customMessage').value.trim(),
+    sentBy:       currentUser.email,
+    sentAt:       new Date().toISOString(),
+    recipientCount: staffList.length,
+    emailsSent:   emailEnabled ? emails.length : 0,
+    smsSent:      smsEnabled   ? phones.length  : 0,
+    channels:     [emailEnabled ? 'email' : null, smsEnabled ? 'sms' : null].filter(Boolean),
+  };
+  try {
+    await db.collection('alertLog').add(logEntry);
+    alertLog.unshift({ id: 'new', ...logEntry });
+  } catch (e) { console.error('Log failed:', e); }
+
+  // Update last-alert strip
+  const strip = document.getElementById('lastAlertStrip');
+  strip.style.display = 'block';
+  document.getElementById('lastAlertContent').innerHTML =
+    `<strong style="color:${meta.color};">${meta.emoji} ${meta.label}</strong> &nbsp;·&nbsp; ` +
+    `${new Date().toLocaleString()} &nbsp;·&nbsp; ` +
+    `${logEntry.emailsSent} email${logEntry.emailsSent !== 1 ? 's' : ''} sent` +
+    (logEntry.smsSent ? ` + ${logEntry.smsSent} SMS` : '');
+
+  // Reset UI
+  btn.classList.remove('firing');
+  statusEl.textContent = 'ALERT BROADCAST COMPLETE';
+  statusEl.className   = 'button-status';
+  setTimeout(() => {
+    statusEl.textContent = 'SELECT ALERT TYPE → PRESS TO BROADCAST';
+  }, 6000);
+
+  toast(`✓ ${meta.label} sent to ${staffList.length} staff`, 'success');
+  document.getElementById('customMessage').value = '';
+}
+
+// ════════════════════════════════════════════════════════════
+//  ALERT LOG
+// ════════════════════════════════════════════════════════════
+async function loadAlertLog() {
+  try {
+    const snap = await db.collection('alertLog').orderBy('sentAt','desc').limit(50).get();
+    alertLog = [];
+    snap.forEach(doc => alertLog.push({ id: doc.id, ...doc.data() }));
+    renderAlertLog();
+  } catch (e) { console.error(e); }
+}
+
+function renderAlertLog() {
+  const el = document.getElementById('alertLogList');
+  if (!alertLog.length) {
+    el.innerHTML = '<div class="empty-state">No alerts sent yet.</div>';
+    return;
+  }
+  const TYPE_COLOR = { LOCKDOWN:'badge-red', SHELTER:'badge-amber', EVACUATION:'badge-blue', ALLCLEAR:'badge-green', CUSTOM:'badge-blue' };
+  el.innerHTML = alertLog.map(a => `
+    <div class="log-item ${a.type}">
+      <div class="log-type ${a.type}">${a.label || a.type}</div>
+      <div class="log-body">
+        <div class="log-msg">${a.customText || '<em style="color:var(--muted);">No additional message</em>'}</div>
+        <div class="log-meta">
+          Sent by <strong>${a.sentBy}</strong> &nbsp;·&nbsp; ${new Date(a.sentAt).toLocaleString()}
+          &nbsp;·&nbsp; ${a.emailsSent || 0} email${a.emailsSent !== 1 ? 's' : ''}
+          ${a.smsSent ? ` + ${a.smsSent} SMS` : ''}
+          &nbsp;·&nbsp; ${a.recipientCount} recipients
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════════
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type}`;
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+/*
+═══════════════════════════════════════════════════════════════
+  TWILIO INTEGRATION — TRUE AUTOMATED BULK SMS
+  ───────────────────────────────────────────────────────────
+  For real automated SMS (no manual "click-to-send"),
+  you'll need a small backend. Options:
+
+  OPTION A — Firebase Cloud Function (recommended)
+  1. npm install twilio in your functions folder
+  2. Create an HTTP-triggered function:
+
+     const twilio = require('twilio');
+     exports.sendAlert = functions.https.onCall(async (data, context) => {
+       const client = twilio(ACCOUNT_SID, AUTH_TOKEN);
+       for (const phone of data.phones) {
+         await client.messages.create({
+           body: data.message,
+           from: YOUR_TWILIO_NUMBER,
+           to: phone
+         });
+       }
+     });
+
+  3. Call it from this file:
+     const fn = firebase.functions().httpsCallable('sendAlert');
+     await fn({ phones, message: msg });
+
+  OPTION B — Twilio's free trial covers ~$15 of messages.
+  Sign up at twilio.com, get a phone number, grab your
+  Account SID and Auth Token from the console.
+
+  OPTION C — Email-to-SMS gateways (free, no Twilio needed)
+  Most US carriers support SMS via email:
+    AT&T:     number@txt.att.net
+    Verizon:  number@vtext.com
+    T-Mobile: number@tmomail.net
+    Sprint:   number@messaging.sprintpcs.com
+  Add these as extra "email" entries in the staff roster
+  for free SMS delivery through your existing email blast.
+═══════════════════════════════════════════════════════════════
+*/
+</script>
+
+</body>
+</html>

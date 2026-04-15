@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f172a"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<title>Seabass · Unsplash Edition</title>
+<title>Seabass · School‑Safe Unsplash</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=DM+Sans:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -255,24 +255,51 @@ autocapitalize="off" spellcheck="false"/>
 
 <script>
 // ─────────────────────────────────────────────────────────────
-// WORD LIST (for autocomplete & suggestions)
-// You can edit / extend this list freely.
-// The Unsplash API will search for any word you type.
+// WORD LIST (for autocomplete)
 // ─────────────────────────────────────────────────────────────
 const WORD_LIST = [
 "backpack", "bathroom", "cafeteria", "classroom", "computer",
 "desk", "door", "drink", "eat", "gym", "hallway", "homework",
 "library", "locker", "lunch", "pencil", "playground", "school bus",
-"sit down", "stand up", "teacher", "water fountain"
+"sit down", "stand up", "teacher", "water fountain", "bus"
 ];
 
-// Optional: emoji for dropdown (just for fun)
+// Optional emoji for dropdown
 const EMOJI = {
 "backpack":"🎒","bathroom":"🚽","cafeteria":"🍽️","classroom":"📚",
 "computer":"💻","desk":"🪑","door":"🚪","drink":"🥤","eat":"🍔",
 "gym":"🏋️","hallway":"🚶","homework":"📝","library":"📖","locker":"🔒",
 "lunch":"🥪","pencil":"✏️","playground":"🛝","school bus":"🚌",
-"sit down":"💺","stand up":"🧍","teacher":"👩‍🏫","water fountain":"💧"
+"sit down":"💺","stand up":"🧍","teacher":"👩‍🏫","water fountain":"💧","bus":"🚌"
+};
+
+// ─────────────────────────────────────────────────────────────
+// QUERY MAPPING – turn generic words into school‑friendly searches
+// Add or edit entries as you like.
+// ─────────────────────────────────────────────────────────────
+const QUERY_MAP = {
+"bus": "school bus",
+"bus stop": "school bus",
+"cafeteria": "school cafeteria",
+"lunch": "school lunch",
+"playground": "school playground",
+"locker": "school locker",
+"hallway": "school hallway",
+"gym": "school gymnasium",
+"library": "school library",
+"classroom": "school classroom",
+"desk": "classroom desk",
+"computer": "school computer",
+"pencil": "school pencil",
+"backpack": "school backpack",
+"teacher": "teacher in classroom",
+"water fountain": "school water fountain",
+"door": "school door",
+"drink": "child drinking water",
+"eat": "child eating lunch",
+"homework": "student doing homework",
+"sit down": "students sitting",
+"stand up": "students standing"
 };
 
 // DOM elements
@@ -298,13 +325,11 @@ closeDropdown();
 setGhost('');
 return;
 }
-// match startsWith first, then includes
 let matches = WORD_LIST.filter(w => w.startsWith(q));
 const extra = WORD_LIST.filter(w => w.includes(q) && !w.startsWith(q));
 matches = [...matches, ...extra];
 currentMatches = matches;
 
-// Ghost hint – top prefix match
 const topPrefix = WORD_LIST.find(w => w.startsWith(q));
 setGhost(topPrefix ? inp.value + topPrefix.slice(q.length) : '');
 
@@ -387,35 +412,36 @@ document.addEventListener('click', e => {
 if (!e.target.closest('.input-wrap')) closeDropdown();
 });
 
-// ── Unsplash image loader ─────────────────────────────────
-// Using Unsplash Source API (no key required)
-// Format: https://source.unsplash.com/featured/800x600?query,word
-// We use 1200x800 for retina, and add a cache-bust to avoid stale images.
+// ── Image loading with query mapping ───────────────────────
 function showImage(word) {
 inp.blur();
-// Hide idle message, reset display
 idleMsg.style.display = 'none';
 photoImg.style.display = 'none';
 frame.classList.remove('lit');
 frame.classList.add('loading');
 frameLabel.classList.remove('show');
 
-// Encode the word for URL
-const query = encodeURIComponent(word);
-// Unsplash "featured" returns a relevant photo.
-// Add a timestamp to avoid browser caching the same image.
+// Apply query mapping for school‑appropriate images
+let searchTerm = word.toLowerCase();
+if (QUERY_MAP[searchTerm]) {
+searchTerm = QUERY_MAP[searchTerm];
+}
+// Add "school" as a safe fallback context (optional)
+if (!searchTerm.includes("school") && !searchTerm.includes("classroom") && !searchTerm.includes("student")) {
+// You can optionally append "school" but might reduce relevance.
+// For now, we rely on the mapping above.
+}
 const timestamp = Date.now();
-const unsplashUrl = `https://source.unsplash.com/featured/1200x800?${query}&t=${timestamp}`;
+const unsplashUrl = `https://source.unsplash.com/featured/1200x800?${encodeURIComponent(searchTerm)}&t=${timestamp}`;
 
 photoImg.onload = () => {
 frame.classList.remove('loading');
 frame.classList.add('lit');
 photoImg.style.display = 'block';
-frameLabel.textContent = word;
+frameLabel.textContent = word; // show original word, not mapped
 frameLabel.classList.add('show');
 };
 photoImg.onerror = () => {
-// Fallback: show idle message with error
 frame.classList.remove('loading');
 idleMsg.style.display = 'flex';
 idleMsg.querySelector('.prompt-text').innerHTML = `⚠️ No image for “${escapeHtml(word)}”`;
@@ -438,7 +464,6 @@ recognition.interimResults = false;
 recognition.maxAlternatives = 5;
 recognition.onresult = e => {
 const alts = Array.from(e.results[0]).map(a => a.transcript.trim().toLowerCase());
-// Try to match best word from WORD_LIST
 let match = null;
 for (let alt of alts) {
 match = WORD_LIST.find(w => w === alt)
@@ -453,14 +478,14 @@ closeDropdown();
 showImage(match);
 } else {
 inp.value = alts[0];
-onType(); // show dropdown for typed word
+onType();
 }
 };
 recognition.onerror = () => voiceBtn.classList.remove('listening');
 recognition.onend = () => voiceBtn.classList.remove('listening');
 } else {
 voiceBtn.style.opacity = '0.35';
-voiceBtn.title = 'Voice not supported in this browser';
+voiceBtn.title = 'Voice not supported';
 }
 
 voiceBtn.addEventListener('click', () => {
@@ -470,7 +495,6 @@ try { recognition.start(); }
 catch { recognition.stop(); setTimeout(() => recognition.start(), 150); }
 });
 
-// Helper: escape HTML to avoid injection
 function escapeHtml(str) {
 return str.replace(/[&<>]/g, function(m) {
 if (m === '&') return '&amp;';
@@ -483,10 +507,8 @@ function escapeAttr(str) {
 return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// Auto-focus on load
 window.addEventListener('load', () => {
 inp.focus();
-// Optional: register service worker if you have one (PWA)
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('sw.js').catch(() => {});
 }

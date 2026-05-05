@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudentScope — Full System Demo</title>
+<title>StudentScope — Full System Demo</title>F
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -978,12 +978,198 @@ const PARENT_MSGS=[
   {from:"parent",text:"Thank you for letting me know. He had a tough morning at home too.",time:"9:45 AM"},
   {from:"teacher",text:"Not necessary today — let's see how the afternoon goes.",time:"10:02 AM"},
 ];
-const AI_RESPONSES={
-  "Professional Documentation Language":`During the observed instructional period, the student demonstrated [behavior] in the classroom environment. The behavior occurred following [antecedent] and resulted in [consequence]. Instructional staff provided [level of prompting] with [effectiveness]. This incident is documented in accordance with the student's current behavior intervention plan for IEP review and data tracking purposes.`,
-  "Parent Email Draft":`Dear [Parent/Guardian],\n\nI wanted to reach out regarding [student]'s day. During [period/time], [professional description of behavior]. Our staff responded by [intervention], and [student] was able to [outcome].\n\nWe remain committed to supporting [student] and wanted to keep you informed. Please don't hesitate to reach out.\n\nWarm regards,\nMs. Chen`,
-  "Behavior Strategy Suggestions":`1. Antecedent modification — Identify triggers and restructure environment proactively.\n\n2. Replacement behavior training — Teach a functionally equivalent behavior.\n\n3. Differential reinforcement — Increase reinforcement density during high-risk periods.\n\n4. Scheduled check-ins — Brief (2-3 min) proactive check-ins before known trigger points.\n\n5. Visual supports — Provide schedule reminders and first/then boards.`,
-  "Intervention Plan Ideas":`Hypothesized function: Escape / avoidance of academic demand\n\nPrevention strategies:\n• Pre-teach content to reduce task frustration\n• Offer structured choice within the activity\n• Build in planned movement breaks\n\nReplacement behaviors:\n• Teach break card request protocol\n• Practice self-advocacy scripting\n\nResponse strategies:\n• Planned ignoring of low-level avoidance\n• Prompt hierarchy: visual → gestural → vocal`
+// ═══════════════════════════════════════════════════
+// FAKE AI ENGINE — zero API calls, context-aware
+// ═══════════════════════════════════════════════════
+
+const STUDENT_CONTEXT = {
+  "Dee Dee Ramone": { pronoun:"he", grade:"7th grade", esp:"T. Vega", triggers:"transitions and independent seatwork", strength:"responds to non-verbal redirection and earned breaks", goal:"self-regulation (IEP Goal 2.1)" },
+  "Joey Ramone":    { pronoun:"he", grade:"8th grade", esp:"M. Cruz", triggers:"afternoon academic demands", strength:"thrives during presentation and audience-based tasks", goal:"communication and self-advocacy (IEP Goal 1.3)" },
+  "Johnny Ramone":  { pronoun:"he", grade:"6th grade", esp:"T. Vega", triggers:"midday transitions and unstructured time", strength:"responds well to visual schedules and movement breaks", goal:"elopement prevention and safety (IEP Goal 3.2)" },
+  "Marky Ramone":   { pronoun:"he", grade:"7th grade", esp:"D. Park", triggers:"morning check-in and group tasks", strength:"uses break card protocol effectively", goal:"emotional regulation (IEP Goal 2.4)" },
+  "Tommy Ramone":   { pronoun:"he", grade:"8th grade", esp:"M. Cruz", triggers:"classroom exits and permission-seeking", strength:"responds to pre-correction and praise", goal:"on-task behavior and classroom independence (IEP Goal 1.1)" },
+  "Richie Ramone":  { pronoun:"he", grade:"7th grade", esp:"T. Vega", triggers:"group activities and peer interactions", strength:"engages well with independent tasks and clear expectations", goal:"peer interaction and social skills (IEP Goal 4.1)" },
+  "CJ Ramone":      { pronoun:"he", grade:"6th grade", esp:"D. Park", triggers:"group tasks and unstructured transitions", strength:"responds to visual supports and routine", goal:"on-task behavior (IEP Goal 1.2)" },
+  "Elvis Ramone":   { pronoun:"he", grade:"8th grade", esp:"K. Torres", triggers:"public performance anxiety", strength:"strong motivation when given an audience and positive attention", goal:"communication and self-confidence (IEP Goal 2.2)" },
 };
+
+function inferSetting(desc) {
+  const d = desc.toLowerCase();
+  if (d.includes('math'))                       return 'independent math work';
+  if (d.includes('reading') || d.includes('ela')) return 'ELA/reading period';
+  if (d.includes('lunch') || d.includes('cafeteria')) return 'lunch / cafeteria transition';
+  if (d.includes('hallway') || d.includes('transition')) return 'a hallway transition';
+  if (d.includes('group'))                      return 'a group activity';
+  if (d.includes('specials') || d.includes('gym') || d.includes('art')) return 'a specials transition';
+  return 'the classroom instructional period';
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function buildAIResponse(studentName, desc, type, focus) {
+  const c = STUDENT_CONTEXT[studentName] || STUDENT_CONTEXT["Dee Dee Ramone"];
+  const first = studentName.split(' ')[0];
+  const setting = inferSetting(desc);
+  const his = c.pronoun === 'he' ? 'his' : 'her';
+
+  if (focus === 'Professional Documentation Language') {
+    if (type === 'neg') return (
+`During the observed instructional period, ${studentName} (${c.grade}) engaged in the following target behavior: ${first} ${desc.toLowerCase().replace(/\.$/, '')}.
+
+The incident occurred during ${setting} in the presence of ${c.esp} (paraprofessional). Antecedent conditions appeared consistent with previously identified triggers related to ${c.triggers}.
+
+Staff provided a verbal redirect (Level 1 prompt) followed by a second verbal prompt approximately 60 seconds later. The student did not comply with either prompt at the time of documentation.
+
+This incident is recorded per the student's current Behavior Intervention Plan and contributes to data collection for ${c.goal}.`
+    );
+    return (
+`During the observed instructional period, ${studentName} (${c.grade}) demonstrated the following positive behavior: ${desc.toLowerCase().replace(/\.$/, '')}.
+
+This is consistent with skills targeted under ${c.goal} and reflects ${first}'s documented strength in the area of ${c.strength.split(' and ')[0]}.
+
+Staff provided specific behavior-specific praise immediately following the response. The event is documented to support positive data collection and reinforce the student's behavior intervention record.`
+    );
+  }
+
+  if (focus === 'Parent Email Draft') {
+    const lastName = studentName.split(' ')[1];
+    if (type === 'neg') return (
+`Subject: Behavior update — ${studentName} — ${todayLabel()}
+
+Dear ${lastName} Family,
+
+I wanted to reach out with a brief update about ${first}'s day. During ${setting}, ${first} ${desc.toLowerCase().replace(/\.$/, '')}. Our staff responded calmly with a verbal redirect, consistent with ${his} current plan.
+
+This is something we're actively supporting, and our team remains consistent. Days like this are part of the process — ${first} is making real progress overall.
+
+You can view the full behavior log in your parent portal anytime. Please don't hesitate to reach out if you'd like to talk.
+
+Warm regards,
+Ms. Chen
+Case Manager, Joey Ramone Middle School`
+    );
+    return (
+`Subject: Great news about ${studentName} — ${todayLabel()}
+
+Dear ${lastName} Family,
+
+I'm reaching out with some wonderful news! Today, ${first} ${desc.toLowerCase().replace(/\.$/, '')} — and we wanted to make sure you heard about it.
+
+This directly supports ${his} IEP goals around ${c.goal}, and it's exactly the kind of progress our team has been working toward. ${first} received specific praise immediately, and ${c.pronoun} responded really well.
+
+Please take a moment to celebrate this with ${c.pronoun} at home — it makes a real difference.
+
+Warm regards,
+Ms. Chen
+Case Manager, Joey Ramone Middle School`
+    );
+  }
+
+  if (focus === 'Behavior Strategy Suggestions') {
+    if (type === 'neg') return (
+`Strategies for: ${studentName} — ${setting}
+
+1. Non-verbal redirection first
+   ${first} ${c.strength}. Try a proximity cue or visual card before using verbal prompts.
+
+2. Antecedent modification
+   Preview upcoming tasks with ${first} before they begin. A 2-minute warm-up review reduces frustration linked to ${c.triggers}.
+
+3. Offer structured choice
+   "Would you like to start with problem 1 or problem 5?" — reduces perceived demand while maintaining engagement.
+
+4. Behavioral momentum (high-p sequence)
+   Precede the challenging task with 2–3 simple, highly likely-to-succeed requests.
+
+5. Reinforcement calibration
+   Confirm the current reinforcer (Arcade points) is still motivating. A brief preference check can re-anchor the system.`
+    );
+    return (
+`Reinforcement strategies for: ${studentName}
+
+1. Behavior-specific praise — be exact
+   "I noticed you ${desc.split('.')[0].toLowerCase()} — that's exactly what we've been working on."
+
+2. Immediate reinforcement
+   Award Arcade points the moment the behavior occurs. Any delay weakens the connection.
+
+3. Home-school loop
+   Flag this for the parent portal and consider a positive phone call — one of the highest-leverage tools available.
+
+4. Build on the pattern
+   ${first}'s documented strength: ${c.strength}. Design more opportunities like today's.
+
+5. Thinning schedule
+   If this behavior is newly emerging, keep reinforcement dense. Don't thin too early.`
+    );
+  }
+
+  if (focus === 'Intervention Plan Ideas') {
+    if (type === 'neg') return (
+`Hypothesized function: Escape / avoidance of academic demand
+Student: ${studentName} | Target: ${desc.split(',')[0].toLowerCase()}
+
+Prevention (before behavior occurs)
+- Pre-teach content for upcoming tasks to reduce task-based frustration
+- Post a visual schedule — ${first} benefits from predictability around ${c.triggers}
+- Offer a proactive "take a break" card before escalation window
+
+Teaching (replacement behavior)
+- Rehearse: "I need help" / "Can I take a break?" — 2x per week, scripted practice
+- Role-play refusal scenarios and redirect paths
+- Tie to ${c.goal} — log each use as skill-building data
+
+Response (after behavior occurs)
+- Planned ignoring for low-level avoidance (looking away, passive refusal)
+- Maintain calm, neutral tone — extended engagement escalates
+- Do not fully remove task demand (preserve behavioral function fidelity)
+
+Reinforcement
+- DRA: award Arcade points immediately when ${first} uses the replacement behavior
+- Thinning plan: move from continuous to intermittent after 5 consecutive successes`
+    );
+    return (
+`Positive behavior support note
+Student: ${studentName} | Documented strength: ${desc.split('.')[0].toLowerCase()}
+
+Momentum building
+- Schedule similar opportunities daily — create repeated success cycles
+- Document frequency to establish a baseline for growth measurement
+
+Reinforcement maintenance
+- Current system (Arcade points) — connect this behavior type directly to a preferred reward tier
+- Consider a visible progress tracker ${first} can monitor to build intrinsic motivation alongside external rewards
+
+IEP alignment
+- This event supports evidence for ${c.goal}
+- Flag for next progress monitoring cycle — positive examples strengthen the data narrative
+
+Family loop
+- Parent notification sent. Encourage family to replicate the setting conditions at home when possible.`
+    );
+  }
+
+  return 'Output type not recognized.';
+}
+
+// Typewriter effect — makes it feel like live AI generation
+function typewriteAI(text, el, onDone) {
+  el.className = 'ai-out';
+  el.textContent = '';
+  let i = 0;
+  const speed = Math.max(4, Math.min(14, Math.round(5000 / text.length)));
+  function tick() {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      setTimeout(tick, speed);
+    } else {
+      if (onDone) onDone();
+    }
+  }
+  tick();
+}
 
 // ═══════════════════════════════════
 // NAVIGATION
@@ -1470,13 +1656,19 @@ function espLog(){
   toast('✓ Logged · Case manager notified · Parent alerted');
 }
 function espGoodBehavior(){toast('⭐ Good Behavior Alert sent to Ms. Chen and parent!');}
-function espAI(){
-  const p=document.getElementById('esp-ai-prompt').value.trim();
-  const f=document.getElementById('esp-ai-focus').value;
-  const out=document.getElementById('esp-ai-out');
-  if(!p){toast('⚠ Describe a situation first');return;}
-  out.className='ai-out';out.textContent='🤖 Generating...';
-  setTimeout(()=>{out.textContent=AI_RESPONSES[f]||AI_RESPONSES["Professional Documentation Language"];toast('✓ Generated by Claude AI');},1200);
+function espAI() {
+  const desc = document.getElementById('esp-ai-prompt').value.trim();
+  const focus = document.getElementById('esp-ai-focus').value;
+  const student = document.getElementById('esp-student').value;
+  const type = document.getElementById('esp-type').value;
+  const out = document.getElementById('esp-ai-out');
+  if (!desc) { toast('⚠ Describe a situation first'); return; }
+  out.className = 'ai-out';
+  out.textContent = '🤖 Generating...';
+  setTimeout(() => {
+    const result = buildAIResponse(student, desc, type, focus);
+    typewriteAI(result, out, () => toast('✓ Generated · No tokens used'));
+  }, 800);
 }
 function tchLog(){
   const b=document.getElementById('tch-log-behavior').value.trim();
@@ -1491,13 +1683,19 @@ function tchLog(){
   s.style.display='block';setTimeout(()=>s.style.display='none',3500);
   toast('✓ Logged · Feed updated · Parent notified');
 }
-function tchAI(){
-  const p=document.getElementById('tch-ai-prompt').value.trim();
-  const f=document.getElementById('tch-ai-focus').value;
-  const out=document.getElementById('tch-ai-out');
-  if(!p){toast('⚠ Describe a situation first');return;}
-  out.className='ai-out';out.textContent='🤖 Generating...';
-  setTimeout(()=>{out.textContent=AI_RESPONSES[f]||AI_RESPONSES["Professional Documentation Language"];toast('✓ Generated by Claude AI');},1200);
+function tchAI() {
+  const desc = document.getElementById('tch-ai-prompt').value.trim();
+  const focus = document.getElementById('tch-ai-focus').value;
+  const student = document.getElementById('tch-log-student').value;
+  const type = document.getElementById('tch-log-type').value;
+  const out = document.getElementById('tch-ai-out');
+  if (!desc) { toast('⚠ Describe a situation first'); return; }
+  out.className = 'ai-out';
+  out.textContent = '🤖 Generating...';
+  setTimeout(() => {
+    const result = buildAIResponse(student, desc, type, focus);
+    typewriteAI(result, out, () => toast('✓ Generated · No tokens used'));
+  }, 800);
 }
 
 // BRANDING
